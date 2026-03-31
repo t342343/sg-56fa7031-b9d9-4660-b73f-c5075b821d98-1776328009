@@ -46,10 +46,17 @@ export const transactionService = {
 
   async checkNewTransactions(walletAddress: string, walletId: string): Promise<number> {
     try {
-      const response = await fetch(`https://blockchain.info/rawaddr/${walletAddress}`);
+      // Verwende Next.js API Route als Proxy (umgeht CORS)
+      const response = await fetch(`/api/bitcoin-transactions?address=${walletAddress}`);
       
       if (!response.ok) {
-        console.error("Bitcoin API error:", response.status);
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Bitcoin API proxy error:", response.status, errorData);
+        
+        if (response.status === 429) {
+          console.warn("Rate limit exceeded. Will retry later.");
+        }
+        
         return 0;
       }
       
