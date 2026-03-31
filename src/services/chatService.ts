@@ -50,7 +50,7 @@ export const chatService = {
   },
 
   subscribeToMessages(userId: string, callback: (message: any) => void) {
-    return supabase
+    const channel = supabase
       .channel(`chat:${userId}`)
       .on(
         "postgres_changes",
@@ -63,5 +63,7 @@ export const chatService = {
         (payload) => callback(payload.new)
       )
       .subscribe();
+    
+    return channel;
   }
 };
