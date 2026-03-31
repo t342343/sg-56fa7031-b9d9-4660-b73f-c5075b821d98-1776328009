@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
 import { ArrowDownLeft, Copy, Check, Clock, MessageCircle, Send } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function UserDashboard() {
   const [wallet, setWallet] = useState<any>(null);
@@ -23,40 +24,39 @@ export default function UserDashboard() {
   const [selectedTx, setSelectedTx] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     loadDashboard();
+    loadChat();
     const interval = setInterval(loadDashboard, 30000); // Refresh every 30s
     return () => clearInterval(interval);
   }, []);
 
   // Chat subscription
   useEffect(() => {
-    if (profile?.id) {
-      let channel: any;
-      
-      const setupChat = async () => {
-        await loadMessages();
-        channel = chatService.subscribeToMessages(profile.id, (newMessage) => {
-          setMessages((prev) => [...prev, newMessage]);
-        });
-      };
-      
-      setupChat();
-
-      return () => {
-        if (channel) {
-          supabase.removeChannel(channel);
-        }
-      };
+    let channel: any;
+    
+    if (userId) {
+      channel = chatService.subscribeToMessages(userId, (newMessage) => {
+        setMessages((prev) => [...prev, newMessage]);
+      });
     }
-  }, [profile?.id]);
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [userId]);
 
   const loadDashboard = async () => {
     setLoading(true);
     const profile = await profileService.getCurrentProfile();
     if (!profile) return;
+    
+    setUserId(profile.id);
 
     const w = await walletService.getWalletForUser(profile.id);
     setWallet(w);
@@ -76,6 +76,7 @@ export default function UserDashboard() {
   const loadChat = async () => {
     const profile = await profileService.getCurrentProfile();
     if (profile) {
+      setUserId(profile.id);
       const msgs = await chatService.getMessages(profile.id);
       setMessages(msgs);
     }
