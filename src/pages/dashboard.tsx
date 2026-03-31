@@ -4,14 +4,17 @@ import { profileService } from "@/services/profileService";
 import { walletService } from "@/services/walletService";
 import { transactionService } from "@/services/transactionService";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
-import { ArrowDownLeft } from "lucide-react";
+import { ArrowDownLeft, Copy, Check } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 
 export default function UserDashboard() {
   const [wallet, setWallet] = useState<any>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -40,6 +43,18 @@ export default function UserDashboard() {
     setLoading(false);
   };
 
+  const copyWalletAddress = async () => {
+    if (wallet?.wallet_address) {
+      await navigator.clipboard.writeText(wallet.wallet_address);
+      setCopied(true);
+      toast({ 
+        title: "Adresse kopiert", 
+        description: "Die Bitcoin-Wallet-Adresse wurde in die Zwischenablage kopiert." 
+      });
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   return (
     <>
       <SEO title="Investment Dashboard - Finanzportal" />
@@ -62,13 +77,37 @@ export default function UserDashboard() {
               <CardHeader>
                 <CardTitle className="text-lg">Ihre Wallet</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="font-mono bg-background border p-4 rounded-md break-all select-all text-sm">
-                  {wallet.wallet_address}
-                </p>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Dies ist Ihre persönliche Einzahlungsadresse.
-                </p>
+              <CardContent className="space-y-4">
+                <div className="flex flex-col sm:flex-row gap-4 items-start">
+                  <div className="flex-1 w-full">
+                    <div className="relative">
+                      <p className="font-mono bg-background border p-4 rounded-md break-all select-all text-sm pr-12">
+                        {wallet.wallet_address}
+                      </p>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={copyWalletAddress}
+                        className="absolute right-2 top-1/2 -translate-y-1/2"
+                        title="Adresse kopieren"
+                      >
+                        {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Dies ist Ihre persönliche Einzahlungsadresse.
+                    </p>
+                  </div>
+                  
+                  <div className="bg-white p-4 rounded-lg border shadow-sm">
+                    <QRCodeSVG 
+                      value={wallet.wallet_address} 
+                      size={160}
+                      level="H"
+                      includeMargin={true}
+                    />
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
