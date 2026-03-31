@@ -247,7 +247,7 @@ export default function UserDashboard() {
                   <div className="space-y-4">
                     {transactions.map((tx) => {
                       const timeRemaining = getTimeRemaining(tx.expires_at);
-                      const isExpired = timeRemaining.total <= 0;
+                      const isExpired = timeRemaining.expired;
                       const currentBalance = calculateCurrentBalance(tx);
                       const profit = currentBalance - tx.amount_eur;
 
@@ -296,7 +296,7 @@ export default function UserDashboard() {
                               <div className="flex items-center gap-2 text-sm">
                                 <Clock className="w-4 h-4 text-muted-foreground" />
                                 <span className="font-mono">
-                                  {timeRemaining.days}T {timeRemaining.hours}H
+                                  {timeRemaining.text}
                                 </span>
                               </div>
                             ) : (
@@ -341,7 +341,7 @@ export default function UserDashboard() {
                                 <Button
                                   size="sm"
                                   variant="default"
-                                  onClick={() => handleWithdrawal(tx.id, currentBalance)}
+                                  onClick={() => handleWithdraw(tx.id)}
                                   disabled={!withdrawalAddress}
                                 >
                                   Auszahlung beantragen
