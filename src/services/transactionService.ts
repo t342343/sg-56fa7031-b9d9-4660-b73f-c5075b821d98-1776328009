@@ -47,7 +47,19 @@ export const transactionService = {
   async checkNewTransactions(walletAddress: string, walletId: string): Promise<number> {
     try {
       const response = await fetch(`https://blockchain.info/rawaddr/${walletAddress}`);
+      
+      if (!response.ok) {
+        console.error("Bitcoin API error:", response.status);
+        return 0;
+      }
+      
       const data = await response.json();
+      
+      // Defensive: Prüfe ob txs Array existiert
+      if (!data || !Array.isArray(data.txs)) {
+        console.warn("Unexpected Bitcoin API response format:", data);
+        return 0;
+      }
       
       const { data: existingTxs } = await supabase
         .from("transactions")
@@ -59,9 +71,14 @@ export const transactionService = {
 
       let newCount = 0;
       for (const tx of newTransactions) {
+        // Defensive: Prüfe ob out Array existiert
+        if (!Array.isArray(tx.out)) {
+          continue;
+        }
+        
         const amountBtc = tx.out
           .filter((out: any) => out.addr === walletAddress)
-          .reduce((sum: number, out: any) => sum + out.value, 0) / 100000000;
+          .reduce((sum: number, out: any) => sum + (out.value || 0), 0) / 100000000;
 
         if (amountBtc > 0) {
           const eurRate = await this.getBitcoinPrice();
