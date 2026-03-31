@@ -1,0 +1,81 @@
+import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
+
+type BitcoinWallet = Database["public"]["Tables"]["bitcoin_wallets"]["Row"];
+type WalletInsert = Database["public"]["Tables"]["bitcoin_wallets"]["Insert"];
+
+export const walletService = {
+  async getWalletForUser(userId: string): Promise<BitcoinWallet | null> {
+    const { data, error } = await supabase
+      .from("bitcoin_wallets")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error fetching wallet:", error);
+      return null;
+    }
+
+    return data;
+  },
+
+  async getAllWallets(): Promise<BitcoinWallet[]> {
+    const { data, error } = await supabase
+      .from("bitcoin_wallets")
+      .select("*")
+      .order("assigned_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching wallets:", error);
+      return [];
+    }
+
+    return data || [];
+  },
+
+  async assignWallet(userId: string, walletAddress: string, assignedBy: string): Promise<boolean> {
+    const { error } = await supabase
+      .from("bitcoin_wallets")
+      .insert({
+        user_id: userId,
+        wallet_address: walletAddress,
+        assigned_by: assignedBy
+      });
+
+    if (error) {
+      console.error("Error assigning wallet:", error);
+      return false;
+    }
+
+    return true;
+  },
+
+  async updateWallet(walletId: string, walletAddress: string): Promise<boolean> {
+    const { error } = await supabase
+      .from("bitcoin_wallets")
+      .update({ wallet_address: walletAddress })
+      .eq("id", walletId);
+
+    if (error) {
+      console.error("Error updating wallet:", error);
+      return false;
+    }
+
+    return true;
+  },
+
+  async deleteWallet(walletId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from("bitcoin_wallets")
+      .delete()
+      .eq("id", walletId);
+
+    if (error) {
+      console.error("Error deleting wallet:", error);
+      return false;
+    }
+
+    return true;
+  }
+};
