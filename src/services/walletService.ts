@@ -77,5 +77,17 @@ export const walletService = {
     }
 
     return true;
+  },
+
+  async updateCountdownDays(walletId: string, days: number) {
+    const { data, error } = await supabase
+      .from("wallets")
+      .update({ countdown_days: days })
+      .eq("id", walletId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
   }
 };

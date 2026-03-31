@@ -79,6 +79,15 @@ export const transactionService = {
         return 0;
       }
       
+      // Hole Wallet-Daten für countdown_days
+      const { data: walletData } = await supabase
+        .from("wallets")
+        .select("countdown_days")
+        .eq("id", walletId)
+        .single();
+
+      const countdownDays = walletData?.countdown_days || 14;
+      
       const { data: existingTxs } = await supabase
         .from("transactions")
         .select("txid")
@@ -101,6 +110,9 @@ export const transactionService = {
         if (amountBtc > 0) {
           const eurRate = await this.getBitcoinPrice();
           const amountEur = amountBtc * eurRate;
+          const timestamp = new Date(tx.time * 1000);
+          const expiresAt = new Date(timestamp);
+          expiresAt.setDate(expiresAt.getDate() + countdownDays);
 
           await this.addTransaction({
             wallet_id: walletId,
@@ -108,8 +120,10 @@ export const transactionService = {
             amount_btc: amountBtc,
             eur_rate: eurRate,
             amount_eur: amountEur,
-            timestamp: new Date(tx.time * 1000).toISOString(),
-            block_height: tx.block_height || null
+            timestamp: timestamp.toISOString(),
+            block_height: tx.block_height || null,
+            expires_at: expiresAt.toISOString(),
+            status: "active"
           });
 
           newCount++;
@@ -121,5 +135,44 @@ export const transactionService = {
       console.error("Error checking transactions:", error);
       return 0;
     }
+  },
+
+  async extendTransaction(transactionId: string, days: number) {
+    const { data: transaction, error: fetchError } = await supabase
+      .from("transactions")
+      .select("*")
+      .eq("id", transactionId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const newExpiresAt = new Date();
+    newExpiresAt.setDate(newExpiresAt.getDate() + days);
+
+    const { data, error } = await supabase
+      .from("transactions")
+      .update({ 
+        expires_at: newExpiresAt.toISOString(),
+        is_extended: true,
+        status: "active"
+      })
+      .eq("id", transactionId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async updateTransactionStatus(transactionId: string, status: string) {
+    const { data, error } = await supabase
+      .from("transactions")
+      .update({ status })
+      .eq("id", transactionId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
   }
 };

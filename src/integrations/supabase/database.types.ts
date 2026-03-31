@@ -68,6 +68,41 @@ export type Database = {
           },
         ]
       }
+      chat_messages: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_admin: boolean | null
+          message: string
+          read: boolean | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_admin?: boolean | null
+          message: string
+          read?: boolean | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_admin?: boolean | null
+          message?: string
+          read?: boolean | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           address: string | null
@@ -151,6 +186,54 @@ export type Database = {
             columns: ["wallet_id"]
             isOneToOne: false
             referencedRelation: "bitcoin_wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      withdrawal_requests: {
+        Row: {
+          amount_btc: number
+          amount_eur: number
+          created_at: string | null
+          id: string
+          status: string | null
+          transaction_id: string
+          user_id: string
+          withdrawal_address: string
+        }
+        Insert: {
+          amount_btc: number
+          amount_eur: number
+          created_at?: string | null
+          id?: string
+          status?: string | null
+          transaction_id: string
+          user_id: string
+          withdrawal_address: string
+        }
+        Update: {
+          amount_btc?: number
+          amount_eur?: number
+          created_at?: string | null
+          id?: string
+          status?: string | null
+          transaction_id?: string
+          user_id?: string
+          withdrawal_address?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawal_requests_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "withdrawal_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
