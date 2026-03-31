@@ -44,23 +44,23 @@ export default function UserDashboard() {
     <>
       <SEO title="Investment Dashboard - Finanzportal" />
       <DashboardLayout>
-        <h2 className="text-2xl font-bold mb-6 text-navy">Ihr Investment Dashboard</h2>
+        <h2 className="text-2xl font-bold mb-6 text-navy">Kundenbereich</h2>
         
-        {loading ? (
-          <div className="animate-pulse text-muted-foreground">Lade Daten...</div>
-        ) : !wallet ? (
-          <Card>
+        {loading ?
+        <div className="animate-pulse text-muted-foreground">Lade Daten...</div> :
+        !wallet ?
+        <Card>
             <CardContent className="pt-6">
               <p className="text-muted-foreground text-center py-8">
                 Ihnen wurde noch keine Bitcoin Wallet zugewiesen. Bitte warten Sie, bis der Administrator Ihr Konto eingerichtet hat.
               </p>
             </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-6">
+          </Card> :
+
+        <div className="space-y-6">
             <Card className="border-blue-accent/20 bg-blue-accent/5">
               <CardHeader>
-                <CardTitle className="text-lg">Ihre Read-Only Bitcoin Wallet</CardTitle>
+                <CardTitle className="text-lg">Ihre Wallet</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="font-mono bg-background border p-4 rounded-md break-all select-all text-sm">
@@ -77,12 +77,12 @@ export default function UserDashboard() {
                 <CardTitle>Transaktionshistorie (Eingänge)</CardTitle>
               </CardHeader>
               <CardContent>
-                {transactions.length === 0 ? (
-                  <p className="text-muted-foreground py-4">Noch keine Transaktionen gefunden. Die Historie wird automatisch aktualisiert.</p>
-                ) : (
-                  <div className="space-y-4">
-                    {transactions.map(tx => (
-                      <div key={tx.id} className="flex justify-between items-center p-4 border rounded-lg bg-card hover:bg-muted/50 transition-colors">
+                {transactions.length === 0 ?
+              <p className="text-muted-foreground py-4">Noch keine Transaktionen gefunden. Die Historie wird automatisch aktualisiert.</p> :
+
+              <div className="space-y-4">
+                    {transactions.map((tx) =>
+                <div key={tx.id} className="flex justify-between items-center p-4 border rounded-lg bg-card hover:bg-muted/50 transition-colors">
                         <div className="flex items-center gap-4">
                           <div className="bg-green-100 text-green-700 p-2 rounded-full dark:bg-green-900/30 dark:text-green-400">
                             <ArrowDownLeft className="w-5 h-5" />
@@ -99,14 +99,14 @@ export default function UserDashboard() {
                           </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
                 )}
+                  </div>
+              }
               </CardContent>
             </Card>
           </div>
-        )}
+        }
       </DashboardLayout>
-    </>
-  );
+    </>);
+
 }
