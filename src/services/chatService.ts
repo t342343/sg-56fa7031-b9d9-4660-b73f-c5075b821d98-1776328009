@@ -50,8 +50,14 @@ export const chatService = {
   },
 
   subscribeToMessages(userId: string, callback: (message: any) => void) {
+    const channelName = `chat:${userId}`;
+    
+    // Entferne existierenden Channel falls vorhanden
+    supabase.removeChannel(supabase.channel(channelName));
+    
+    // Erstelle neuen Channel mit korrekter Reihenfolge
     const channel = supabase
-      .channel(`chat:${userId}`)
+      .channel(channelName)
       .on(
         "postgres_changes",
         {

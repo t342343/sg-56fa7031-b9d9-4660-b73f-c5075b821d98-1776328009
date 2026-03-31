@@ -31,18 +31,27 @@ export default function UserDashboard() {
     return () => clearInterval(interval);
   }, []);
 
+  // Chat subscription
   useEffect(() => {
-    loadChat();
-    const profile = profileService.getCurrentProfile();
-    profile.then(p => {
-      if (p) {
-        const channel = chatService.subscribeToMessages(p.id, (message) => {
-          setMessages(prev => [...prev, message]);
+    if (profile?.id) {
+      let channel: any;
+      
+      const setupChat = async () => {
+        await loadMessages();
+        channel = chatService.subscribeToMessages(profile.id, (newMessage) => {
+          setMessages((prev) => [...prev, newMessage]);
         });
-        return () => { channel.unsubscribe(); };
-      }
-    });
-  }, []);
+      };
+      
+      setupChat();
+
+      return () => {
+        if (channel) {
+          supabase.removeChannel(channel);
+        }
+      };
+    }
+  }, [profile?.id]);
 
   const loadDashboard = async () => {
     setLoading(true);
