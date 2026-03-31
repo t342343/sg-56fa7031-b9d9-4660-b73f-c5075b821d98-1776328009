@@ -1,12 +1,25 @@
-import React from 'react'
+import { useEffect } from "react";
+import { useRouter } from "next/router";
+import { authService } from "@/services/authService";
 
 export default function Home() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const session = await authService.getCurrentSession();
+      if (session) {
+        router.push("/dashboard");
+      } else {
+        router.push("/login");
+      }
+    };
+    checkSession();
+  }, [router]);
+
   return (
-    <main className="min-h-screen bg-background flex items-center justify-center">
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-foreground">Hello World</h1>
-        <p className="text-lg text-muted-foreground">This is going to be your softgen app, start by describing your project.</p>
-      </div>
-    </main>
-  )
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="animate-pulse text-lg font-heading text-navy">Laden...</div>
+    </div>
+  );
 }

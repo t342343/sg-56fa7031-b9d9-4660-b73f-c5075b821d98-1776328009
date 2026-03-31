@@ -27,10 +27,10 @@ export function AuthForm() {
     setLoading(true);
 
     try {
-      const user = await authService.signIn(loginData.email, loginData.password);
-      if (user) {
+      const { user, error } = await authService.signIn(loginData.email, loginData.password);
+      if (user && !error) {
         const profile = await profileService.getCurrentProfile();
-        toast({ title: "Erfolgreich angemeldet", description: `Willkommen zurück, ${profile?.name || "User"}!` });
+        toast({ title: "Erfolgreich angemeldet", description: `Willkommen zurück, ${profile?.full_name || "User"}!` });
         
         if (profile?.role === "admin") {
           router.push("/admin");
@@ -52,19 +52,21 @@ export function AuthForm() {
     setLoading(true);
 
     try {
-      const user = await authService.signUp(registerData.email, registerData.password);
-      if (user) {
+      const { user, error } = await authService.signUp(registerData.email, registerData.password);
+      if (user && !error) {
         await profileService.createProfile({
           id: user.id,
           email: registerData.email,
-          name: registerData.name,
+          full_name: registerData.name,
           address: registerData.address,
           phone: registerData.phone,
           role: "user"
         });
 
-        toast({ title: "Registrierung erfolgreich", description: "Bitte bestätigen Sie Ihre E-Mail-Adresse" });
+        toast({ title: "Registrierung erfolgreich", description: "Bitte bestätigen Sie Ihre E-Mail-Adresse (falls erforderlich) und loggen sich ein." });
         setRegisterData({ email: "", password: "", name: "", address: "", phone: "" });
+      } else {
+        toast({ title: "Fehler", description: error?.message || "Registrierung fehlgeschlagen", variant: "destructive" });
       }
     } catch (error) {
       toast({ title: "Fehler", description: "Registrierung fehlgeschlagen", variant: "destructive" });

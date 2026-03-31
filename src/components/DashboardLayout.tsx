@@ -22,7 +22,7 @@ export function DashboardLayout({ children, requireAdmin = false }: DashboardLay
   }, []);
 
   const checkAuth = async () => {
-    const session = await authService.getSession();
+    const session = await authService.getCurrentSession();
     if (!session) {
       router.push("/login");
       return;
@@ -40,7 +40,7 @@ export function DashboardLayout({ children, requireAdmin = false }: DashboardLay
       return;
     }
 
-    setUserName(profile.name || "User");
+    setUserName(profile.full_name || "User");
     setLoading(false);
   };
 
