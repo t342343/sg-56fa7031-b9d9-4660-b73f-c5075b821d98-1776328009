@@ -11,9 +11,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
-import { ArrowDownLeft, Copy, Check, Clock, MessageCircle, Send } from "lucide-react";
+import { ArrowDownLeft, Copy, Check, Clock, MessageCircle, Send, TrendingUp } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
+import { Progress } from "@/components/ui/progress";
 
 export default function UserDashboard() {
   const [wallet, setWallet] = useState<any>(null);
@@ -153,18 +154,50 @@ export default function UserDashboard() {
     const startDate = new Date(transaction.timestamp);
     const expiresDate = new Date(transaction.expires_at);
     
-    // Berechne vergangene Tage seit Einzahlung
-    const daysPassed = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    // Berechne vergangene vollständige Tage seit Einzahlung
+    const timeDiff = now.getTime() - startDate.getTime();
+    const daysPassed = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
     
     // Nur berechnen wenn Countdown noch läuft (Status active)
     if (transaction.status !== "active" || now > expiresDate) {
-      return transaction.amount_eur; // Ursprungsbetrag wenn abgelaufen
+      // Bei Ablauf: Berechne den finalen Betrag basierend auf gesamter Laufzeit
+      const totalDays = Math.floor((expiresDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      return transaction.amount_eur * Math.pow(1.007, totalDays);
     }
     
-    // Guthaben = Eingezahlter Betrag × (1.007 ^ vergangene Tage)
+    // Guthaben = Eingezahlter Betrag × (1.007 ^ vergangene vollständige Tage)
+    // 1.007 = 0.7% tägliches Wachstum
     const currentBalance = transaction.amount_eur * Math.pow(1.007, daysPassed);
     
     return currentBalance;
+  };
+
+  const getNextGrowthTime = (timestamp: string) => {
+    const now = new Date();
+    const startDate = new Date(timestamp);
+    
+    // Berechne wann der nächste Tag beginnt
+    const nextGrowth = new Date(startDate);
+    const daysPassed = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    nextGrowth.setDate(startDate.getDate() + daysPassed + 1);
+    
+    const timeUntilGrowth = nextGrowth.getTime() - now.getTime();
+    const hoursLeft = Math.floor(timeUntilGrowth / (1000 * 60 * 60));
+    const minutesLeft = Math.floor((timeUntilGrowth % (1000 * 60 * 60)) / (1000 * 60));
+    
+    return { hours: hoursLeft, minutes: minutesLeft, total: timeUntilGrowth };
+  };
+
+  const getCountdownProgress = (timestamp: string, expiresAt: string) => {
+    const now = new Date();
+    const startDate = new Date(timestamp);
+    const expiresDate = new Date(expiresAt);
+    
+    const totalDuration = expiresDate.getTime() - startDate.getTime();
+    const elapsed = now.getTime() - startDate.getTime();
+    const progress = Math.min((elapsed / totalDuration) * 100, 100);
+    
+    return progress;
   };
 
   const getTimeRemaining = (expiresAt: string) => {
@@ -250,6 +283,8 @@ export default function UserDashboard() {
                       const isExpired = timeRemaining.expired;
                       const currentBalance = calculateCurrentBalance(tx);
                       const profit = currentBalance - tx.amount_eur;
+                      const nextGrowth = getNextGrowthTime(tx.timestamp);
+                      const progress = getCountdownProgress(tx.timestamp, tx.expires_at);
 
                       return (
                         <div
@@ -284,11 +319,30 @@ export default function UserDashboard() {
                                 {currentBalance.toFixed(2)} €
                               </div>
                               {profit > 0 && !isExpired && (
-                                <div className="text-xs text-green-600">
+                                <div className="text-xs text-green-600 font-medium">
                                   +{profit.toFixed(2)} € Gewinn
                                 </div>
                               )}
                             </div>
+                          </div>
+
+                          {!isExpired && nextGrowth.total > 0 && (
+                            <div className="mb-3 p-2 bg-green-50 dark:bg-green-900/10 rounded-md border border-green-200 dark:border-green-800">
+                              <div className="flex items-center gap-2 text-xs text-green-700 dark:text-green-400">
+                                <TrendingUp className="w-3 h-3" />
+                                <span className="font-medium">
+                                  Nächstes Wachstum (+0.7%) in {nextGrowth.hours}h {nextGrowth.minutes}min
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="space-y-2 mb-3">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-muted-foreground">Countdown-Fortschritt</span>
+                              <span className="font-mono text-muted-foreground">{progress.toFixed(1)}%</span>
+                            </div>
+                            <Progress value={progress} className="h-2" />
                           </div>
 
                           <div className="flex items-center justify-between pt-3 border-t">
