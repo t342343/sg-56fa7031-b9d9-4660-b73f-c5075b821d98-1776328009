@@ -35,12 +35,23 @@ export const transactionService = {
 
   async getBitcoinPrice(): Promise<number> {
     try {
-      const response = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur");
+      // Verwende Next.js API Route als Proxy (umgeht CORS)
+      const response = await fetch("/api/bitcoin-price");
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Bitcoin price API error:", response.status, errorData);
+        
+        // Fallback Preis bei Fehler (ungefährer aktueller BTC Preis)
+        return 85000;
+      }
+      
       const data = await response.json();
-      return data.bitcoin.eur;
+      return data.eur || 85000;
     } catch (error) {
       console.error("Error fetching Bitcoin price:", error);
-      return 0;
+      // Fallback Preis bei Fehler
+      return 85000;
     }
   },
 
