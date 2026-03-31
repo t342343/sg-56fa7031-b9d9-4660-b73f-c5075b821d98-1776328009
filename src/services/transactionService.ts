@@ -81,7 +81,7 @@ export const transactionService = {
       
       // Hole Wallet-Daten für countdown_days
       const { data: walletData } = await supabase
-        .from("wallets")
+        .from("bitcoin_wallets")
         .select("countdown_days")
         .eq("id", walletId)
         .single();

@@ -81,7 +81,7 @@ export const walletService = {
 
   async updateCountdownDays(walletId: string, days: number) {
     const { data, error } = await supabase
-      .from("wallets")
+      .from("bitcoin_wallets")
       .update({ countdown_days: days })
       .eq("id", walletId)
       .select()

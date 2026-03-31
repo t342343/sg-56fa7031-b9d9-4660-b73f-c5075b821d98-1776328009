@@ -19,6 +19,7 @@ export type Database = {
         Row: {
           assigned_at: string | null
           assigned_by: string | null
+          countdown_days: number | null
           id: string
           user_id: string
           wallet_address: string
@@ -26,6 +27,7 @@ export type Database = {
         Insert: {
           assigned_at?: string | null
           assigned_by?: string | null
+          countdown_days?: number | null
           id?: string
           user_id: string
           wallet_address: string
@@ -33,6 +35,7 @@ export type Database = {
         Update: {
           assigned_at?: string | null
           assigned_by?: string | null
+          countdown_days?: number | null
           id?: string
           user_id?: string
           wallet_address?: string
@@ -146,7 +149,10 @@ export type Database = {
           block_height: number | null
           created_at: string | null
           eur_rate: number
+          expires_at: string | null
           id: string
+          is_extended: boolean | null
+          status: string | null
           timestamp: string
           txid: string
           wallet_id: string
@@ -157,7 +163,10 @@ export type Database = {
           block_height?: number | null
           created_at?: string | null
           eur_rate: number
+          expires_at?: string | null
           id?: string
+          is_extended?: boolean | null
+          status?: string | null
           timestamp: string
           txid: string
           wallet_id: string
@@ -168,7 +177,10 @@ export type Database = {
           block_height?: number | null
           created_at?: string | null
           eur_rate?: number
+          expires_at?: string | null
           id?: string
+          is_extended?: boolean | null
+          status?: string | null
           timestamp?: string
           txid?: string
           wallet_id?: string
