@@ -18,15 +18,7 @@ export function AuthForm() {
   // Login State
   const [loginData, setLoginData] = useState({ email: "", password: "" });
 
-  // Register State
-  const [registerData, setRegisterData] = useState({
-    email: "",
-    password: "",
-    name: "",
-    address: "",
-    phone: "",
-  });
-
+  // Register State - direkter State statt Objekt
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -167,36 +159,27 @@ export function AuthForm() {
       // Warte kurz, damit Supabase die Session setzt
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Erstelle Profil - mit Admin-Check
-      const isAdminEmail = registerData.email === "admin@finanzportal.dev";
-      
+      // Erstelle Profil
       try {
         await profileService.createProfile({
           id: authData.user.id,
-          email: registerData.email,
-          full_name: registerData.name,
-          address: registerData.address,
-          phone: registerData.phone,
-          role: isAdminEmail ? "admin" : "user"
+          email,
+          full_name: fullName,
+          address: combinedAddress,
+          phone,
+          role: "user"
         });
 
         console.log("Profile created successfully");
 
         toast({ 
           title: "Registrierung erfolgreich!", 
-          description: isAdminEmail 
-            ? "Admin-Account erstellt. Sie können sich jetzt anmelden." 
-            : "Account erstellt. Sie können sich jetzt anmelden.",
+          description: "Account erstellt. Sie können sich jetzt anmelden.",
         });
 
-        // Leere Formular
-        setRegisterData({ email: "", password: "", name: "", address: "", phone: "" });
-        
-        // Warte kurz und wechsle zum Login-Tab
-        setTimeout(() => {
-          const loginTab = document.querySelector('[value="login"]') as HTMLElement;
-          if (loginTab) loginTab.click();
-        }, 1500);
+        // Logout nach Registrierung und Umleitung zum Login
+        await supabase.auth.signOut();
+        router.push("/login");
 
       } catch (profileError: any) {
         console.error("Profile creation error:", profileError);
@@ -274,8 +257,8 @@ export function AuthForm() {
                     id="register-name"
                     type="text"
                     placeholder="Max Mustermann"
-                    value={registerData.name}
-                    onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
                     required
                     disabled={loading}
                   />
@@ -341,8 +324,8 @@ export function AuthForm() {
                     id="register-email"
                     type="email"
                     placeholder="ihre@email.de"
-                    value={registerData.email}
-                    onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     required
                     disabled={loading}
                   />
