@@ -231,7 +231,7 @@ export default function AdminPage() {
                           </Button>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          Aktuell: {wallet?.countdown_days || 14} Tage bis Ablauf neuer Transaktionen
+                          Aktuell: {wallet?.countdown_days ?? 14} Tage bis Ablauf neuer Transaktionen
                         </p>
                       </div>
                     </CardContent>
