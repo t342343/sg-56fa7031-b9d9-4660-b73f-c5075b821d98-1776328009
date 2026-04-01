@@ -327,13 +327,18 @@ export default function Dashboard() {
   const getCountdownProgress = (timestamp: string, expiresAt: string) => {
     if (!serverTime) return 0;
 
-    const now = serverTime;
-    const startDate = new Date(timestamp);
-    const expiresDate = new Date(expiresAt);
+    const start = new Date(timestamp).getTime();
+    const end = new Date(expiresAt).getTime();
+    const now = serverTime.getTime();
 
-    const totalDuration = expiresDate.getTime() - startDate.getTime();
-    const elapsed = now.getTime() - startDate.getTime();
-    const progress = Math.min(elapsed / totalDuration * 100, 100);
+    // Gesamtlaufzeit in Millisekunden
+    const totalDuration = end - start;
+    
+    // Verbleibende Zeit
+    const remaining = end - now;
+
+    // Verbleibende Zeit als Prozentsatz der Gesamtlaufzeit
+    const progress = Math.max(0, Math.min(100, (remaining / totalDuration) * 100));
 
     return progress;
   };
