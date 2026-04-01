@@ -21,6 +21,10 @@ export default function ProfilePage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [street, setStreet] = useState("");
+  const [houseNumber, setHouseNumber] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [city, setCity] = useState("");
   
   // Passwort-Änderung
   const [currentPassword, setCurrentPassword] = useState("");
@@ -42,13 +46,32 @@ export default function ProfilePage() {
       setEmail(p.email || "");
       setPhone(p.phone || "");
       setAddress(p.address || "");
+      
+      // Parse address into components
+      const addr = p.address || "";
+      const parts = addr.split(", ");
+      if (parts.length >= 4) {
+        setStreet(parts[0] || "");
+        setHouseNumber(parts[1] || "");
+        setPostalCode(parts[2] || "");
+        setCity(parts[3] || "");
+      } else {
+        setStreet("");
+        setHouseNumber("");
+        setPostalCode("");
+        setCity("");
+      }
     }
     setLoading(false);
   };
 
   const handleSaveProfile = async () => {
     if (!profile) return;
-    
+
+    const combinedAddress = [street, houseNumber, postalCode, city]
+      .filter(Boolean)
+      .join(", ");
+
     setSaving(true);
     try {
       // Prüfe ob E-Mail geändert wurde
@@ -83,7 +106,7 @@ export default function ProfilePage() {
         full_name: fullName.trim() || null,
         email: email.trim(),
         phone: phone.trim() || null,
-        address: address.trim() || null
+        address: combinedAddress
       });
 
       if (success) {
@@ -265,15 +288,42 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="address" className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    Adresse
-                  </Label>
+                  <Label htmlFor="street">Straße</Label>
                   <Input
-                    id="address"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    placeholder="Musterstraße 123, 12345 Musterstadt"
+                    id="street"
+                    value={street}
+                    onChange={e => setStreet(e.target.value)}
+                    placeholder="Musterstraße"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="houseNumber">Hausnummer</Label>
+                  <Input
+                    id="houseNumber"
+                    value={houseNumber}
+                    onChange={e => setHouseNumber(e.target.value)}
+                    placeholder="123"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="postalCode">PLZ</Label>
+                  <Input
+                    id="postalCode"
+                    value={postalCode}
+                    onChange={e => setPostalCode(e.target.value)}
+                    placeholder="12345"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="city">Ort</Label>
+                  <Input
+                    id="city"
+                    value={city}
+                    onChange={e => setCity(e.target.value)}
+                    placeholder="Berlin"
                   />
                 </div>
 

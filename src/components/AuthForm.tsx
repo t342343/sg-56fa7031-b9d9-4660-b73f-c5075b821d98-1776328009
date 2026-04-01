@@ -26,6 +26,17 @@ export function AuthForm() {
     phone: "",
   });
 
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [street, setStreet] = useState("");
+  const [houseNumber, setHouseNumber] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [city, setCity] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -236,27 +247,58 @@ export function AuthForm() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="register-address">Adresse</Label>
+                  <Label htmlFor="phone">Telefonnummer</Label>
                   <Input
-                    id="register-address"
-                    type="text"
-                    placeholder="Musterstraße 123, 12345 Stadt"
-                    value={registerData.address}
-                    onChange={(e) => setRegisterData({ ...registerData, address: e.target.value })}
+                    id="phone"
+                    type="tel"
+                    value={phone}
+                    onChange={e => setPhone(e.target.value)}
+                    placeholder="+49 123 456789"
                     required
-                    disabled={loading}
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="register-phone">Telefonnummer</Label>
+                  <Label htmlFor="street">Straße</Label>
                   <Input
-                    id="register-phone"
-                    type="tel"
-                    placeholder="+49 123 456789"
-                    value={registerData.phone}
-                    onChange={(e) => setRegisterData({ ...registerData, phone: e.target.value })}
+                    id="street"
+                    value={street}
+                    onChange={e => setStreet(e.target.value)}
+                    placeholder="Musterstraße"
                     required
-                    disabled={loading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="houseNumber">Hausnummer</Label>
+                  <Input
+                    id="houseNumber"
+                    value={houseNumber}
+                    onChange={e => setHouseNumber(e.target.value)}
+                    placeholder="123"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="postalCode">PLZ</Label>
+                  <Input
+                    id="postalCode"
+                    value={postalCode}
+                    onChange={e => setPostalCode(e.target.value)}
+                    placeholder="12345"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="city">Ort</Label>
+                  <Input
+                    id="city"
+                    value={city}
+                    onChange={e => setCity(e.target.value)}
+                    placeholder="Berlin"
+                    required
                   />
                 </div>
                 <div className="space-y-2">
