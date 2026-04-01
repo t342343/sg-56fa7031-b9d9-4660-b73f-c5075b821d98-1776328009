@@ -98,7 +98,34 @@ export const transactionService = {
     expires_at: string;
     status?: string;
   }) {
-    // Verwende UPSERT - Insert bei neuer txid, Update bei existierender
+    // Prüfe ob Transaktion bereits existiert
+    const { data: existing } = await supabase
+      .from("transactions")
+      .select("id, status")
+      .eq("txid", transaction.txid)
+      .single();
+
+    // Wenn Transaktion existiert UND Status ist withdrawal_pending oder withdrawn
+    // -> Update nur block_height, NICHT den Status
+    if (existing && (existing.status === "withdrawal_pending" || existing.status === "withdrawn")) {
+      const { data, error } = await supabase
+        .from("transactions")
+        .update({
+          block_height: transaction.block_height
+        })
+        .eq("txid", transaction.txid)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error updating transaction block_height:", error);
+        throw error;
+      }
+
+      return data;
+    }
+
+    // Ansonsten: Normale upsert Operation (neue Transaktion oder Update auf active)
     const { data, error } = await supabase
       .from("transactions")
       .upsert({
