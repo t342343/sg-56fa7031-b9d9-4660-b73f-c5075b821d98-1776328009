@@ -202,7 +202,7 @@ export default function AdminPage() {
 
   const handleSetMaturityDate = async (txId: string) => {
     const days = maturityDays[txId];
-    if (days === undefined || days === null || days < 0 || days > 14) {
+    if (days === undefined || days < 0 || days > 14) {
       toast({ title: "Fehler", description: "Bitte 0-14 Tage eingeben", variant: "destructive" });
       return;
     }
@@ -742,17 +742,28 @@ export default function AdminPage() {
                                   <label className="text-xs text-gray-600 block mb-1">
                                     Laufzeit in Tagen (0-14)
                                   </label>
-                                  <input
+                                  <Input
                                     type="number"
                                     min="0"
                                     max="14"
-                                    value={maturityDays[tx.id] || ""}
-                                    onChange={(e) => setMaturityDays(prev => ({ 
-                                      ...prev, 
-                                      [tx.id]: parseInt(e.target.value) || 0 
-                                    }))}
-                                    className="w-full px-3 py-2 border rounded"
-                                    placeholder="Tage eingeben"
+                                    placeholder="Tage"
+                                    value={maturityDays[tx.id] ?? ""}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      if (value === "") {
+                                        setMaturityDays(prev => {
+                                          const newState = { ...prev };
+                                          delete newState[tx.id];
+                                          return newState;
+                                        });
+                                      } else {
+                                        const numValue = parseInt(value);
+                                        if (!isNaN(numValue) && numValue >= 0 && numValue <= 14) {
+                                          setMaturityDays(prev => ({ ...prev, [tx.id]: numValue }));
+                                        }
+                                      }
+                                    }}
+                                    className="text-center"
                                   />
                                   <p className="text-xs text-gray-500 mt-1">
                                     0 = sofort fällig, 14 = maximale Laufzeit
@@ -760,7 +771,7 @@ export default function AdminPage() {
                                 </div>
                                 <Button
                                   onClick={() => handleSetMaturityDate(tx.id)}
-                                  disabled={maturityDays[tx.id] === undefined || maturityDays[tx.id] === null}
+                                  disabled={maturityDays[tx.id] === undefined}
                                   className="w-full"
                                 >
                                   Laufzeit setzen
