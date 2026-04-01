@@ -15,6 +15,7 @@ import { ArrowDownLeft, Copy, Check, Clock, MessageCircle, Send, TrendingUp } fr
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
@@ -381,6 +382,74 @@ export default function Dashboard() {
                               </div>
                             </div>
                           )}
+
+                          {/* 14-Tage Countdown mit visuell verbessertem Fortschrittsbalken */}
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="font-medium text-muted-foreground">Investment-Laufzeit</span>
+                              <span className={cn(
+                                "font-bold",
+                                getTimeRemaining(tx.expires_at).expired ? "text-red-500" : "text-primary"
+                              )}>
+                                {getTimeRemaining(tx.expires_at).text}
+                              </span>
+                            </div>
+                            
+                            {/* Verbesserte Fortschrittsanzeige */}
+                            <div className="space-y-2">
+                              <div className="relative h-8 bg-muted/30 rounded-lg overflow-hidden border border-border/50 shadow-inner">
+                                {/* Fortschrittsbalken mit Farbverlauf */}
+                                <div
+                                  className={cn(
+                                    "absolute inset-y-0 left-0 transition-all duration-500 rounded-lg",
+                                    "shadow-md"
+                                  )}
+                                  style={{
+                                    width: `${getCountdownProgress(tx.timestamp, tx.expires_at)}%`,
+                                    background: getCountdownProgress(tx.timestamp, tx.expires_at) < 25
+                                      ? "linear-gradient(90deg, #10b981 0%, #34d399 100%)" // Grün (0-25%)
+                                      : getCountdownProgress(tx.timestamp, tx.expires_at) < 50
+                                      ? "linear-gradient(90deg, #34d399 0%, #fbbf24 100%)" // Grün → Gelb (25-50%)
+                                      : getCountdownProgress(tx.timestamp, tx.expires_at) < 75
+                                      ? "linear-gradient(90deg, #fbbf24 0%, #fb923c 100%)" // Gelb → Orange (50-75%)
+                                      : "linear-gradient(90deg, #fb923c 0%, #ef4444 100%)" // Orange → Rot (75-100%)
+                                  }}
+                                >
+                                  {/* Glanz-Effekt */}
+                                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent" />
+                                </div>
+                                
+                                {/* Prozentzahl im Balken */}
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <span className="text-xs font-bold text-foreground/90 drop-shadow-md">
+                                    {getCountdownProgress(tx.timestamp, tx.expires_at).toFixed(1)}% vergangen
+                                  </span>
+                                </div>
+                              </div>
+                              
+                              {/* Zeitangaben unter dem Balken */}
+                              <div className="flex justify-between text-xs text-muted-foreground">
+                                <span className="flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  Start: {new Date(tx.timestamp).toLocaleDateString("de-DE", { 
+                                    day: "2-digit", 
+                                    month: "2-digit",
+                                    hour: "2-digit",
+                                    minute: "2-digit"
+                                  })}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  Ende: {new Date(tx.expires_at).toLocaleDateString("de-DE", { 
+                                    day: "2-digit", 
+                                    month: "2-digit",
+                                    hour: "2-digit",
+                                    minute: "2-digit"
+                                  })}
+                                  <Clock className="h-3 w-3" />
+                                </span>
+                              </div>
+                            </div>
+                          </div>
 
                           <div className="space-y-2 mb-3">
                             <div className="flex items-center justify-between text-xs">
