@@ -58,9 +58,6 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadDashboard();
-    loadChat();
-    const interval = setInterval(loadDashboard, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
