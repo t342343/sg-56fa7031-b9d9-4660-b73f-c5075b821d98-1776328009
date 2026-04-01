@@ -56,23 +56,39 @@ export default function AdminPage() {
     const me = await profileService.getCurrentProfile();
     if (!me) return;
 
-    const existingWallet = wallets.find(w => w.user_id === userId);
-    if (existingWallet) {
-      // Archiviere alte Transaktionen VOR dem Update der Wallet
-      await transactionService.archiveWalletTransactions(existingWallet.id);
+    try {
+      const existingWallet = wallets.find(w => w.user_id === userId);
       
-      // Aktualisiere die Wallet-Adresse
-      await walletService.updateWallet(existingWallet.id, address);
-    } else {
-      await walletService.assignWallet(userId, address, me.id);
-    }
+      if (existingWallet) {
+        // Archiviere ALLE alten Transaktionen BEVOR die Wallet-Adresse geändert wird
+        await transactionService.archiveWalletTransactions(existingWallet.id);
+        
+        // Aktualisiere die Wallet-Adresse
+        await walletService.updateWallet(existingWallet.id, address);
+        
+        toast({ 
+          title: "Wallet aktualisiert", 
+          description: "Alte Transaktionen wurden archiviert. Neue werden zur neuen Adresse erkannt."
+        });
+      } else {
+        // Erstelle neue Wallet
+        await walletService.assignWallet(userId, address, me.id);
+        
+        toast({ 
+          title: "Wallet zugewiesen"
+        });
+      }
 
-    toast({ 
-      title: "Wallet zugewiesen", 
-      description: existingWallet ? "Alte Transaktionen wurden archiviert." : undefined
-    });
-    setWalletAddresses({ ...walletAddresses, [userId]: "" });
-    loadData();
+      setWalletAddresses({ ...walletAddresses, [userId]: "" });
+      loadData();
+    } catch (error) {
+      console.error("Error assigning wallet:", error);
+      toast({ 
+        title: "Fehler", 
+        description: "Wallet konnte nicht zugewiesen werden.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleUpdateCountdown = async (userId: string) => {
