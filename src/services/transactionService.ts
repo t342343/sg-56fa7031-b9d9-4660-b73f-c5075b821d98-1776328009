@@ -267,12 +267,15 @@ export const transactionService = {
           const maturityDate = new Date(timestamp);
           maturityDate.setDate(maturityDate.getDate() + maturityDays);
 
+          // 1% Einzahlungsbonus für neue Transaktionen
+          const finalAmountEur = isNew ? amountEur * 1.01 : amountEur;
+
           await this.addTransaction({
             wallet_id: walletId,
             txid: tx.hash,
             amount_btc: amountBtc,
             eur_rate: eurRate,
-            amount_eur: amountEur,
+            amount_eur: finalAmountEur,
             timestamp: timestamp.toISOString(),
             block_height: tx.block_height || null,
             expires_at: expiresAt.toISOString(),

@@ -295,6 +295,20 @@ export default function Dashboard() {
       }, 0);
   };
 
+  // Berechne Gesamtrendite
+  const totalYield = transactions
+    .filter(tx => tx.status === "active")
+    .reduce((sum, tx) => {
+      if (!tx.timestamp || !tx.maturity_date) return sum;
+      const start = new Date(tx.timestamp);
+      const now = new Date();
+      const hoursElapsed = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60));
+      
+      // Stündliche Rendite: 0.05% normal, 0.1% verlängert
+      const hourlyRate = tx.is_extended ? 0.001 : 0.0005;
+      return sum + (tx.amount_eur * hourlyRate * hoursElapsed);
+    }, 0);
+
   const getNextProfitCountdown = (timestamp: string) => {
     if (!serverTime) return "...";
 
