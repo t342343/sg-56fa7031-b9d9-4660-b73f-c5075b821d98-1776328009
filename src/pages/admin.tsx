@@ -530,42 +530,42 @@ export default function AdminPage() {
                           </div>
                           <div className="text-right space-y-1">
                             <div className="text-2xl font-bold text-amber-800">
-                              {tx.withdrawn_amount_eur?.toFixed(2) || calculateCurrentValue(tx).toFixed(2)} €
+                              {(tx.withdrawn_amount_eur || tx.amount_eur).toFixed(2)} €
                             </div>
                             <div className="text-sm text-amber-600 font-medium">
                               {tx.withdrawn_amount_btc ? 
                                 `${tx.withdrawn_amount_btc.toFixed(8)} BTC` : 
-                                `${((tx.withdrawn_amount_eur || calculateCurrentValue(tx)) / 85000).toFixed(8)} BTC`
+                                `${(tx.amount_btc || 0).toFixed(8)} BTC`
                               }
                             </div>
                             <div className="text-xs text-green-600">
-                              Gewinn: +{((tx.withdrawn_amount_eur || calculateCurrentValue(tx)) - tx.amount_eur).toFixed(2)} €
+                              Gewinn: +{((tx.withdrawn_amount_eur || tx.amount_eur) - tx.amount_eur).toFixed(2)} €
                             </div>
                           </div>
                         </div>
 
                         <div className="bg-white rounded-lg p-3 mb-4 space-y-2 text-sm">
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Eingezahlter Betrag:</span>
+                            <span className="text-muted-foreground">Eingezahlter Betrag:</span>
                             <span className="font-medium">{tx.amount_eur.toFixed(2)} €</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Auszahlungsbetrag (EUR):</span>
+                            <span className="text-muted-foreground">Auszahlungsbetrag (EUR):</span>
                             <span className="font-bold text-amber-800">
-                              {tx.withdrawn_amount_eur?.toFixed(2) || calculateCurrentValue(tx).toFixed(2)} €
+                              {(tx.withdrawn_amount_eur || tx.amount_eur).toFixed(2)} €
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Auszahlungsbetrag (BTC):</span>
+                            <span className="text-muted-foreground">Auszahlungsbetrag (BTC):</span>
                             <span className="font-mono text-xs font-medium">
                               {tx.withdrawn_amount_btc ? 
                                 `${tx.withdrawn_amount_btc.toFixed(8)} BTC` : 
-                                `${((tx.withdrawn_amount_eur || calculateCurrentValue(tx)) / 85000).toFixed(8)} BTC`
+                                `${(tx.amount_btc || 0).toFixed(8)} BTC`
                               }
                             </span>
                           </div>
                           <div className="flex justify-between border-t pt-2">
-                            <span className="text-gray-600">Eingezahlt am:</span>
+                            <span className="text-muted-foreground">Eingezahlt am:</span>
                             <span className="font-medium">
                               {new Date(tx.timestamp).toLocaleDateString('de-DE', {
                                 day: '2-digit',
@@ -575,8 +575,8 @@ export default function AdminPage() {
                             </span>
                           </div>
                           <div className="border-t pt-2">
-                            <div className="text-gray-600 mb-1">Auszahlungsadresse:</div>
-                            <div className="font-mono text-xs bg-gray-100 p-2 rounded break-all border">
+                            <div className="text-muted-foreground mb-1">Auszahlungsadresse:</div>
+                            <div className="font-mono text-xs bg-gray-100 p-2 rounded break-all">
                               {tx.withdrawal_address || "Nicht verfügbar"}
                             </div>
                           </div>
@@ -584,7 +584,7 @@ export default function AdminPage() {
 
                         <div className="flex gap-2">
                           <Button
-                            onClick={() => handleApproveWithdrawal(tx.id)}
+                            onClick={() => handleTransactionWithdrawal(tx.id, "withdrawn")}
                             className="flex-1 bg-green-600 hover:bg-green-700"
                           >
                             <CheckCircle2 className="w-4 h-4 mr-2" />
@@ -629,16 +629,16 @@ export default function AdminPage() {
                           </div>
                           <div className="text-right">
                             <div className="text-2xl font-bold text-green-700">
-                              {tx.withdrawn_amount_eur?.toFixed(2) || calculateCurrentValue(tx).toFixed(2)} €
+                              {(tx.withdrawn_amount_eur || tx.amount_eur).toFixed(2)} €
                             </div>
                             <div className="text-sm text-green-600 font-medium">
                               {tx.withdrawn_amount_btc ? 
                                 `${tx.withdrawn_amount_btc.toFixed(8)} BTC` : 
-                                `${((tx.withdrawn_amount_eur || calculateCurrentValue(tx)) / 85000).toFixed(8)} BTC`
+                                `${(tx.amount_btc || 0).toFixed(8)} BTC`
                               }
                             </div>
                             <div className="text-sm text-gray-600 mt-1">
-                              Gewinn: +{((tx.withdrawn_amount_eur || calculateCurrentValue(tx)) - tx.amount_eur).toFixed(2)} €
+                              Gewinn: +{((tx.withdrawn_amount_eur || tx.amount_eur) - tx.amount_eur).toFixed(2)} €
                             </div>
                           </div>
                         </div>
@@ -651,7 +651,7 @@ export default function AdminPage() {
                           <div className="flex justify-between">
                             <span className="text-gray-600">Ausgezahlter Betrag:</span>
                             <span className="font-bold text-green-700">
-                              {tx.withdrawn_amount_eur?.toFixed(2) || calculateCurrentValue(tx).toFixed(2)} €
+                              {(tx.withdrawn_amount_eur || tx.amount_eur).toFixed(2)} €
                             </span>
                           </div>
                           <div className="flex justify-between">
@@ -659,17 +659,17 @@ export default function AdminPage() {
                             <span className="font-mono text-xs font-medium">
                               {tx.withdrawn_amount_btc ? 
                                 `${tx.withdrawn_amount_btc.toFixed(8)} BTC` : 
-                                `${((tx.withdrawn_amount_eur || calculateCurrentValue(tx)) / 85000).toFixed(8)} BTC`
+                                `${(tx.amount_btc || 0).toFixed(8)} BTC`
                               }
                             </span>
                           </div>
                           <div className="flex justify-between border-t pt-2">
                             <span className="text-gray-600">Eingezahlt am:</span>
                             <span className="font-medium">
-                              {new Date(tx.timestamp).toLocaleDateString('de-DE', {
-                                day: '2-digit',
-                                month: 'short',
-                                year: 'numeric'
+                              {new Date(tx.timestamp).toLocaleDateString("de-DE", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric"
                               })}
                             </span>
                           </div>
