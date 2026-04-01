@@ -478,5 +478,46 @@ export const transactionService = {
     }
 
     return data || [];
+  },
+
+  async createTransaction(
+    walletId: string,
+    txid: string,
+    amountBtc: number,
+    amountEur: number,
+    timestamp: string
+  ) {
+    // Zähle bisherige Transaktionen dieses Wallets
+    const { data: existingTxs } = await supabase
+      .from("transactions")
+      .select("id")
+      .eq("wallet_id", walletId);
+
+    const txCount = existingTxs?.length || 0;
+
+    // Bestimme automatische Laufzeit: Erste 2 = 7 Tage, ab 3. = 14 Tage
+    const autoDays = txCount < 2 ? 7 : 14;
+    const transactionDate = new Date(timestamp);
+    const maturityDate = new Date(transactionDate);
+    maturityDate.setDate(maturityDate.getDate() + autoDays);
+
+    const { data, error } = await supabase.from("transactions").insert({
+      wallet_id: walletId,
+      txid: txid,
+      amount_btc: amountBtc,
+      amount_eur: amountEur,
+      timestamp: timestamp,
+      status: "active",
+      maturity_date: maturityDate.toISOString(),
+      maturity_days: autoDays,
+      is_extended: false
+    }).select().single();
+
+    if (error) {
+      console.error("Error creating transaction:", error);
+      return null;
+    }
+
+    return data;
   }
 };
