@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { profileService } from "@/services/profileService";
 import { authService } from "@/services/authService";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +51,27 @@ export default function ProfilePage() {
     
     setSaving(true);
     try {
+      // Prüfe ob E-Mail geändert wurde
+      const emailChanged = email.trim() !== profile.email;
+      
+      // Update auth.users email wenn geändert
+      if (emailChanged) {
+        const { error: authError } = await supabase.auth.updateUser({
+          email: email.trim()
+        });
+        
+        if (authError) {
+          toast({ 
+            title: "Fehler", 
+            description: "E-Mail-Adresse konnte nicht aktualisiert werden: " + authError.message, 
+            variant: "destructive" 
+          });
+          setSaving(false);
+          return;
+        }
+      }
+
+      // Update profiles Tabelle
       const success = await profileService.updateProfile(profile.id, {
         full_name: fullName.trim() || null,
         email: email.trim(),
@@ -60,7 +82,9 @@ export default function ProfilePage() {
       if (success) {
         toast({ 
           title: "Profil aktualisiert", 
-          description: "Ihre Änderungen wurden gespeichert." 
+          description: emailChanged 
+            ? "Ihre Änderungen wurden gespeichert. Bitte bestätigen Sie Ihre neue E-Mail-Adresse." 
+            : "Ihre Änderungen wurden gespeichert." 
         });
         loadProfile();
       } else {
@@ -111,18 +135,20 @@ export default function ProfilePage() {
 
     setSaving(true);
     try {
-      // Schritt 1: Aktuelles Passwort verifizieren durch Re-Login
-      if (!profile?.email) {
+      // Schritt 1: Aktuelles Passwort verifizieren durch Re-Login mit AKTUELLER E-Mail
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user?.email) {
         toast({ 
           title: "Fehler", 
-          description: "E-Mail-Adresse nicht gefunden.", 
+          description: "Benutzer-Session nicht gefunden.", 
           variant: "destructive" 
         });
         setSaving(false);
         return;
       }
 
-      const { error: loginError } = await authService.signIn(profile.email, currentPassword);
+      const { error: loginError } = await authService.signIn(user.email, currentPassword);
       
       if (loginError) {
         toast({ 
