@@ -589,6 +589,22 @@ export default function AdminPage() {
                             </div>
                           </div>
                         </div>
+
+                        <div className="mt-4 flex gap-2">
+                          <Button
+                            onClick={() => handleTransactionWithdrawal(tx.id, "withdrawn")}
+                            className="flex-1 bg-green-600 hover:bg-green-700"
+                          >
+                            ✓ Auszahlung bestätigen
+                          </Button>
+                          <Button
+                            onClick={() => handleTransactionWithdrawal(tx.id, "active")}
+                            variant="outline"
+                            className="flex-1"
+                          >
+                            ✗ Ablehnen
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
