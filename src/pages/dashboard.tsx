@@ -145,6 +145,8 @@ export default function Dashboard() {
     try {
       const success = await transactionService.requestWithdrawal(txId, wallet.wallet_address, tx.amount_btc);
       if (success) {
+        setSelectedTx(null); // Schließe das Formular
+        setWithdrawalAddress(""); // Leere das Adressfeld
         toast({ title: "Auszahlungsanfrage gesendet", description: "Die Auszahlung erfolgt in Kürze." });
         loadDashboard();
       } else {
