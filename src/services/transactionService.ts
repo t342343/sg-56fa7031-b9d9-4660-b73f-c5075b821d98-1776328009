@@ -22,18 +22,28 @@ export const transactionService = {
 
   // Hole Transaktionen nach Wallet-Adresse (nicht nach wallet_id!)
   async getTransactionsByWalletAddress(walletAddress: string) {
+    // Erst hole die Wallet ID für die Adresse
+    const { data: wallet, error: walletError } = await supabase
+      .from("bitcoin_wallets")
+      .select("id")
+      .eq("wallet_address", walletAddress)
+      .single();
+
+    if (walletError || !wallet) {
+      console.error("Error finding wallet:", walletError);
+      return [];
+    }
+
+    // Dann hole die Transaktionen für diese Wallet ID
     const { data, error } = await supabase
       .from("transactions")
-      .select(`
-        *,
-        bitcoin_wallets!inner(wallet_address)
-      `)
-      .eq("bitcoin_wallets.wallet_address", walletAddress)
+      .select("*")
+      .eq("wallet_id", wallet.id)
       .eq("status", "active")
       .order("timestamp", { ascending: false });
 
     if (error) {
-      console.error("Error fetching transactions by address:", error);
+      console.error("Error fetching transactions by wallet:", error);
       throw error;
     }
 
