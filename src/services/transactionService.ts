@@ -399,7 +399,7 @@ export const transactionService = {
       .from("transactions")
       .select(`
         *,
-        bitcoin_wallets (
+        bitcoin_wallets!transactions_wallet_id_fkey (
           address,
           profiles (
             email,
@@ -423,7 +423,7 @@ export const transactionService = {
       .from("transactions")
       .select(`
         *,
-        bitcoin_wallets (
+        bitcoin_wallets!transactions_wallet_id_fkey (
           address,
           profiles (
             email,

@@ -152,6 +152,7 @@ export type Database = {
           expires_at: string | null
           id: string
           is_extended: boolean | null
+          maturity_date: string | null
           status: string | null
           timestamp: string
           txid: string
@@ -169,6 +170,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_extended?: boolean | null
+          maturity_date?: string | null
           status?: string | null
           timestamp: string
           txid: string
@@ -186,6 +188,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_extended?: boolean | null
+          maturity_date?: string | null
           status?: string | null
           timestamp?: string
           txid?: string
