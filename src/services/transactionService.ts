@@ -341,10 +341,10 @@ export const transactionService = {
       updateData.withdrawal_address = withdrawalAddress;
     }
     if (withdrawalAmountEur !== undefined) {
-      updateData.amount_eur = withdrawalAmountEur;
+      updateData.withdrawn_amount_eur = withdrawalAmountEur;
     }
     if (withdrawalAmountBtc !== undefined) {
-      updateData.amount_btc = withdrawalAmountBtc;
+      updateData.withdrawn_amount_btc = withdrawalAmountBtc;
     }
 
     const { error } = await supabase
