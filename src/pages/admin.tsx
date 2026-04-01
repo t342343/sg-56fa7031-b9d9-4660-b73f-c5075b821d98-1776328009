@@ -49,12 +49,14 @@ export default function AdminPage() {
     const txData = await transactionService.getAllTransactions();
     const pendingTx = await transactionService.getPendingWithdrawals();
     const completedTx = await transactionService.getCompletedWithdrawals();
+    const poolData = await walletService.getWalletPool();
     
     setUsers(usersData);
     setWallets(walletsData);
     setTransactions(txData);
     setPendingTransactions(pendingTx);
     setCompletedWithdrawals(completedTx);
+    setWalletPool(poolData);
   };
 
   const handleAssignWallet = async (userId: string) => {
@@ -528,7 +530,7 @@ export default function AdminPage() {
                               Angefragt: {new Date(tx.created_at).toLocaleString('de-DE')}
                             </div>
                           </div>
-                          <div className="text-right space-y-1">
+                          <div className="text-right">
                             <div className="text-2xl font-bold text-amber-800">
                               {(tx.withdrawn_amount_eur || tx.amount_eur).toFixed(2)} €
                             </div>
@@ -538,25 +540,25 @@ export default function AdminPage() {
                                 `${(tx.amount_btc || 0).toFixed(8)} BTC`
                               }
                             </div>
-                            <div className="text-xs text-green-600">
+                            <div className="text-sm text-green-600 mt-1">
                               Gewinn: +{((tx.withdrawn_amount_eur || tx.amount_eur) - tx.amount_eur).toFixed(2)} €
                             </div>
                           </div>
                         </div>
 
-                        <div className="bg-white rounded-lg p-3 mb-4 space-y-2 text-sm">
+                        <div className="bg-white rounded p-3 space-y-2 text-sm">
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Eingezahlter Betrag:</span>
+                            <span className="text-gray-600">Eingezahlter Betrag:</span>
                             <span className="font-medium">{tx.amount_eur.toFixed(2)} €</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Auszahlungsbetrag (EUR):</span>
+                            <span className="text-gray-600">Auszahlungsbetrag (EUR):</span>
                             <span className="font-bold text-amber-800">
                               {(tx.withdrawn_amount_eur || tx.amount_eur).toFixed(2)} €
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Auszahlungsbetrag (BTC):</span>
+                            <span className="text-gray-600">Auszahlungsbetrag (BTC):</span>
                             <span className="font-mono text-xs font-medium">
                               {tx.withdrawn_amount_btc ? 
                                 `${tx.withdrawn_amount_btc.toFixed(8)} BTC` : 
@@ -565,31 +567,27 @@ export default function AdminPage() {
                             </span>
                           </div>
                           <div className="flex justify-between border-t pt-2">
-                            <span className="text-muted-foreground">Eingezahlt am:</span>
+                            <span className="text-gray-600">Eingezahlt am:</span>
                             <span className="font-medium">
-                              {new Date(tx.timestamp).toLocaleDateString('de-DE', {
-                                day: '2-digit',
-                                month: 'short',
-                                year: 'numeric'
+                              {new Date(tx.timestamp).toLocaleDateString("de-DE", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric"
                               })}
                             </span>
                           </div>
-                          <div className="border-t pt-2">
-                            <div className="text-muted-foreground mb-1">Auszahlungsadresse:</div>
-                            <div className="font-mono text-xs bg-gray-100 p-2 rounded break-all">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Wallet:</span>
+                            <span className="font-mono text-xs">
+                              {tx.bitcoin_wallets?.wallet_address?.substring(0, 30)}...
+                            </span>
+                          </div>
+                          <div className="border-t pt-2 mt-2">
+                            <div className="text-gray-600 mb-1">Auszahlung an:</div>
+                            <div className="font-mono text-xs bg-gray-100 p-2 rounded break-all border">
                               {tx.withdrawal_address || "Nicht verfügbar"}
                             </div>
                           </div>
-                        </div>
-
-                        <div className="flex gap-2">
-                          <Button
-                            onClick={() => handleTransactionWithdrawal(tx.id, "withdrawn")}
-                            className="flex-1 bg-green-600 hover:bg-green-700"
-                          >
-                            <CheckCircle2 className="w-4 h-4 mr-2" />
-                            Auszahlung genehmigen
-                          </Button>
                         </div>
                       </div>
                     ))}
