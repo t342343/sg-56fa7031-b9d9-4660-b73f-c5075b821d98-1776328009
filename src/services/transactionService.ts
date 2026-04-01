@@ -6,6 +6,20 @@ type Transaction = Database["public"]["Tables"]["transactions"]["Row"];
 type TransactionInsert = Database["public"]["Tables"]["transactions"]["Insert"];
 
 export const transactionService = {
+  async getAllTransactions() {
+    const { data, error } = await supabase
+      .from("transactions")
+      .select("*")
+      .order("timestamp", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching all transactions:", error);
+      return [];
+    }
+
+    return data || [];
+  },
+
   async getTransactionsForWallet(walletId: string): Promise<Transaction[]> {
     const { data, error } = await supabase
       .from("transactions")

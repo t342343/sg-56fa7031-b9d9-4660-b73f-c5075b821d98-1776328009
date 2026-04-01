@@ -42,7 +42,7 @@ export default function AdminPage() {
   }, []);
 
   const loadData = async () => {
-    const usersData = await profileService.getAllUsers();
+    const usersData = await profileService.getAllProfiles();
     const walletsData = await walletService.getAllWallets();
     const txData = await transactionService.getAllTransactions();
     const pendingTx = await transactionService.getPendingWithdrawals();
