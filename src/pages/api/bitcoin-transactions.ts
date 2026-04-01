@@ -15,58 +15,32 @@ export default async function handler(
   }
 
   try {
-    // Verwende Blockstream.info - zuverlässiger für Bech32 (bc1q) Adressen
-    // Hole sowohl bestätigte Transaktionen als auch unbestätigte (Mempool)
-    const [confirmedResponse, mempoolResponse] = await Promise.all([
-      fetch(`https://blockstream.info/api/address/${address}/txs`, {
-        headers: { "User-Agent": "FinanzPortal/1.0" }
-      }),
-      fetch(`https://blockstream.info/api/address/${address}/txs/mempool`, {
-        headers: { "User-Agent": "FinanzPortal/1.0" }
+    // Hole Transaktionen von blockchain.info API
+    const response = await fetch(
+      `https://blockchain.info/rawaddr/${address}?limit=50`
+    );
+    const data = await response.json();
+
+    // Extrahiere relevante Transaktionsdaten (inklusive unbestätigter Transaktionen)
+    const transactions = data.txs
+      .filter((tx: any) => {
+        // Prüfe ob diese Wallet Empfänger war (Output)
+        return tx.out.some((output: any) => output.addr === address);
       })
-    ]);
-
-    if (!confirmedResponse.ok) {
-      if (confirmedResponse.status === 429) {
-        return res.status(429).json({ 
-          error: "Rate limit exceeded", 
-          message: "Too many requests to Bitcoin API. Please try again later." 
-        });
-      }
-      return res.status(confirmedResponse.status).json({ 
-        error: "Bitcoin API error", 
-        status: confirmedResponse.status 
+      .map((tx: any) => {
+        // Finde den Output für diese Adresse
+        const output = tx.out.find((o: any) => o.addr === address);
+        
+        return {
+          txid: tx.hash,
+          value: output.value / 100000000, // Satoshi zu BTC
+          time: tx.time,
+          confirmations: tx.block_height ? 1 : 0, // 0 = unbestätigt, 1+ = bestätigt
+          block_height: tx.block_height || null
+        };
       });
-    }
 
-    const confirmedData = await confirmedResponse.json();
-    const mempoolData = mempoolResponse.ok ? await mempoolResponse.json() : [];
-    
-    // Validiere das Antwortformat
-    if (!Array.isArray(confirmedData)) {
-      return res.status(500).json({ 
-        error: "Invalid response format from Bitcoin API" 
-      });
-    }
-
-    // Kombiniere bestätigte und unbestätigte Transaktionen
-    const allTransactions = [...confirmedData, ...(Array.isArray(mempoolData) ? mempoolData : [])];
-
-    // Konvertiere Blockstream Format zu unserem internen Format
-    const formattedData = {
-      address: address,
-      txs: allTransactions.map((tx: any) => ({
-        hash: tx.txid,
-        time: tx.status.block_time || Math.floor(Date.now() / 1000),
-        block_height: tx.status.block_height || null,
-        out: tx.vout.map((vout: any) => ({
-          addr: vout.scriptpubkey_address,
-          value: vout.value
-        }))
-      }))
-    };
-
-    return res.status(200).json(formattedData);
+    res.status(200).json(transactions);
   } catch (error) {
     console.error("Bitcoin API proxy error:", error);
     return res.status(500).json({ 
