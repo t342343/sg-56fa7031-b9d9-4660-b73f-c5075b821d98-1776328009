@@ -9,16 +9,7 @@ export const transactionService = {
   async getAllTransactions() {
     const { data, error } = await supabase
       .from("transactions")
-      .select(`
-        *,
-        bitcoin_wallets!transactions_wallet_id_fkey (
-          address,
-          profiles (
-            email,
-            full_name
-          )
-        )
-      `)
+      .select("*")
       .order("timestamp", { ascending: false });
 
     if (error) {

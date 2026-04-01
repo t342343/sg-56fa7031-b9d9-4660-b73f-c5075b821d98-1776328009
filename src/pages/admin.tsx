@@ -689,15 +689,6 @@ export default function AdminPage() {
                           <>
                             <div className="space-y-3 text-sm">
                               <div>
-                                <span className="text-gray-600">Benutzer:</span>
-                                <div className="font-medium">
-                                  {tx.bitcoin_wallets?.profiles?.full_name || "Kein Name"}
-                                </div>
-                                <div className="text-gray-500 text-xs">
-                                  {tx.bitcoin_wallets?.profiles?.email || "Keine Email"}
-                                </div>
-                              </div>
-                              <div>
                                 <span className="text-gray-600">TXID:</span>
                                 <div className="font-mono text-xs break-all mt-1">{tx.txid}</div>
                               </div>
@@ -705,34 +696,6 @@ export default function AdminPage() {
                                 <span className="text-gray-600">Betrag:</span>
                                 <div className="font-semibold text-lg">{tx.amount_eur.toFixed(2)} €</div>
                               </div>
-                              <div>
-                                <span className="text-gray-600">Status:</span>
-                                <div className="font-medium capitalize">{tx.status}</div>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Eingezahlt am:</span>
-                                <div>{transactionDate.toLocaleString("de-DE")}</div>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Tage seit Einzahlung:</span>
-                                <div className="font-semibold">{daysPassed} Tage</div>
-                              </div>
-                              {maturityDate && (
-                                <>
-                                  <div>
-                                    <span className="text-gray-600">Fälligkeitsdatum:</span>
-                                    <div className="font-semibold text-green-600">
-                                      {maturityDate.toLocaleString("de-DE")}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600">Verbleibende Tage:</span>
-                                    <div className={`font-semibold ${daysUntilMaturity && daysUntilMaturity > 0 ? "text-green-600" : "text-red-600"}`}>
-                                      {daysUntilMaturity !== null ? (daysUntilMaturity > 0 ? `${daysUntilMaturity} Tage` : "Fällig") : "-"}
-                                    </div>
-                                  </div>
-                                </>
-                              )}
                             </div>
 
                             <div className="border-t pt-4 mt-4">
