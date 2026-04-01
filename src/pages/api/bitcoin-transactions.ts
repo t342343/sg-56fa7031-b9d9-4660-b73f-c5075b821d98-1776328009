@@ -16,44 +16,49 @@ export default async function handler(
 
   try {
     // Verwende Blockstream.info - zuverlässiger für Bech32 (bc1q) Adressen
-    const response = await fetch(
-      `https://blockstream.info/api/address/${address}/txs`,
-      {
-        headers: {
-          "User-Agent": "FinanzPortal/1.0"
-        }
-      }
-    );
+    // Hole sowohl bestätigte Transaktionen als auch unbestätigte (Mempool)
+    const [confirmedResponse, mempoolResponse] = await Promise.all([
+      fetch(`https://blockstream.info/api/address/${address}/txs`, {
+        headers: { "User-Agent": "FinanzPortal/1.0" }
+      }),
+      fetch(`https://blockstream.info/api/address/${address}/txs/mempool`, {
+        headers: { "User-Agent": "FinanzPortal/1.0" }
+      })
+    ]);
 
-    if (!response.ok) {
-      if (response.status === 429) {
+    if (!confirmedResponse.ok) {
+      if (confirmedResponse.status === 429) {
         return res.status(429).json({ 
           error: "Rate limit exceeded", 
           message: "Too many requests to Bitcoin API. Please try again later." 
         });
       }
-      return res.status(response.status).json({ 
+      return res.status(confirmedResponse.status).json({ 
         error: "Bitcoin API error", 
-        status: response.status 
+        status: confirmedResponse.status 
       });
     }
 
-    const data = await response.json();
+    const confirmedData = await confirmedResponse.json();
+    const mempoolData = mempoolResponse.ok ? await mempoolResponse.json() : [];
     
     // Validiere das Antwortformat
-    if (!Array.isArray(data)) {
+    if (!Array.isArray(confirmedData)) {
       return res.status(500).json({ 
         error: "Invalid response format from Bitcoin API" 
       });
     }
 
+    // Kombiniere bestätigte und unbestätigte Transaktionen
+    const allTransactions = [...confirmedData, ...(Array.isArray(mempoolData) ? mempoolData : [])];
+
     // Konvertiere Blockstream Format zu unserem internen Format
     const formattedData = {
       address: address,
-      txs: data.map((tx: any) => ({
+      txs: allTransactions.map((tx: any) => ({
         hash: tx.txid,
         time: tx.status.block_time || Math.floor(Date.now() / 1000),
-        block_height: tx.status.block_height,
+        block_height: tx.status.block_height || null,
         out: tx.vout.map((vout: any) => ({
           addr: vout.scriptpubkey_address,
           value: vout.value
