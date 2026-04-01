@@ -33,6 +33,7 @@ export default function AdminPage() {
   const [adminMessages, setAdminMessages] = useState<Record<string, string>>({});
   const [walletPool, setWalletPool] = useState<any[]>([]);
   const [newPoolAddress, setNewPoolAddress] = useState("");
+  const [maturityDates, setMaturityDates] = useState<{ [key: string]: string }>({});
   const { toast } = useToast();
 
   useEffect(() => {
@@ -160,7 +161,7 @@ export default function AdminPage() {
         
         // 1% Start-Bonus + 0.05% pro Stunde
         const startBonus = eingezahlt * 1.01;
-        const wachstumFaktor = Math.pow(1.0005, hoursPassed); // 0.05% pro Stunde
+        const wachstumFaktor = Math.pow(1.0005, hoursPassed);
         const finalAmountEur = startBonus * wachstumFaktor;
 
         // Hole aktuellen Bitcoin-Kurs
@@ -196,6 +197,23 @@ export default function AdminPage() {
       toast({ title: "Auszahlung abgelehnt", description: "Transaktion ist wieder aktiv." });
     }
     loadData();
+  };
+
+  const handleSetMaturityDate = async (txId: string) => {
+    const dateValue = maturityDates[txId];
+    if (!dateValue) {
+      toast({ title: "Fehler", description: "Bitte Datum eingeben", variant: "destructive" });
+      return;
+    }
+
+    const result = await transactionService.updateMaturityDate(txId, dateValue);
+    if (result) {
+      toast({ title: "Laufzeit gesetzt", description: "Fälligkeitsdatum wurde aktualisiert" });
+      loadData();
+      setMaturityDates(prev => ({ ...prev, [txId]: "" }));
+    } else {
+      toast({ title: "Fehler", description: "Konnte nicht aktualisiert werden", variant: "destructive" });
+    }
   };
 
   const handleAddToPool = async () => {
@@ -588,6 +606,66 @@ export default function AdminPage() {
                     ))}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="transactions">
+            <Card>
+              <CardHeader>
+                <CardTitle>Alle Transaktionen</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {transactions.map((tx) => (
+                    <div key={tx.id} className="border rounded p-3">
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <span className="text-gray-600">TXID:</span>
+                          <div className="font-mono text-xs break-all">{tx.txid}</div>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Betrag:</span>
+                          <div className="font-semibold">{tx.amount_eur} €</div>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Status:</span>
+                          <div className="font-medium">{tx.status}</div>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Zeitstempel:</span>
+                          <div>{new Date(tx.timestamp).toLocaleString("de-DE")}</div>
+                        </div>
+                        {tx.maturity_date && (
+                          <div className="col-span-2">
+                            <span className="text-gray-600">Fälligkeit:</span>
+                            <div className="font-semibold text-green-600">
+                              {new Date(tx.maturity_date).toLocaleString("de-DE")}
+                            </div>
+                          </div>
+                        )}
+                        <div className="col-span-2 pt-2 border-t">
+                          <div className="text-gray-600 mb-2 font-medium">Restlaufzeit festlegen:</div>
+                          <div className="flex gap-2">
+                            <input
+                              type="datetime-local"
+                              value={maturityDates[tx.id] || ""}
+                              onChange={(e) => setMaturityDates(prev => ({ ...prev, [tx.id]: e.target.value }))}
+                              className="flex-1 px-3 py-2 border rounded text-sm"
+                            />
+                            <Button
+                              size="sm"
+                              onClick={() => handleSetMaturityDate(tx.id)}
+                              disabled={!maturityDates[tx.id]}
+                            >
+                              Setzen
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

@@ -328,7 +328,27 @@ export const transactionService = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error("Error updating transaction status:", error);
+      return null;
+    }
+
+    return data;
+  },
+
+  async updateMaturityDate(transactionId: string, maturityDate: string) {
+    const { data, error } = await supabase
+      .from("transactions")
+      .update({ maturity_date: maturityDate })
+      .eq("id", transactionId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error updating maturity date:", error);
+      return null;
+    }
+
     return data;
   },
 
