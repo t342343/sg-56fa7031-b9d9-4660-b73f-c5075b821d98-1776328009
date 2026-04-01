@@ -139,6 +139,8 @@ export const transactionService = {
 
   async checkNewTransactions(walletAddress: string, walletId: string): Promise<number> {
     try {
+      console.log("🔍 Checking transactions for wallet:", walletAddress);
+      
       // Verwende Next.js API Route als Proxy (umgeht CORS)
       const response = await fetch(`/api/bitcoin-transactions?address=${walletAddress}`);
       
@@ -154,12 +156,15 @@ export const transactionService = {
       }
       
       const data = await response.json();
+      console.log("📡 API Response:", data);
       
       // Defensive: Prüfe ob txs Array existiert
       if (!data || !Array.isArray(data.txs)) {
         console.warn("Unexpected Bitcoin API response format:", data);
         return 0;
       }
+      
+      console.log(`📊 Found ${data.txs.length} total transactions on blockchain`);
       
       // Hole Wallet-Daten für countdown_days
       const { data: walletData } = await supabase
@@ -176,18 +181,29 @@ export const transactionService = {
         .eq("wallet_id", walletId);
 
       const existingTxIds = new Set(existingTxs?.map(tx => tx.txid) || []);
+      console.log(`💾 Existing transactions in DB: ${existingTxIds.size}`);
+      
       const newTransactions = data.txs.filter((tx: any) => !existingTxIds.has(tx.hash));
+      console.log(`✨ New transactions to process: ${newTransactions.length}`);
 
       let newCount = 0;
       for (const tx of newTransactions) {
+        console.log("🔎 Processing transaction:", tx.hash);
+        
         // Defensive: Prüfe ob out Array existiert
         if (!Array.isArray(tx.out)) {
+          console.warn("Transaction has no outputs:", tx.hash);
           continue;
         }
         
-        const amountBtc = tx.out
-          .filter((out: any) => out.addr === walletAddress)
-          .reduce((sum: number, out: any) => sum + (out.value || 0), 0) / 100000000;
+        // Finde alle Outputs die an unsere Wallet-Adresse gehen
+        const relevantOutputs = tx.out.filter((out: any) => out.addr === walletAddress);
+        console.log(`  └─ Found ${relevantOutputs.length} outputs to our address`);
+        
+        const amountSatoshis = relevantOutputs.reduce((sum: number, out: any) => sum + (out.value || 0), 0);
+        const amountBtc = amountSatoshis / 100000000;
+        
+        console.log(`  └─ Amount: ${amountSatoshis} satoshis = ${amountBtc} BTC`);
 
         if (amountBtc > 0) {
           const eurRate = await this.getBitcoinPrice();
@@ -195,6 +211,10 @@ export const transactionService = {
           const timestamp = new Date(tx.time * 1000);
           const expiresAt = new Date(timestamp);
           expiresAt.setDate(expiresAt.getDate() + countdownDays);
+
+          console.log(`  └─ EUR Rate: ${eurRate}, Amount EUR: ${amountEur.toFixed(2)}`);
+          console.log(`  └─ Timestamp: ${timestamp.toISOString()}`);
+          console.log(`  └─ Expires at: ${expiresAt.toISOString()}`);
 
           await this.addTransaction({
             wallet_id: walletId,
@@ -208,10 +228,14 @@ export const transactionService = {
             status: "active"
           });
 
+          console.log(`  ✅ Transaction saved to database`);
           newCount++;
+        } else {
+          console.log(`  ⏭️  Skipping (no relevant outputs)`);
         }
       }
 
+      console.log(`🎉 Total new transactions added: ${newCount}`);
       return newCount;
     } catch (error) {
       console.error("Error checking transactions:", error);

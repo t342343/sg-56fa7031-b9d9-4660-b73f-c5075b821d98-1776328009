@@ -28,6 +28,7 @@ export default function Dashboard() {
   const [withdrawalAddress, setWithdrawalAddress] = useState("");
   const [selectedTx, setSelectedTx] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [checkingTransactions, setCheckingTransactions] = useState(false);
   const [copied, setCopied] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [serverTime, setServerTime] = useState<Date | null>(null);
@@ -177,6 +178,38 @@ export default function Dashboard() {
       setCopied(true);
       toast({ title: "Adresse kopiert", description: "Die Bitcoin-Wallet-Adresse wurde kopiert." });
       setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const manualCheckTransactions = async () => {
+    if (!wallet) return;
+    
+    setCheckingTransactions(true);
+    toast({ title: "Prüfe Transaktionen...", description: "Suche nach neuen Zahlungseingängen." });
+    
+    try {
+      const newCount = await transactionService.checkNewTransactions(wallet.wallet_address, wallet.id);
+      
+      if (newCount > 0) {
+        toast({ 
+          title: "Neue Transaktionen gefunden!", 
+          description: `${newCount} neue Zahlungen wurden erkannt und hinzugefügt.` 
+        });
+        await loadDashboard();
+      } else {
+        toast({ 
+          title: "Keine neuen Transaktionen", 
+          description: "Es wurden keine neuen Zahlungen gefunden." 
+        });
+      }
+    } catch (error) {
+      toast({ 
+        title: "Fehler", 
+        description: "Transaktionsprüfung fehlgeschlagen.", 
+        variant: "destructive" 
+      });
+    } finally {
+      setCheckingTransactions(false);
     }
   };
 
@@ -381,12 +414,24 @@ export default function Dashboard() {
                     
                     <div className="bg-white p-4 rounded-lg border shadow-sm">
                       <QRCodeSVG
-                      value={wallet.wallet_address}
-                      size={160}
-                      level="H"
-                      includeMargin={true} />
-                    
+                        value={wallet.wallet_address}
+                        size={160}
+                        level="H"
+                        includeMargin={true}
+                      />
                     </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 pt-3 border-t">
+                    <Button
+                      onClick={manualCheckTransactions}
+                      disabled={checkingTransactions}
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                    >
+                      {checkingTransactions ? "Prüfe..." : "Transaktionen jetzt prüfen"}
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
