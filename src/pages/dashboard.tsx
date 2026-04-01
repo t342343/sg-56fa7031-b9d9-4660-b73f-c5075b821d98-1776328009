@@ -137,15 +137,36 @@ export default function Dashboard() {
     if (!wallet?.id) return;
 
     const interval = setInterval(() => {
-      console.log("🔄 Auto-refresh: Checking for new transactions...");
-      manualCheckTransactions();
+      console.log("🔄 Auto-refresh: Checking silently for new transactions...");
+      silentCheckTransactions();
     }, 30000); // 30 Sekunden
 
     return () => clearInterval(interval);
   }, [wallet?.id]);
 
-  const loadDashboard = async () => {
-    setLoading(true);
+  const silentCheckTransactions = async () => {
+    if (!wallet) return;
+    
+    try {
+      const newCount = await transactionService.checkNewTransactions(wallet.wallet_address, wallet.id);
+      
+      if (newCount > 0) {
+        toast({
+          title: newCount === 1 ? "Neue Transaktion gefunden!" : "Neue Transaktionen gefunden!",
+          description: newCount === 1 ? "Eine neue Zahlung wurde erkannt und hinzugefügt." : `${newCount} neue Zahlungen wurden erkannt und hinzugefügt.`,
+          duration: 5000
+        });
+        // Lade Dashboard lautlos neu (ohne setLoading(true))
+        await loadDashboard(true);
+      }
+    } catch (error) {
+      console.error("Silent background check failed:", error);
+    }
+  };
+
+  const loadDashboard = async (silent = false) => {
+    if (!silent) setLoading(true);
+    
     const profile = await profileService.getCurrentProfile();
     if (!profile) return;
 
@@ -155,25 +176,27 @@ export default function Dashboard() {
     setWallet(w);
 
     if (w) {
-      // Prüfe auf neue Transaktionen via API
-      const newCount = await transactionService.checkNewTransactions(w.wallet_address, w.id);
-      if (newCount > 0) {
-        toast({ 
-          title: newCount === 1 ? "Neue Transaktion eingegangen" : "Neue Transaktionen eingegangen", 
-          description: newCount === 1 ? "Eine neue Zahlung wurde gefunden." : `${newCount} neue Zahlungen gefunden.`
-        });
+      // Prüfe auf neue Transaktionen via API (nur initial, wenn nicht silent)
+      if (!silent) {
+        const newCount = await transactionService.checkNewTransactions(w.wallet_address, w.id);
+        if (newCount > 0) {
+          toast({ 
+            title: newCount === 1 ? "Neue Transaktion eingegangen" : "Neue Transaktionen eingegangen", 
+            description: newCount === 1 ? "Eine neue Zahlung wurde gefunden." : `${newCount} neue Zahlungen gefunden.`
+          });
+        }
       }
 
       // Aktive Transaktionen laden
       const txs = await transactionService.getActiveTransactionsByWallet(w.id);
-      console.log("📋 Dashboard loaded", txs.length, "transactions - Status:", txs.map(t => t.status));
       setTransactions(txs);
 
       // Abgeschlossene Auszahlungen laden
       const withdrawn = await transactionService.getWithdrawnTransactionsByWallet(w.id);
       setWithdrawnTransactions(withdrawn);
     }
-    setLoading(false);
+    
+    if (!silent) setLoading(false);
   };
 
   const loadChat = async () => {
