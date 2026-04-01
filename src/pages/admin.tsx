@@ -215,7 +215,7 @@ export default function AdminPage() {
     const maturityDate = new Date(transactionDate);
     maturityDate.setDate(maturityDate.getDate() + days);
 
-    const result = await transactionService.updateMaturityDate(txId, maturityDate.toISOString());
+    const result = await transactionService.updateMaturityDate(txId, maturityDate.toISOString(), days);
     if (result) {
       toast({ title: "Laufzeit gesetzt", description: `Fälligkeit auf ${days} Tage gesetzt` });
       loadData();

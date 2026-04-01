@@ -345,20 +345,26 @@ export const transactionService = {
     return data;
   },
 
-  async updateMaturityDate(transactionId: string, maturityDate: string) {
-    const { data, error } = await supabase
+  async updateMaturityDate(transactionId: string, maturityDate: string, maturityDays?: number) {
+    const updateData: any = {
+      maturity_date: maturityDate,
+    };
+
+    // Speichere maturity_days explizit, auch wenn 0
+    if (maturityDays !== undefined) {
+      updateData.maturity_days = maturityDays;
+    }
+
+    const { error } = await supabase
       .from("transactions")
-      .update({ maturity_date: maturityDate } as any)
-      .eq("id", transactionId)
-      .select()
-      .single();
+      .update(updateData)
+      .eq("id", transactionId);
 
     if (error) {
       console.error("Error updating maturity date:", error);
-      return null;
+      return false;
     }
-
-    return data;
+    return true;
   },
 
   async requestWithdrawal(transactionId: string, walletAddress: string, amount: number): Promise<boolean> {
