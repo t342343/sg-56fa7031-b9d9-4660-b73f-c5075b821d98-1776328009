@@ -1,4 +1,4 @@
- 
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 export type Json =
   | string
   | number
@@ -198,6 +198,41 @@ export type Database = {
             columns: ["wallet_id"]
             isOneToOne: false
             referencedRelation: "bitcoin_wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallet_pool: {
+        Row: {
+          assigned_at: string | null
+          assigned_to_user_id: string | null
+          created_at: string | null
+          id: string
+          is_assigned: boolean | null
+          wallet_address: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_to_user_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_assigned?: boolean | null
+          wallet_address: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_to_user_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_assigned?: boolean | null
+          wallet_address?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_pool_assigned_to_user_id_fkey"
+            columns: ["assigned_to_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
