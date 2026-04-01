@@ -4,6 +4,7 @@ import { profileService } from "@/services/profileService";
 import { walletService } from "@/services/walletService";
 import { chatService } from "@/services/chatService";
 import { withdrawalService } from "@/services/withdrawalService";
+import { transactionService } from "@/services/transactionService";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
