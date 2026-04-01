@@ -95,11 +95,13 @@ export default function Dashboard() {
           // Wenn Status zu "withdrawn" wechselt
           if (payload.new.status === "withdrawn" && payload.old.status === "withdrawal_pending") {
             const tx = payload.new;
-            const finalBalance = calculateCurrentBalance(tx);
+            const finalAmountEur = tx.withdrawn_amount_eur || calculateCurrentBalance(tx);
+            const finalAmountBtc = tx.withdrawn_amount_btc || 0;
+            const walletAddress = tx.withdrawal_address || "Ihre Wallet";
             
             toast({
               title: "🎉 Auszahlung veranlasst!",
-              description: `${finalBalance.toFixed(2)} € wurden an ${tx.withdrawal_address?.substring(0, 20)}... überwiesen.`,
+              description: `${finalAmountEur.toFixed(2)} € (${finalAmountBtc.toFixed(8)} BTC) wurden an ${walletAddress.substring(0, 20)}... überwiesen.`,
               duration: 10000
             });
 
