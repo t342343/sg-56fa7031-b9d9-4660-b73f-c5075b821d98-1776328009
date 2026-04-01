@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { authService } from "@/services/authService";
@@ -14,6 +14,19 @@ export function AuthForm() {
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+
+  // Zeige Erfolgsmeldung wenn von Registrierung weitergeleitet
+  useEffect(() => {
+    if (router.query.registered === "true") {
+      toast({
+        title: "Registrierung abgeschlossen!",
+        description: "Sie können sich jetzt anmelden.",
+        duration: 5000,
+      });
+      // Entferne Parameter aus URL
+      router.replace("/login", undefined, { shallow: true });
+    }
+  }, [router.query.registered]);
 
   // Login State
   const [loginData, setLoginData] = useState({ email: "", password: "" });
@@ -180,8 +193,8 @@ export function AuthForm() {
         // Logout nach Registrierung und Umleitung zum Login
         await supabase.auth.signOut();
         
-        // Verwende window.location für zuverlässige Umleitung
-        window.location.href = "/login";
+        // Verwende window.location für zuverlässige Umleitung mit Erfolgs-Parameter
+        window.location.href = "/login?registered=true";
 
       } catch (profileError: any) {
         console.error("Profile creation error:", profileError);
