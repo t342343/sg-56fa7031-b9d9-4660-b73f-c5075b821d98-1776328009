@@ -103,6 +103,27 @@ export function AuthForm() {
     setLoading(true);
 
     try {
+      // Passwort-Validierung
+      if (password !== confirmPassword) {
+        toast({ 
+          title: "Fehler", 
+          description: "Die Passwörter stimmen nicht überein",
+          variant: "destructive" 
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (password.length < 6) {
+        toast({ 
+          title: "Fehler", 
+          description: "Das Passwort muss mindestens 6 Zeichen lang sein",
+          variant: "destructive" 
+        });
+        setLoading(false);
+        return;
+      }
+
       console.log("Attempting registration with:", registerData.email);
       
       const { user, error } = await authService.signUp(registerData.email, registerData.password);
@@ -321,6 +342,19 @@ export function AuthForm() {
                     placeholder="••••••••"
                     value={registerData.password}
                     onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
+                    required
+                    disabled={loading}
+                    minLength={6}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Passwort bestätigen</Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                     required
                     disabled={loading}
                     minLength={6}
