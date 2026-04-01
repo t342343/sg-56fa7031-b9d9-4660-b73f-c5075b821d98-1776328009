@@ -33,6 +33,7 @@ export default function Dashboard() {
   const [copied, setCopied] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [serverTime, setServerTime] = useState<Date | null>(null);
+  const [bitcoinPrice, setBitcoinPrice] = useState<number>(85000);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -49,7 +50,20 @@ export default function Dashboard() {
       }
     };
 
+    const fetchBitcoinPrice = async () => {
+      try {
+        const response = await fetch("/api/bitcoin-price");
+        const data = await response.json();
+        if (data.price) {
+          setBitcoinPrice(data.price);
+        }
+      } catch (error) {
+        console.error("Error fetching Bitcoin price:", error);
+      }
+    };
+
     fetchServerTime();
+    fetchBitcoinPrice();
     const interval = setInterval(() => {
       setServerTime((prev) => prev ? new Date(prev.getTime() + 1000) : new Date());
     }, 1000);

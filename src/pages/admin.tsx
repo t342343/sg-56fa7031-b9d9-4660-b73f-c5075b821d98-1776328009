@@ -447,11 +447,11 @@ export default function AdminPage() {
                 <CardTitle>Auszahlungsanfragen</CardTitle>
               </CardHeader>
               <CardContent>
-                {withdrawalRequests.length === 0 ? (
+                {pendingTransactions.length === 0 ? (
                   <p className="text-gray-500">Keine offenen Auszahlungsanfragen</p>
                 ) : (
                   <div className="space-y-4">
-                    {withdrawalRequests.map((tx) => (
+                    {pendingTransactions.map((tx) => (
                       <div key={tx.id} className="border rounded-lg p-4 space-y-3">
                         <div className="flex justify-between items-start">
                           <div className="space-y-2">
