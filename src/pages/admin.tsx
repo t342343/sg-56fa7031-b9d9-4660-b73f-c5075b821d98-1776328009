@@ -162,9 +162,9 @@ export default function AdminPage() {
         const timeDiffMs = serverTime.getTime() - timestamp;
         const hoursPassed = Math.max(0, Math.floor(timeDiffMs / (1000 * 60 * 60)));
         
-        // 1% Start-Bonus + 0.5% pro Stunde
+        // 1% Start-Bonus + 0.05% pro Stunde
         const startBonus = eingezahlt * 1.01;
-        const wachstumFaktor = Math.pow(1.005, hoursPassed);
+        const wachstumFaktor = Math.pow(1.0005, hoursPassed); // 0.05% pro Stunde
         const finalAmountEur = startBonus * wachstumFaktor;
 
         // Hole aktuellen Bitcoin-Kurs

@@ -253,7 +253,7 @@ export default function Dashboard() {
     const safeHoursPassed = Math.max(0, hoursPassed);
     
     const startBonus = eingezahlt * 1.01;
-    const wachstumFaktor = Math.pow(1.005, safeHoursPassed);
+    const wachstumFaktor = Math.pow(1.0005, safeHoursPassed); // 0.05% pro Stunde
     const finalBalance = startBonus * wachstumFaktor;
 
     console.log("💰 Balance Calculation:", {
