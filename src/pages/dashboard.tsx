@@ -205,6 +205,16 @@ export default function Dashboard() {
     const wachstumFaktor = Math.pow(1.005, hoursPassed);
     const finalBalance = startBonus * wachstumFaktor;
 
+    console.log("💰 Balance Calculation:", {
+      txid: tx.txid?.substring(0, 8),
+      eingezahlt,
+      hoursPassed,
+      startBonus,
+      wachstumFaktor,
+      finalBalance,
+      gewinn: finalBalance - eingezahlt
+    });
+
     return finalBalance;
   };
 
