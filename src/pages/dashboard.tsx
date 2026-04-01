@@ -16,7 +16,9 @@ import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
 
-export default function UserDashboard() {
+export default function Dashboard() {
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [wallet, setWallet] = useState<any>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
@@ -26,23 +28,38 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [nextGrowth, setNextGrowth] = useState({ minutes: 0, seconds: 0 });
+  const [serverTime, setServerTime] = useState<Date | null>(null);
   const { toast } = useToast();
+
+  // Hole Server-Zeit beim Laden
+  useEffect(() => {
+    const fetchServerTime = async () => {
+      try {
+        const response = await fetch("/api/server-time");
+        const data = await response.json();
+        setServerTime(new Date(data.timestamp));
+      } catch (error) {
+        console.error("Error fetching server time:", error);
+        // Fallback: nutze Browser-Zeit
+        setServerTime(new Date());
+      }
+    };
+
+    fetchServerTime();
+    // Update Server-Zeit jede Sekunde
+    const interval = setInterval(() => {
+      setServerTime(prev => prev ? new Date(prev.getTime() + 1000) : new Date());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     loadDashboard();
     loadChat();
     const interval = setInterval(loadDashboard, 30000); // Refresh every 30s
     return () => clearInterval(interval);
-  }, []);
-
-  // Realtime Countdown Update (jede Sekunde)
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    
-    return () => clearInterval(timer);
   }, []);
 
   // Chat subscription
@@ -160,12 +177,14 @@ export default function UserDashboard() {
   };
 
   const calculateCurrentBalance = (transaction: any) => {
-    // WICHTIG: Verwende UTC-Zeit für konsistente Berechnungen
-    const now = new Date();
+    if (!serverTime) return transaction.amount_eur;
+
+    // Nutze SERVER-ZEIT statt Browser-Zeit
+    const now = serverTime;
     const startDate = new Date(transaction.timestamp);
     const expiresDate = new Date(transaction.expires_at);
     
-    // Berechne vergangene Stunden seit Einzahlung (in UTC)
+    // Berechne vergangene Stunden seit Broadcast (Blockchain-Zeit)
     const timeDiff = now.getTime() - startDate.getTime();
     const hoursPassed = Math.floor(timeDiff / (1000 * 60 * 60));
     
@@ -173,7 +192,7 @@ export default function UserDashboard() {
     console.log("Balance Calculation Debug:", {
       eingezahlt: transaction.amount_eur,
       timestamp: transaction.timestamp,
-      nowUTC: now.toISOString(),
+      serverTime: now.toISOString(),
       timeDiffMs: timeDiff,
       hoursPassed,
       startBonus: transaction.amount_eur * 1.01,
@@ -183,24 +202,22 @@ export default function UserDashboard() {
     
     // Nur berechnen wenn Countdown noch läuft (Status active)
     if (transaction.status !== "active" || now.getTime() > expiresDate.getTime()) {
-      // Bei Ablauf: Berechne den finalen Betrag basierend auf gesamter Laufzeit
       const totalHours = Math.floor((expiresDate.getTime() - startDate.getTime()) / (1000 * 60 * 60));
-      // +1% Startbonus × (1.0005 ^ Stunden) = 0.05% pro Stunde
       return transaction.amount_eur * 1.01 * Math.pow(1.0005, totalHours);
     }
     
     // Guthaben = Eingezahlter Betrag × 1.01 (Startbonus) × (1.0005 ^ vergangene Stunden)
-    // 1.0005 = 0.05% stündliches Wachstum
-    // 1.01 = einmaliger 1% Bonus am ersten Tag
     const currentBalance = transaction.amount_eur * 1.01 * Math.pow(1.0005, hoursPassed);
     
     return currentBalance;
   };
 
   const getNextGrowthTime = () => {
-    const now = new Date();
+    if (!serverTime) return { minutes: 0, seconds: 0, total: 0 };
+
+    const now = serverTime;
     
-    // Berechne wann die nächste Stunde beginnt (in UTC)
+    // Berechne wann die nächste Stunde beginnt (basierend auf Server-Zeit)
     const nextGrowth = new Date(now);
     nextGrowth.setUTCMinutes(0, 0, 0);
     nextGrowth.setUTCHours(nextGrowth.getUTCHours() + 1);
@@ -213,7 +230,9 @@ export default function UserDashboard() {
   };
 
   const getCountdownProgress = (timestamp: string, expiresAt: string) => {
-    const now = new Date();
+    if (!serverTime) return 0;
+
+    const now = serverTime;
     const startDate = new Date(timestamp);
     const expiresDate = new Date(expiresAt);
     
@@ -225,7 +244,9 @@ export default function UserDashboard() {
   };
 
   const getTimeRemaining = (expiresAt: string) => {
-    const now = new Date().getTime();
+    if (!serverTime) return { expired: false, text: "..." };
+
+    const now = serverTime.getTime();
     const expiry = new Date(expiresAt).getTime();
     const diff = expiry - now;
 

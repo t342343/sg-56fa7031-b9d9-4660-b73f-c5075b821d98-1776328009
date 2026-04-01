@@ -31,15 +31,11 @@ export const transactionService = {
     expires_at: string;
     status?: string;
   }) {
-    // WICHTIG: Verwende immer die aktuelle Serverzeit für timestamp
-    // um sicherzustellen dass hoursPassed korrekt berechnet wird
-    const now = new Date().toISOString();
-    
+    // Speichere die Transaktion MIT dem Blockchain broadcast timestamp
     const { data, error } = await supabase
       .from("transactions")
       .insert({
         ...transaction,
-        timestamp: now, // Überschreibe mit aktueller Zeit
         status: transaction.status || "active"
       })
       .select()
