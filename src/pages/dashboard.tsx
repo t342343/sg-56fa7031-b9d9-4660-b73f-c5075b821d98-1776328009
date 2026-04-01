@@ -612,6 +612,11 @@ export default function Dashboard() {
                                   </Button>
                                 </div>
                               )}
+                              {isExpired && tx.status !== "withdrawal_pending" && (
+                                <p className="text-xs text-green-600 mt-2 text-center">
+                                  (Bonus 2 % sofort Rendite und täglich 2fache Rendite)
+                                </p>
+                              )}
                             </div>
 
                             {selectedTx === tx.id && tx.status !== "withdrawal_pending" && (
