@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
-import { ArrowDownLeft, Copy, Check, Clock, MessageCircle, Send, TrendingUp, Wallet } from "lucide-react";
+import { ArrowDownLeft, Copy, Check, Clock, MessageCircle, Send, TrendingUp, Wallet, CheckCircle2 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -23,6 +23,7 @@ export default function Dashboard() {
   const [profile, setProfile] = useState<any>(null);
   const [wallet, setWallet] = useState<any>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [withdrawnTransactions, setWithdrawnTransactions] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [withdrawalAddress, setWithdrawalAddress] = useState("");
@@ -93,10 +94,14 @@ export default function Dashboard() {
         toast({ title: "Neue Transaktionen", description: `${newCount} neue Zahlungen gefunden.` });
       }
 
-      // WICHTIG: Nur aktive Transaktionen zur AKTUELLEN Wallet-Adresse laden
+      // Aktive Transaktionen laden
       const txs = await transactionService.getActiveTransactionsByWallet(w.id);
       console.log("📋 Dashboard loaded", txs.length, "transactions - Status:", txs.map(t => t.status));
       setTransactions(txs);
+
+      // Abgeschlossene Auszahlungen laden
+      const withdrawn = await transactionService.getWithdrawnTransactionsByWallet(w.id);
+      setWithdrawnTransactions(withdrawn);
     }
     setLoading(false);
   };
@@ -657,6 +662,74 @@ export default function Dashboard() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Abgeschlossene Auszahlungen */}
+              {withdrawnTransactions.length > 0 && (
+                <Card className="mt-8">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      Abgeschlossene Auszahlungen
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {withdrawnTransactions.map((tx) => (
+                        <div key={tx.id} className="border border-green-200 bg-green-50 rounded-lg p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                <span className="font-semibold text-green-800">Auszahlung veranlasst</span>
+                              </div>
+                              <p className="text-sm text-gray-600">
+                                {new Date(tx.updated_at || tx.created_at).toLocaleDateString("de-DE", {
+                                  day: "2-digit",
+                                  month: "long",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit"
+                                })}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-2xl font-bold text-green-700">
+                                {calculateCurrentBalance(tx).toFixed(2)} €
+                              </div>
+                              <div className="text-sm text-gray-600">
+                                Gewinn: +{(calculateCurrentBalance(tx) - tx.amount_eur).toFixed(2)} €
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="bg-white rounded p-3 space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Eingezahlter Betrag:</span>
+                              <span className="font-medium">{tx.amount_eur.toFixed(2)} €</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Eingezahlt am:</span>
+                              <span className="font-medium">
+                                {new Date(tx.timestamp).toLocaleDateString("de-DE", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric"
+                                })}
+                              </span>
+                            </div>
+                            <div className="border-t pt-2 mt-2">
+                              <div className="text-gray-600 mb-1">Auszahlung an:</div>
+                              <div className="font-mono text-xs bg-gray-100 p-2 rounded break-all">
+                                {tx.withdrawal_address || "Nicht verfügbar"}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           }
         </div>
