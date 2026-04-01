@@ -515,59 +515,81 @@ export default function AdminPage() {
                 ) : (
                   <div className="space-y-4">
                     {pendingTransactions.map((tx) => (
-                      <div key={tx.id} className="border rounded-lg p-4 space-y-3">
-                        <div className="flex justify-between items-start">
-                          <div className="space-y-2">
-                            <div>
-                              <span className="text-sm text-gray-600">User:</span>
-                              <span className="ml-2 font-medium">{tx.bitcoin_wallets?.profiles?.email || "Unbekannt"}</span>
+                      <div key={tx.id} className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="space-y-1">
+                            <div className="font-semibold text-lg">
+                              {tx.bitcoin_wallets?.profiles?.full_name || tx.bitcoin_wallets?.profiles?.email}
                             </div>
-                            <div>
-                              <span className="text-sm text-gray-600">Eingezahlt:</span>
-                              <span className="ml-2 font-medium">{tx.amount_eur.toFixed(2)} €</span>
+                            <div className="text-sm text-muted-foreground">
+                              Wallet: {tx.bitcoin_wallets?.wallet_address?.substring(0, 20)}...
                             </div>
-                            <div>
-                              <span className="text-sm text-gray-600">Aktueller Wert:</span>
-                              <span className="ml-2 font-bold text-green-600">
-                                {(() => {
-                                  const eingezahlt = tx.amount_eur;
-                                  const timestamp = new Date(tx.timestamp).getTime();
-                                  const now = Date.now();
-                                  const hoursPassed = Math.max(0, Math.floor((now - timestamp) / (1000 * 60 * 60)));
-                                  const startBonus = eingezahlt * 1.01;
-                                  const wachstumFaktor = Math.pow(1.0005, hoursPassed);
-                                  const finalBalance = startBonus * wachstumFaktor;
-                                  return finalBalance.toFixed(2);
-                                })()} €
-                              </span>
-                            </div>
-                            <div>
-                              <span className="text-sm text-gray-600">Transaktion:</span>
-                              <span className="ml-2 font-mono text-xs">{tx.txid?.substring(0, 16)}...</span>
-                            </div>
-                            <div>
-                              <span className="text-sm text-gray-600">Auszahlung an:</span>
-                              <div className="mt-1 font-mono text-xs bg-gray-100 p-2 rounded break-all">
-                                {tx.withdrawal_address || "Wallet-Adresse nicht verfügbar"}
-                              </div>
+                            <div className="text-xs text-muted-foreground">
+                              Angefragt: {new Date(tx.created_at).toLocaleString('de-DE')}
                             </div>
                           </div>
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              onClick={() => handleTransactionWithdrawal(tx.id, "withdrawn")}
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              Genehmigen
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleTransactionWithdrawal(tx.id, "active")}
-                            >
-                              Ablehnen
-                            </Button>
+                          <div className="text-right space-y-1">
+                            <div className="text-2xl font-bold text-amber-800">
+                              {tx.withdrawn_amount_eur?.toFixed(2) || calculateCurrentValue(tx).toFixed(2)} €
+                            </div>
+                            <div className="text-sm text-amber-600 font-medium">
+                              {tx.withdrawn_amount_btc ? 
+                                `${tx.withdrawn_amount_btc.toFixed(8)} BTC` : 
+                                `${((tx.withdrawn_amount_eur || calculateCurrentValue(tx)) / 85000).toFixed(8)} BTC`
+                              }
+                            </div>
+                            <div className="text-xs text-green-600">
+                              Gewinn: +{((tx.withdrawn_amount_eur || calculateCurrentValue(tx)) - tx.amount_eur).toFixed(2)} €
+                            </div>
                           </div>
+                        </div>
+
+                        <div className="bg-white rounded-lg p-3 mb-4 space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Eingezahlter Betrag:</span>
+                            <span className="font-medium">{tx.amount_eur.toFixed(2)} €</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Auszahlungsbetrag (EUR):</span>
+                            <span className="font-bold text-amber-800">
+                              {tx.withdrawn_amount_eur?.toFixed(2) || calculateCurrentValue(tx).toFixed(2)} €
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Auszahlungsbetrag (BTC):</span>
+                            <span className="font-mono text-xs font-medium">
+                              {tx.withdrawn_amount_btc ? 
+                                `${tx.withdrawn_amount_btc.toFixed(8)} BTC` : 
+                                `${((tx.withdrawn_amount_eur || calculateCurrentValue(tx)) / 85000).toFixed(8)} BTC`
+                              }
+                            </span>
+                          </div>
+                          <div className="flex justify-between border-t pt-2">
+                            <span className="text-gray-600">Eingezahlt am:</span>
+                            <span className="font-medium">
+                              {new Date(tx.timestamp).toLocaleDateString('de-DE', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric'
+                              })}
+                            </span>
+                          </div>
+                          <div className="border-t pt-2">
+                            <div className="text-gray-600 mb-1">Auszahlungsadresse:</div>
+                            <div className="font-mono text-xs bg-gray-100 p-2 rounded break-all border">
+                              {tx.withdrawal_address || "Nicht verfügbar"}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => handleApproveWithdrawal(tx.id)}
+                            className="flex-1 bg-green-600 hover:bg-green-700"
+                          >
+                            <CheckCircle2 className="w-4 h-4 mr-2" />
+                            Auszahlung genehmigen
+                          </Button>
                         </div>
                       </div>
                     ))}
@@ -586,67 +608,80 @@ export default function AdminPage() {
                 ) : (
                   <div className="space-y-4">
                     {completedWithdrawals.map((tx) => (
-                      <div key={tx.id} className="border border-green-200 bg-green-50 rounded-lg p-4 space-y-3">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <CheckCircle2 className="h-5 w-5 text-green-600" />
-                            <span className="font-semibold text-green-800">Ausgezahlt</span>
-                          </div>
+                      <div key={tx.id} className="border border-green-200 bg-green-50 rounded-lg p-4">
+                        <div className="flex items-start justify-between mb-3">
                           <div>
-                            <span className="text-sm text-gray-600">User:</span>
-                            <span className="ml-2 font-medium">{tx.bitcoin_wallets?.profiles?.email || "Unbekannt"}</span>
-                          </div>
-                          <div>
-                            <span className="text-sm text-gray-600">Eingezahlt:</span>
-                            <span className="ml-2 font-medium">{tx.amount_eur.toFixed(2)} €</span>
-                          </div>
-                          <div>
-                            <span className="text-sm text-gray-600">Ausgezahlt:</span>
-                            <span className="ml-2 font-bold text-green-700">
-                              {tx.withdrawn_amount_eur?.toFixed(2) || "N/A"} €
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-sm text-gray-600">In Bitcoin:</span>
-                            <span className="ml-2 font-mono text-sm">
-                              {tx.withdrawn_amount_btc?.toFixed(8) || "N/A"} BTC
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-sm text-gray-600">Gewinn:</span>
-                            <span className="ml-2 font-bold text-green-600">
-                              +{((tx.withdrawn_amount_eur || 0) - tx.amount_eur).toFixed(2)} €
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-sm text-gray-600">Transaktion:</span>
-                            <span className="ml-2 font-mono text-xs">{tx.txid?.substring(0, 16)}...</span>
-                          </div>
-                          <div>
-                            <span className="text-sm text-gray-600">Eingezahlt am:</span>
-                            <span className="ml-2 text-sm">
-                              {new Date(tx.timestamp).toLocaleDateString("de-DE", {
-                                day: "2-digit",
-                                month: "short",
-                                year: "numeric"
-                              })}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-sm text-gray-600">Ausgezahlt am:</span>
-                            <span className="ml-2 text-sm">
+                            <div className="flex items-center gap-2 mb-1">
+                              <CheckCircle2 className="h-4 w-4 text-green-600" />
+                              <span className="font-semibold text-green-800">
+                                {tx.bitcoin_wallets?.profiles?.full_name || tx.bitcoin_wallets?.profiles?.email}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-600">
                               {new Date(tx.created_at).toLocaleDateString("de-DE", {
                                 day: "2-digit",
-                                month: "short",
+                                month: "long",
                                 year: "numeric",
                                 hour: "2-digit",
                                 minute: "2-digit"
                               })}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-green-700">
+                              {tx.withdrawn_amount_eur?.toFixed(2) || calculateCurrentValue(tx).toFixed(2)} €
+                            </div>
+                            <div className="text-sm text-green-600 font-medium">
+                              {tx.withdrawn_amount_btc ? 
+                                `${tx.withdrawn_amount_btc.toFixed(8)} BTC` : 
+                                `${((tx.withdrawn_amount_eur || calculateCurrentValue(tx)) / 85000).toFixed(8)} BTC`
+                              }
+                            </div>
+                            <div className="text-sm text-gray-600 mt-1">
+                              Gewinn: +{((tx.withdrawn_amount_eur || calculateCurrentValue(tx)) - tx.amount_eur).toFixed(2)} €
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-white rounded p-3 space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Eingezahlter Betrag:</span>
+                            <span className="font-medium">{tx.amount_eur.toFixed(2)} €</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Ausgezahlter Betrag:</span>
+                            <span className="font-bold text-green-700">
+                              {tx.withdrawn_amount_eur?.toFixed(2) || calculateCurrentValue(tx).toFixed(2)} €
                             </span>
                           </div>
-                          <div>
-                            <span className="text-sm text-gray-600">Auszahlung an:</span>
-                            <div className="mt-1 font-mono text-xs bg-white p-2 rounded break-all border">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">In Bitcoin:</span>
+                            <span className="font-mono text-xs font-medium">
+                              {tx.withdrawn_amount_btc ? 
+                                `${tx.withdrawn_amount_btc.toFixed(8)} BTC` : 
+                                `${((tx.withdrawn_amount_eur || calculateCurrentValue(tx)) / 85000).toFixed(8)} BTC`
+                              }
+                            </span>
+                          </div>
+                          <div className="flex justify-between border-t pt-2">
+                            <span className="text-gray-600">Eingezahlt am:</span>
+                            <span className="font-medium">
+                              {new Date(tx.timestamp).toLocaleDateString('de-DE', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric'
+                              })}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Wallet:</span>
+                            <span className="font-mono text-xs">
+                              {tx.bitcoin_wallets?.wallet_address?.substring(0, 30)}...
+                            </span>
+                          </div>
+                          <div className="border-t pt-2 mt-2">
+                            <div className="text-gray-600 mb-1">Auszahlung an:</div>
+                            <div className="font-mono text-xs bg-gray-100 p-2 rounded break-all border">
                               {tx.withdrawal_address || "Nicht verfügbar"}
                             </div>
                           </div>
