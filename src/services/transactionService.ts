@@ -240,7 +240,7 @@ export const transactionService = {
           txid: tx.txid,
           amount_btc: tx.value,
           amount_eur: totalEur,
-          btc_price_eur: price,
+          eur_rate: price,
           timestamp: new Date(tx.time * 1000).toISOString(),
           status: "active",
           maturity_days: maturityDays,
