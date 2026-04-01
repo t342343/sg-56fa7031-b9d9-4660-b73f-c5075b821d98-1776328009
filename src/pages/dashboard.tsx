@@ -84,7 +84,6 @@ export default function Dashboard() {
     setUserId(profile.id);
 
     const w = await walletService.getWalletForUser(profile.id);
-    console.log("📱 Dashboard loaded wallet:", w);
     setWallet(w);
 
     if (w) {
@@ -95,10 +94,8 @@ export default function Dashboard() {
       }
 
       // WICHTIG: Nur aktive Transaktionen zur AKTUELLEN Wallet-Adresse laden
-      console.log("🔍 Loading transactions for wallet_id:", w.id, "address:", w.wallet_address);
       const txs = await transactionService.getActiveTransactionsByWallet(w.id);
-      console.log("📋 Loaded transactions:", txs.length, "transactions:", txs);
-      console.log("📋 Transaction statuses:", txs.map(t => ({ id: t.id, status: t.status })));
+      console.log("📋 Dashboard loaded", txs.length, "transactions - Status:", txs.map(t => t.status));
       setTransactions(txs);
     }
     setLoading(false);
@@ -198,35 +195,17 @@ export default function Dashboard() {
     }
   };
 
-  const calculateCurrentBalance = (transaction: any) => {
-    if (!serverTime) return transaction.amount_eur;
+  const calculateCurrentBalance = (tx: any) => {
+    const eingezahlt = tx.amount_eur;
+    const timestamp = new Date(tx.timestamp).getTime();
+    const now = Date.now();
+    const timeDiffMs = now - timestamp;
+    const hoursPassed = Math.floor(timeDiffMs / (1000 * 60 * 60));
+    const startBonus = eingezahlt * 1.01;
+    const wachstumFaktor = Math.pow(1.005, hoursPassed);
+    const finalBalance = startBonus * wachstumFaktor;
 
-    const now = serverTime;
-    const startDate = new Date(transaction.timestamp);
-    const expiresDate = new Date(transaction.expires_at);
-
-    const timeDiff = now.getTime() - startDate.getTime();
-    const hoursPassed = Math.floor(timeDiff / (1000 * 60 * 60));
-
-    console.log("Balance Calculation Debug:", {
-      eingezahlt: transaction.amount_eur,
-      timestamp: transaction.timestamp,
-      serverTime: now.toISOString(),
-      timeDiffMs: timeDiff,
-      hoursPassed,
-      startBonus: transaction.amount_eur * 1.01,
-      wachstumFaktor: Math.pow(1.0005, hoursPassed),
-      finalBalance: transaction.amount_eur * 1.01 * Math.pow(1.0005, hoursPassed)
-    });
-
-    if (transaction.status !== "active" || now.getTime() > expiresDate.getTime()) {
-      const totalHours = Math.floor((expiresDate.getTime() - startDate.getTime()) / (1000 * 60 * 60));
-      return transaction.amount_eur * 1.01 * Math.pow(1.0005, totalHours);
-    }
-
-    const currentBalance = transaction.amount_eur * 1.01 * Math.pow(1.0005, hoursPassed);
-
-    return currentBalance;
+    return finalBalance;
   };
 
   const calculateTotalBalance = () => {
@@ -436,8 +415,6 @@ export default function Dashboard() {
                     const isExpired = timeRemaining.expired;
                     const currentBalance = calculateCurrentBalance(tx);
                     const profit = currentBalance - tx.amount_eur;
-
-                    console.log("🎨 Rendering transaction:", { id: tx.id, status: tx.status, isExpired });
 
                     return (
                       <Card key={tx.id} className={tx.status === "withdrawal_pending" ? "opacity-50 border-amber-200" : ""}>
