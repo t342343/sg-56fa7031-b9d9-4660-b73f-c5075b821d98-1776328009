@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
-import { ArrowDownLeft, Copy, Check, Clock, MessageCircle, Send, TrendingUp } from "lucide-react";
+import { ArrowDownLeft, Copy, Check, Clock, MessageCircle, Send, TrendingUp, Wallet } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { Progress } from "@/components/ui/progress";
@@ -213,6 +213,20 @@ export default function Dashboard() {
     return currentBalance;
   };
 
+  const calculateTotalBalance = () => {
+    return transactions.reduce((total, tx) => {
+      return total + calculateCurrentBalance(tx);
+    }, 0);
+  };
+
+  const calculateTotalProfit = () => {
+    return transactions.reduce((total, tx) => {
+      const currentBalance = calculateCurrentBalance(tx);
+      const profit = currentBalance - tx.amount_eur;
+      return total + profit;
+    }, 0);
+  };
+
   const getNextGrowthTime = () => {
     if (!serverTime) return { minutes: 0, seconds: 0, total: 0 };
 
@@ -263,186 +277,252 @@ export default function Dashboard() {
     <>
       <SEO title="Investment Dashboard - Finanzportal" />
       <DashboardLayout>
-        <h2 className="text-2xl font-bold mb-6 text-navy">Kundenbereich</h2>
-        
-        {loading ?
-        <div className="animate-pulse text-muted-foreground">Lade Daten...</div> :
-        !wallet ?
-        <Card>
-            <CardContent className="pt-6">
-              <p className="text-muted-foreground text-center py-8">
-                Ihnen wurde noch keine Bitcoin Wallet zugewiesen. Bitte warten Sie, bis der Administrator Ihr Konto eingerichtet hat.
-              </p>
-            </CardContent>
-          </Card> :
-
         <div className="space-y-6">
-            <Card className="border-blue-accent/20 bg-blue-accent/5">
-              <CardHeader>
-                <CardTitle className="text-lg">Ihre Wallet</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex flex-col sm:flex-row gap-4 items-start">
-                  <div className="flex-1 w-full">
-                    <div className="relative">
-                      <p className="font-mono bg-background border p-4 rounded-md break-all select-all text-sm pr-12">
-                        {wallet.wallet_address}
-                      </p>
-                      <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={copyWalletAddress}
-                      className="absolute right-2 top-1/2 -translate-y-1/2"
-                      title="Adresse kopieren">
-                      
-                        {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
-                      </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Dies ist Ihre persönliche Einzahlungsadresse.
-                    </p>
-                  </div>
-                  
-                  <div className="bg-white p-4 rounded-lg border shadow-sm">
-                    <QRCodeSVG
-                    value={wallet.wallet_address}
-                    size={160}
-                    level="H"
-                    includeMargin={true} />
-                  
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          {/* Header */}
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Investment Dashboard</h1>
+            <p className="text-muted-foreground">
+              Willkommen zurück, {profile?.full_name || user?.email}
+            </p>
+          </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Positionen</CardTitle>
+          {/* Gesamt-Statistiken */}
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Gesamt-Guthaben Card */}
+            <Card className="relative overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Gesamt-Guthaben
+                  </CardTitle>
+                  <Wallet className="h-4 w-4 text-primary" />
+                </div>
               </CardHeader>
               <CardContent>
-                {transactions.length === 0 ?
-              <p className="text-muted-foreground text-center py-8">Noch keine Transaktionen</p> :
+                <div className="text-3xl font-bold text-primary">
+                  {calculateTotalBalance().toLocaleString("de-DE", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  })} €
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Aus {transactions.length} {transactions.length === 1 ? "Position" : "Positionen"}
+                </p>
+              </CardContent>
+              {/* Hintergrund-Dekoration */}
+              <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-primary/5 blur-2xl" />
+            </Card>
 
-              <div className="space-y-4">
-                    {transactions.map((tx) => {
-                  const timeRemaining = getTimeRemaining(tx.expires_at);
-                  const isExpired = timeRemaining.expired;
-                  const currentBalance = calculateCurrentBalance(tx);
-                  const profit = currentBalance - tx.amount_eur;
-                  const nextGrowth = getNextGrowthTime();
-                  const progress = getCountdownProgress(tx.timestamp, tx.expires_at);
+            {/* Gesamt-Gewinn Card */}
+            <Card className="relative overflow-hidden border-green-500/20 bg-gradient-to-br from-green-500/5 to-background">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Gesamt-Gewinn
+                  </CardTitle>
+                  <TrendingUp className="h-4 w-4 text-green-500" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className={cn(
+                  "text-3xl font-bold",
+                  calculateTotalProfit() >= 0 ? "text-green-500" : "text-red-500"
+                )}>
+                  {calculateTotalProfit() >= 0 ? "+" : ""}
+                  {calculateTotalProfit().toLocaleString("de-DE", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  })} €
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {((calculateTotalProfit() / transactions.reduce((sum, tx) => sum + tx.amount_eur, 0)) * 100).toFixed(2)}% Rendite
+                </p>
+              </CardContent>
+              {/* Hintergrund-Dekoration */}
+              <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-green-500/5 blur-2xl" />
+            </Card>
+          </div>
 
-                  return (
-                    <div
-                      key={tx.id}
-                      className={`border rounded-lg p-4 ${isExpired ? "opacity-50 bg-muted" : ""}`}>
-                      
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                                <ArrowDownLeft className="w-3 h-3 text-white" />
-                              </div>
-                              <div className="text-xs text-green-600 font-medium">
-                                +{tx.amount_btc.toFixed(8)} BTC
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-xs text-muted-foreground">
-                                {new Date(tx.timestamp).toLocaleString("de-DE")}
-                              </div>
-                            </div>
-                          </div>
+          {/* Bitcoin Wallet */}
 
-                          <div className="grid grid-cols-2 gap-4 mb-3">
-                            <div>
-                              <div className="text-xs text-muted-foreground mb-1">Eingezahlter Betrag</div>
-                              <div className="text-lg font-semibold">{tx.amount_eur.toFixed(2)} €</div>
-                            </div>
-                            
-                            <div>
-                              <div className="text-xs text-muted-foreground mb-1">Aktuelles Guthaben</div>
-                              <div className="text-lg font-semibold text-green-600">
-                                {currentBalance.toFixed(2)} €
-                              </div>
-                              {profit > 0 && !isExpired &&
-                          <div className="text-xs text-green-600 font-medium">
-                                  +{profit.toFixed(2)} € Gewinn
+          {loading ?
+          <div className="animate-pulse text-muted-foreground">Lade Daten...</div> :
+          !wallet ?
+          <Card>
+              <CardContent className="pt-6">
+                <p className="text-muted-foreground text-center py-8">
+                  Ihnen wurde noch keine Bitcoin Wallet zugewiesen. Bitte warten Sie, bis der Administrator Ihr Konto eingerichtet hat.
+                </p>
+              </CardContent>
+            </Card> :
+
+          <div className="space-y-6">
+              <Card className="border-blue-accent/20 bg-blue-accent/5">
+                <CardHeader>
+                  <CardTitle className="text-lg">Ihre Wallet</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex flex-col sm:flex-row gap-4 items-start">
+                    <div className="flex-1 w-full">
+                      <div className="relative">
+                        <p className="font-mono bg-background border p-4 rounded-md break-all select-all text-sm pr-12">
+                          {wallet.wallet_address}
+                        </p>
+                        <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={copyWalletAddress}
+                        className="absolute right-2 top-1/2 -translate-y-1/2"
+                        title="Adresse kopieren">
+                        
+                          {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Dies ist Ihre persönliche Einzahlungsadresse.
+                      </p>
+                    </div>
+                    
+                    <div className="bg-white p-4 rounded-lg border shadow-sm">
+                      <QRCodeSVG
+                      value={wallet.wallet_address}
+                      size={160}
+                      level="H"
+                      includeMargin={true} />
+                    
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Positionen</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {transactions.length === 0 ?
+                <p className="text-muted-foreground text-center py-8">Noch keine Transaktionen</p> :
+
+                <div className="space-y-4">
+                      {transactions.map((tx) => {
+                    const timeRemaining = getTimeRemaining(tx.expires_at);
+                    const isExpired = timeRemaining.expired;
+                    const currentBalance = calculateCurrentBalance(tx);
+                    const profit = currentBalance - tx.amount_eur;
+                    const nextGrowth = getNextGrowthTime();
+                    const progress = getCountdownProgress(tx.timestamp, tx.expires_at);
+
+                    return (
+                      <div
+                        key={tx.id}
+                        className={`border rounded-lg p-4 ${isExpired ? "opacity-50 bg-muted" : ""}`}>
+                        
+                              <div className="flex items-start justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                    <ArrowDownLeft className="w-3 h-3 text-white" />
+                                  </div>
+                                  <div className="text-xs text-green-600 font-medium">
+                                    +{tx.amount_btc.toFixed(8)} BTC
+                                  </div>
                                 </div>
-                          }
-                            </div>
-                          </div>
-
-                          {/* 14-Tage Countdown mit visuell verbessertem Fortschrittsbalken */}
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="font-medium text-muted-foreground">Restlaufzeit</span>
-                              <span className={cn(
-                            "font-bold",
-                            getTimeRemaining(tx.expires_at).expired ? "text-red-500" : "text-primary"
-                          )}>
-                                {getTimeRemaining(tx.expires_at).text}
-                              </span>
-                            </div>
-                            
-                            {/* Verbesserte Fortschrittsanzeige */}
-                            <div className="relative h-8 bg-muted/30 rounded-lg overflow-hidden border border-border/50 shadow-inner">
-                              {/* Fortschrittsbalken mit Farbverlauf */}
-                              <div
-                            className={cn(
-                              "absolute inset-y-0 left-0 transition-all duration-500 rounded-lg",
-                              "shadow-md"
-                            )}
-                            style={{
-                              width: `${getCountdownProgress(tx.timestamp, tx.expires_at)}%`,
-                              background: getCountdownProgress(tx.timestamp, tx.expires_at) < 25 ?
-                              "linear-gradient(90deg, #10b981 0%, #34d399 100%)" // Grün (0-25%)
-                              : getCountdownProgress(tx.timestamp, tx.expires_at) < 50 ?
-                              "linear-gradient(90deg, #34d399 0%, #fbbf24 100%)" // Grün → Gelb (25-50%)
-                              : getCountdownProgress(tx.timestamp, tx.expires_at) < 75 ?
-                              "linear-gradient(90deg, #fbbf24 0%, #fb923c 100%)" // Gelb → Orange (50-75%)
-                              : "linear-gradient(90deg, #fb923c 0%, #ef4444 100%)" // Orange → Rot (75-100%)
-                            }}>
-                            
-                                {/* Glanz-Effekt */}
-                                <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent" />
+                                <div className="text-right">
+                                  <div className="text-xs text-muted-foreground">
+                                    {new Date(tx.timestamp).toLocaleString("de-DE")}
+                                  </div>
+                                </div>
                               </div>
-                            </div>
-                          </div>
 
-                          <div className="flex items-center justify-between pt-3 border-t">
-                            {!isExpired ?
-                        <div className="flex items-center gap-2 text-sm">
-                                <Clock className="w-4 h-4 text-muted-foreground" />
-                                <span className="font-mono">
-                                  {timeRemaining.text}
-                                </span>
-                              </div> :
-
-                        <div className="text-sm text-red-600 font-medium">Abgelaufen</div>
-                        }
-
-                            {isExpired &&
-                        <div className="flex gap-2">
-                                <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleExtend(tx.id)}>
-                            
-                                  Verlängern
-                                </Button>
-                                <Button
-                            size="sm"
-                            variant="default"
-                            onClick={() => setSelectedTx(tx.id)}>
-                            
-                                  Auszahlen
-                                </Button>
+                              <div className="grid grid-cols-2 gap-4 mb-3">
+                                <div>
+                                  <div className="text-xs text-muted-foreground mb-1">Eingezahlter Betrag</div>
+                                  <div className="text-lg font-semibold">{tx.amount_eur.toFixed(2)} €</div>
+                                </div>
+                                
+                                <div>
+                                  <div className="text-xs text-muted-foreground mb-1">Aktuelles Guthaben</div>
+                                  <div className="text-lg font-semibold text-green-600">
+                                    {currentBalance.toFixed(2)} €
+                                  </div>
+                                  {profit > 0 && !isExpired &&
+                              <div className="text-xs text-green-600 font-medium">
+                                      +{profit.toFixed(2)} € Gewinn
+                                    </div>
+                              }
+                                </div>
                               </div>
-                        }
-                          </div>
 
-                          {selectedTx === tx.id &&
-                      <div className="mt-4 pt-4 border-t space-y-3">
+                              {/* 14-Tage Countdown mit visuell verbessertem Fortschrittsbalken */}
+                              <div className="space-y-3">
+                                <div className="flex items-center justify-between text-sm">
+                                  <span className="font-medium text-muted-foreground">Restlaufzeit</span>
+                                  <span className={cn(
+                                "font-bold",
+                                getTimeRemaining(tx.expires_at).expired ? "text-red-500" : "text-primary"
+                              )}>
+                                    {getTimeRemaining(tx.expires_at).text}
+                                  </span>
+                                </div>
+                                
+                                {/* Verbesserte Fortschrittsanzeige */}
+                                <div className="relative h-8 bg-muted/30 rounded-lg overflow-hidden border border-border/50 shadow-inner">
+                                  {/* Fortschrittsbalken mit Farbverlauf */}
+                                  <div
+                                className={cn(
+                                  "absolute inset-y-0 left-0 transition-all duration-500 rounded-lg",
+                                  "shadow-md"
+                                )}
+                                style={{
+                                  width: `${getCountdownProgress(tx.timestamp, tx.expires_at)}%`,
+                                  background: getCountdownProgress(tx.timestamp, tx.expires_at) < 25 ?
+                                  "linear-gradient(90deg, #10b981 0%, #34d399 100%)" // Grün (0-25%)
+                                  : getCountdownProgress(tx.timestamp, tx.expires_at) < 50 ?
+                                  "linear-gradient(90deg, #34d399 0%, #fbbf24 100%)" // Grün → Gelb (25-50%)
+                                  : getCountdownProgress(tx.timestamp, tx.expires_at) < 75 ?
+                                  "linear-gradient(90deg, #fbbf24 0%, #fb923c 100%)" // Gelb → Orange (50-75%)
+                                  : "linear-gradient(90deg, #fb923c 0%, #ef4444 100%)" // Orange → Rot (75-100%)
+                                }}>
+                                
+                                    {/* Glanz-Effekt */}
+                                    <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent" />
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center justify-between pt-3 border-t">
+                                {!isExpired ?
+                            <div className="flex items-center gap-2 text-sm">
+                                    <Clock className="w-4 h-4 text-muted-foreground" />
+                                    <span className="font-mono">
+                                      {timeRemaining.text}
+                                    </span>
+                                  </div> :
+
+                            <div className="text-sm text-red-600 font-medium">Abgelaufen</div>
+                            }
+
+                                {isExpired &&
+                            <div className="flex gap-2">
+                                    <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleExtend(tx.id)}>
+                                
+                                      Verlängern
+                                    </Button>
+                                    <Button
+                                size="sm"
+                                variant="default"
+                                onClick={() => setSelectedTx(tx.id)}>
+                                
+                                      Auszahlen
+                                    </Button>
+                                  </div>
+                            }
+                              </div>
+
+                              {selectedTx === tx.id &&
+                          <div className="mt-4 pt-4 border-t space-y-3">
                               <div>
                                 <label className="text-sm font-medium mb-2 block">
                                   Bitcoin Auszahlungsadresse
@@ -473,7 +553,7 @@ export default function Dashboard() {
                                 </Button>
                               </div>
                             </div>
-                      }
+                          }
                         </div>);
 
                 })}
