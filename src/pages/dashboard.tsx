@@ -168,6 +168,16 @@ export default function UserDashboard() {
     const timeDiff = now.getTime() - startDate.getTime();
     const hoursPassed = Math.floor(timeDiff / (1000 * 60 * 60));
     
+    // Debug: Zeige Berechnungsdetails
+    console.log("Balance Calculation Debug:", {
+      eingezahlt: transaction.amount_eur,
+      timestamp: transaction.timestamp,
+      hoursPassed,
+      startBonus: transaction.amount_eur * 1.01,
+      wachstumFaktor: Math.pow(1.0005, hoursPassed),
+      finalBalance: transaction.amount_eur * 1.01 * Math.pow(1.0005, hoursPassed)
+    });
+    
     // Nur berechnen wenn Countdown noch läuft (Status active)
     if (transaction.status !== "active" || now > expiresDate) {
       // Bei Ablauf: Berechne den finalen Betrag basierend auf gesamter Laufzeit
