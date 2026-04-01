@@ -36,41 +36,41 @@ export function AuthForm() {
 
     try {
       console.log("Attempting login with:", loginData.email);
-      
+
       const { user, error } = await authService.signIn(loginData.email, loginData.password);
-      
+
       if (error) {
         console.error("Login error details:", error);
-        toast({ 
-          title: "Anmeldung fehlgeschlagen", 
+        toast({
+          title: "Anmeldung fehlgeschlagen",
           description: error.message || "Bitte überprüfen Sie Ihre Anmeldedaten",
-          variant: "destructive" 
+          variant: "destructive"
         });
         setLoading(false);
         return;
       }
 
       if (!user) {
-        toast({ 
-          title: "Anmeldung fehlgeschlagen", 
+        toast({
+          title: "Anmeldung fehlgeschlagen",
           description: "Ungültige Anmeldedaten",
-          variant: "destructive" 
+          variant: "destructive"
         });
         setLoading(false);
         return;
       }
 
       console.log("Login successful, fetching profile...");
-      
+
       // Warte kurz, damit Supabase die Session setzt
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       const profile = await profileService.getCurrentProfile();
       console.log("Profile fetched:", profile);
 
-      toast({ 
-        title: "Erfolgreich angemeldet", 
-        description: `Willkommen zurück, ${profile?.full_name || "User"}!` 
+      toast({
+        title: "Erfolgreich angemeldet",
+        description: `Willkommen zurück, ${profile?.full_name || "User"}!`
       });
 
       // Redirect basierend auf Rolle
@@ -81,10 +81,10 @@ export function AuthForm() {
       }
     } catch (error: any) {
       console.error("Login exception:", error);
-      toast({ 
-        title: "Fehler", 
+      toast({
+        title: "Fehler",
         description: error.message || "Ein unerwarteter Fehler ist aufgetreten",
-        variant: "destructive" 
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
@@ -98,28 +98,28 @@ export function AuthForm() {
     try {
       // Passwort-Validierung
       if (password !== confirmPassword) {
-        toast({ 
-          title: "Fehler", 
+        toast({
+          title: "Fehler",
           description: "Die Passwörter stimmen nicht überein",
-          variant: "destructive" 
+          variant: "destructive"
         });
         setLoading(false);
         return;
       }
 
       if (password.length < 6) {
-        toast({ 
-          title: "Fehler", 
+        toast({
+          title: "Fehler",
           description: "Das Passwort muss mindestens 6 Zeichen lang sein",
-          variant: "destructive" 
+          variant: "destructive"
         });
         setLoading(false);
         return;
       }
 
-      const combinedAddress = [street, houseNumber, postalCode, city]
-        .filter(Boolean)
-        .join(", ");
+      const combinedAddress = [street, houseNumber, postalCode, city].
+      filter(Boolean).
+      join(", ");
 
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
@@ -128,27 +128,27 @@ export function AuthForm() {
           data: {
             full_name: fullName,
             phone,
-            address: combinedAddress,
+            address: combinedAddress
           }
         }
       });
 
       if (authError) {
         console.error("Registration error details:", authError);
-        toast({ 
-          title: "Registrierung fehlgeschlagen", 
+        toast({
+          title: "Registrierung fehlgeschlagen",
           description: authError.message || "Bitte versuchen Sie es erneut",
-          variant: "destructive" 
+          variant: "destructive"
         });
         setLoading(false);
         return;
       }
 
       if (!authData?.user) {
-        toast({ 
-          title: "Registrierung fehlgeschlagen", 
+        toast({
+          title: "Registrierung fehlgeschlagen",
           description: "Benutzer konnte nicht erstellt werden",
-          variant: "destructive" 
+          variant: "destructive"
         });
         setLoading(false);
         return;
@@ -157,7 +157,7 @@ export function AuthForm() {
       console.log("Registration successful, creating profile...");
 
       // Warte kurz, damit Supabase die Session setzt
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Erstelle Profil
       try {
@@ -172,9 +172,9 @@ export function AuthForm() {
 
         console.log("Profile created successfully");
 
-        toast({ 
-          title: "Registrierung erfolgreich!", 
-          description: "Account erstellt. Sie können sich jetzt anmelden.",
+        toast({
+          title: "Registrierung erfolgreich!",
+          description: "Account erstellt. Sie können sich jetzt anmelden."
         });
 
         // Logout nach Registrierung und Umleitung zum Login
@@ -183,18 +183,18 @@ export function AuthForm() {
 
       } catch (profileError: any) {
         console.error("Profile creation error:", profileError);
-        toast({ 
-          title: "Registrierung teilweise erfolgreich", 
+        toast({
+          title: "Registrierung teilweise erfolgreich",
           description: "Account erstellt, aber Profil konnte nicht angelegt werden. Bitte kontaktieren Sie den Support.",
-          variant: "destructive" 
+          variant: "destructive"
         });
       }
     } catch (error: any) {
       console.error("Registration exception:", error);
-      toast({ 
-        title: "Fehler", 
+      toast({
+        title: "Fehler",
         description: error.message || "Ein unerwarteter Fehler ist aufgetreten",
-        variant: "destructive" 
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
@@ -206,8 +206,8 @@ export function AuthForm() {
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-1">
           <CardTitle className="text-3xl font-heading text-center text-navy">Finanzportal</CardTitle>
-          <CardDescription className="text-center text-lg">
-            Investment-Dashboard für Bitcoin-Verwaltung
+          <CardDescription className="text-center text-lg">Investment-Dashboard für versicherte Bitcoin-Anlage
+
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -228,8 +228,8 @@ export function AuthForm() {
                     value={loginData.email}
                     onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                     required
-                    disabled={loading}
-                  />
+                    disabled={loading} />
+                  
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="login-password">Passwort</Label>
@@ -240,8 +240,8 @@ export function AuthForm() {
                     value={loginData.password}
                     onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                     required
-                    disabled={loading}
-                  />
+                    disabled={loading} />
+                  
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Anmelden..." : "Anmelden"}
@@ -260,8 +260,8 @@ export function AuthForm() {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required
-                    disabled={loading}
-                  />
+                    disabled={loading} />
+                  
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">Telefonnummer</Label>
@@ -269,10 +269,10 @@ export function AuthForm() {
                     id="phone"
                     type="tel"
                     value={phone}
-                    onChange={e => setPhone(e.target.value)}
+                    onChange={(e) => setPhone(e.target.value)}
                     placeholder="+49 123 456789"
-                    required
-                  />
+                    required />
+                  
                 </div>
 
                 <div className="space-y-2">
@@ -280,10 +280,10 @@ export function AuthForm() {
                   <Input
                     id="street"
                     value={street}
-                    onChange={e => setStreet(e.target.value)}
+                    onChange={(e) => setStreet(e.target.value)}
                     placeholder="Musterstraße"
-                    required
-                  />
+                    required />
+                  
                 </div>
 
                 <div className="space-y-2">
@@ -291,10 +291,10 @@ export function AuthForm() {
                   <Input
                     id="houseNumber"
                     value={houseNumber}
-                    onChange={e => setHouseNumber(e.target.value)}
+                    onChange={(e) => setHouseNumber(e.target.value)}
                     placeholder="123"
-                    required
-                  />
+                    required />
+                  
                 </div>
 
                 <div className="space-y-2">
@@ -302,10 +302,10 @@ export function AuthForm() {
                   <Input
                     id="postalCode"
                     value={postalCode}
-                    onChange={e => setPostalCode(e.target.value)}
+                    onChange={(e) => setPostalCode(e.target.value)}
                     placeholder="12345"
-                    required
-                  />
+                    required />
+                  
                 </div>
 
                 <div className="space-y-2">
@@ -313,10 +313,10 @@ export function AuthForm() {
                   <Input
                     id="city"
                     value={city}
-                    onChange={e => setCity(e.target.value)}
+                    onChange={(e) => setCity(e.target.value)}
                     placeholder="Berlin"
-                    required
-                  />
+                    required />
+                  
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="register-email">Email</Label>
@@ -327,8 +327,8 @@ export function AuthForm() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    disabled={loading}
-                  />
+                    disabled={loading} />
+                  
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="register-password">Passwort</Label>
@@ -340,8 +340,8 @@ export function AuthForm() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={loading}
-                    minLength={6}
-                  />
+                    minLength={6} />
+                  
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="confirm-password">Passwort bestätigen</Label>
@@ -353,8 +353,8 @@ export function AuthForm() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
                     disabled={loading}
-                    minLength={6}
-                  />
+                    minLength={6} />
+                  
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Registrieren..." : "Registrieren"}
@@ -364,6 +364,6 @@ export function AuthForm() {
           </Tabs>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>);
+
 }
