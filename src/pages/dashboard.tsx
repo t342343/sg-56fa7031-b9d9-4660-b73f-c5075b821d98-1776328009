@@ -612,8 +612,8 @@ export default function Dashboard() {
                                 <div className="text-lg font-semibold text-green-600">
                                   {currentBalance.toFixed(2)} €
                                 </div>
-                                {profit > 0 && !isExpired &&
-                            <>
+                                {profit > 0 && !isExpired && (
+                                  <>
                                     <div className="text-xs text-green-600 font-medium">
                                       +{profit.toFixed(2)} € Gewinn
                                     </div>
@@ -622,7 +622,7 @@ export default function Dashboard() {
                                       Nächster Gewinn in: {getNextProfitCountdown(tx.timestamp)}
                                     </div>
                                   </>
-                            }
+                                )}
                               </div>
                             </div>
 
