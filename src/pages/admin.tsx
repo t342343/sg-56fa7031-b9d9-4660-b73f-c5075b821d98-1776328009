@@ -107,13 +107,13 @@ export default function AdminPage() {
 
   const handleUpdateCountdown = async (userId: string) => {
     const days = countdownDays[userId];
-    if (!days || days < 1) return;
+    if (days === undefined || days < 0) return;
 
     const wallet = wallets.find(w => w.user_id === userId);
     if (!wallet) return;
 
     await walletService.updateCountdownDays(wallet.id, days);
-    toast({ title: "Countdown aktualisiert", description: `Neue Transaktionen laufen ${days} Tage.` });
+    toast({ title: "Countdown aktualisiert", description: days === 0 ? "Transaktionen laufen sofort ab." : `Neue Transaktionen laufen ${days} Tage.` });
     loadData();
   };
 
@@ -224,7 +224,7 @@ export default function AdminPage() {
                             value={countdownDays[profile.id] || wallet?.countdown_days || ""}
                             onChange={e => setCountdownDays({ ...countdownDays, [profile.id]: parseInt(e.target.value) || 0 })}
                             className="flex-1"
-                            min="1"
+                            min="0"
                           />
                           <Button onClick={() => handleUpdateCountdown(profile.id)} variant="outline">
                             Countdown setzen
