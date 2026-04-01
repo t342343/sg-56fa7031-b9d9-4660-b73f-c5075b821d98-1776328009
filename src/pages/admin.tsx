@@ -249,11 +249,12 @@ export default function AdminPage() {
         <h2 className="text-2xl font-bold mb-6 text-navy">Admin-Panel</h2>
         
         <Tabs defaultValue="users" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="users">Benutzer</TabsTrigger>
             <TabsTrigger value="pool">Wallet-Pool ({walletPool.filter(w => !w.assigned_to_user_id).length})</TabsTrigger>
             <TabsTrigger value="chat">Chats ({chats.length})</TabsTrigger>
             <TabsTrigger value="withdrawals">Auszahlungen ({withdrawals.filter(w => w.status === "pending").length + pendingTransactions.length})</TabsTrigger>
+            <TabsTrigger value="transactions">Transaktionen ({transactions.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="users" className="space-y-4 mt-6">
