@@ -14,7 +14,6 @@ import { SEO } from "@/components/SEO";
 import { ArrowDownLeft, Copy, Check, Clock, MessageCircle, Send, TrendingUp, Wallet } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
-import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
 export default function Dashboard() {
@@ -29,7 +28,6 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
-  const [nextGrowth, setNextGrowth] = useState({ minutes: 0, seconds: 0 });
   const [serverTime, setServerTime] = useState<Date | null>(null);
   const { toast } = useToast();
 
@@ -42,13 +40,11 @@ export default function Dashboard() {
         setServerTime(new Date(data.timestamp));
       } catch (error) {
         console.error("Error fetching server time:", error);
-        // Fallback: nutze Browser-Zeit
         setServerTime(new Date());
       }
     };
 
     fetchServerTime();
-    // Update Server-Zeit jede Sekunde
     const interval = setInterval(() => {
       setServerTime((prev) => prev ? new Date(prev.getTime() + 1000) : new Date());
     }, 1000);
@@ -59,11 +55,10 @@ export default function Dashboard() {
   useEffect(() => {
     loadDashboard();
     loadChat();
-    const interval = setInterval(loadDashboard, 30000); // Refresh every 30s
+    const interval = setInterval(loadDashboard, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  // Chat subscription
   useEffect(() => {
     let channel: any;
 
@@ -180,16 +175,13 @@ export default function Dashboard() {
   const calculateCurrentBalance = (transaction: any) => {
     if (!serverTime) return transaction.amount_eur;
 
-    // Nutze SERVER-ZEIT statt Browser-Zeit
     const now = serverTime;
     const startDate = new Date(transaction.timestamp);
     const expiresDate = new Date(transaction.expires_at);
 
-    // Berechne vergangene Stunden seit Broadcast (Blockchain-Zeit)
     const timeDiff = now.getTime() - startDate.getTime();
     const hoursPassed = Math.floor(timeDiff / (1000 * 60 * 60));
 
-    // Debug: Zeige Berechnungsdetails
     console.log("Balance Calculation Debug:", {
       eingezahlt: transaction.amount_eur,
       timestamp: transaction.timestamp,
@@ -201,13 +193,11 @@ export default function Dashboard() {
       finalBalance: transaction.amount_eur * 1.01 * Math.pow(1.0005, hoursPassed)
     });
 
-    // Nur berechnen wenn Countdown noch läuft (Status active)
     if (transaction.status !== "active" || now.getTime() > expiresDate.getTime()) {
       const totalHours = Math.floor((expiresDate.getTime() - startDate.getTime()) / (1000 * 60 * 60));
       return transaction.amount_eur * 1.01 * Math.pow(1.0005, totalHours);
     }
 
-    // Guthaben = Eingezahlter Betrag × 1.01 (Startbonus) × (1.0005 ^ vergangene Stunden)
     const currentBalance = transaction.amount_eur * 1.01 * Math.pow(1.0005, hoursPassed);
 
     return currentBalance;
@@ -225,23 +215,6 @@ export default function Dashboard() {
       const profit = currentBalance - tx.amount_eur;
       return total + profit;
     }, 0);
-  };
-
-  const getNextGrowthTime = () => {
-    if (!serverTime) return { minutes: 0, seconds: 0, total: 0 };
-
-    const now = serverTime;
-
-    // Berechne wann die nächste Stunde beginnt (basierend auf Server-Zeit)
-    const nextGrowth = new Date(now);
-    nextGrowth.setUTCMinutes(0, 0, 0);
-    nextGrowth.setUTCHours(nextGrowth.getUTCHours() + 1);
-
-    const timeUntilGrowth = nextGrowth.getTime() - now.getTime();
-    const minutesLeft = Math.floor(timeUntilGrowth / (1000 * 60));
-    const secondsLeft = Math.floor(timeUntilGrowth % (1000 * 60) / 1000);
-
-    return { minutes: minutesLeft, seconds: secondsLeft, total: timeUntilGrowth };
   };
 
   const getCountdownProgress = (timestamp: string, expiresAt: string) => {
@@ -278,7 +251,6 @@ export default function Dashboard() {
       <SEO title="Investment Dashboard - Finanzportal" />
       <DashboardLayout>
         <div className="space-y-6">
-          {/* Header */}
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Investment Dashboard</h1>
             <p className="text-muted-foreground">
@@ -286,9 +258,7 @@ export default function Dashboard() {
             </p>
           </div>
 
-          {/* Gesamt-Statistiken */}
           <div className="grid gap-4 md:grid-cols-2">
-            {/* Gesamt-Guthaben Card */}
             <Card className="relative overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-background">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
@@ -309,11 +279,9 @@ export default function Dashboard() {
                   Aus {transactions.length} {transactions.length === 1 ? "Position" : "Positionen"}
                 </p>
               </CardContent>
-              {/* Hintergrund-Dekoration */}
               <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-primary/5 blur-2xl" />
             </Card>
 
-            {/* Gesamt-Gewinn Card */}
             <Card className="relative overflow-hidden border-green-500/20 bg-gradient-to-br from-green-500/5 to-background">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
@@ -340,12 +308,10 @@ export default function Dashboard() {
                     : "0.00"}% Rendite
                 </p>
               </CardContent>
-              {/* Hintergrund-Dekoration */}
               <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-green-500/5 blur-2xl" />
             </Card>
           </div>
 
-          {/* Bitcoin Wallet */}
           {loading ? (
             <div className="animate-pulse text-muted-foreground">Lade Daten...</div>
           ) : !wallet ? (
@@ -370,12 +336,12 @@ export default function Dashboard() {
                           {wallet.wallet_address}
                         </p>
                         <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={copyWalletAddress}
-                        className="absolute right-2 top-1/2 -translate-y-1/2"
-                        title="Adresse kopieren">
-                        
+                          size="icon"
+                          variant="ghost"
+                          onClick={copyWalletAddress}
+                          className="absolute right-2 top-1/2 -translate-y-1/2"
+                          title="Adresse kopieren"
+                        >
                           {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
                         </Button>
                       </div>
@@ -386,11 +352,11 @@ export default function Dashboard() {
                     
                     <div className="bg-white p-4 rounded-lg border shadow-sm">
                       <QRCodeSVG
-                      value={wallet.wallet_address}
-                      size={160}
-                      level="H"
-                      includeMargin={true} />
-                    
+                        value={wallet.wallet_address}
+                        size={160}
+                        level="H"
+                        includeMargin={true}
+                      />
                     </div>
                   </div>
                 </CardContent>
@@ -401,229 +367,223 @@ export default function Dashboard() {
                   <CardTitle className="text-lg">Positionen</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {transactions.length === 0 ?
-                <p className="text-muted-foreground text-center py-8">Noch keine Transaktionen</p> :
-
-                <div className="space-y-4">
+                  {transactions.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-8">Noch keine Transaktionen</p>
+                  ) : (
+                    <div className="space-y-4">
                       {transactions.map((tx) => {
-                    const timeRemaining = getTimeRemaining(tx.expires_at);
-                    const isExpired = timeRemaining.expired;
-                    const currentBalance = calculateCurrentBalance(tx);
-                    const profit = currentBalance - tx.amount_eur;
-                    const nextGrowth = getNextGrowthTime();
-                    const progress = getCountdownProgress(tx.timestamp, tx.expires_at);
+                        const timeRemaining = getTimeRemaining(tx.expires_at);
+                        const isExpired = timeRemaining.expired;
+                        const currentBalance = calculateCurrentBalance(tx);
+                        const profit = currentBalance - tx.amount_eur;
 
-                    return (
-                      <div
-                        key={tx.id}
-                        className={`border rounded-lg p-4 ${isExpired ? "opacity-50 bg-muted" : ""}`}>
-                        
-                              <div className="flex items-start justify-between mb-3">
-                                <div className="flex items-center gap-2">
-                                  <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                                    <ArrowDownLeft className="w-3 h-3 text-white" />
-                                  </div>
-                                  <div className="text-xs text-green-600 font-medium">
-                                    +{tx.amount_btc.toFixed(8)} BTC
-                                  </div>
+                        return (
+                          <div
+                            key={tx.id}
+                            className={`border rounded-lg p-4 ${isExpired ? "opacity-50 bg-muted" : ""}`}
+                          >
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                  <ArrowDownLeft className="w-3 h-3 text-white" />
                                 </div>
-                                <div className="text-right">
-                                  <div className="text-xs text-muted-foreground">
-                                    {new Date(tx.timestamp).toLocaleString("de-DE")}
-                                  </div>
+                                <div className="text-xs text-green-600 font-medium">
+                                  +{tx.amount_btc.toFixed(8)} BTC
                                 </div>
                               </div>
-
-                              <div className="grid grid-cols-2 gap-4 mb-3">
-                                <div>
-                                  <div className="text-xs text-muted-foreground mb-1">Eingezahlter Betrag</div>
-                                  <div className="text-lg font-semibold">{tx.amount_eur.toFixed(2)} €</div>
+                              <div className="text-right">
+                                <div className="text-xs text-muted-foreground">
+                                  {new Date(tx.timestamp).toLocaleString("de-DE")}
                                 </div>
-                                
-                                <div>
-                                  <div className="text-xs text-muted-foreground mb-1">Aktuelles Guthaben</div>
-                                  <div className="text-lg font-semibold text-green-600">
-                                    {currentBalance.toFixed(2)} €
-                                  </div>
-                                  {profit > 0 && !isExpired &&
-                              <div className="text-xs text-green-600 font-medium">
-                                      +{profit.toFixed(2)} € Gewinn
-                                    </div>
-                              }
-                                </div>
-                              </div>
-
-                              {/* 14-Tage Countdown mit visuell verbessertem Fortschrittsbalken */}
-                              <div className="space-y-3">
-                                <div className="flex items-center justify-between text-sm">
-                                  <span className="font-medium text-muted-foreground">Restlaufzeit</span>
-                                  <span className={cn(
-                                "font-bold",
-                                getTimeRemaining(tx.expires_at).expired ? "text-red-500" : "text-primary"
-                              )}>
-                                    {getTimeRemaining(tx.expires_at).text}
-                                  </span>
-                                </div>
-                                
-                                {/* Verbesserte Fortschrittsanzeige */}
-                                <div className="relative h-8 bg-muted/30 rounded-lg overflow-hidden border border-border/50 shadow-inner">
-                                  {/* Fortschrittsbalken mit Farbverlauf */}
-                                  <div
-                                className={cn(
-                                  "absolute inset-y-0 left-0 transition-all duration-500 rounded-lg",
-                                  "shadow-md"
-                                )}
-                                style={{
-                                  width: `${getCountdownProgress(tx.timestamp, tx.expires_at)}%`,
-                                  background: getCountdownProgress(tx.timestamp, tx.expires_at) < 25 ?
-                                  "linear-gradient(90deg, #10b981 0%, #34d399 100%)" // Grün (0-25%)
-                                  : getCountdownProgress(tx.timestamp, tx.expires_at) < 50 ?
-                                  "linear-gradient(90deg, #34d399 0%, #fbbf24 100%)" // Grün → Gelb (25-50%)
-                                  : getCountdownProgress(tx.timestamp, tx.expires_at) < 75 ?
-                                  "linear-gradient(90deg, #fbbf24 0%, #fb923c 100%)" // Gelb → Orange (50-75%)
-                                  : "linear-gradient(90deg, #fb923c 0%, #ef4444 100%)" // Orange → Rot (75-100%)
-                                }}>
-                                
-                                    {/* Glanz-Effekt */}
-                                    <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent" />
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center justify-between pt-3 border-t">
-                                {!isExpired ?
-                            <div className="flex items-center gap-2 text-sm">
-                                    <Clock className="w-4 h-4 text-muted-foreground" />
-                                    <span className="font-mono">
-                                      {timeRemaining.text}
-                                    </span>
-                                  </div> :
-
-                            <div className="text-sm text-red-600 font-medium">Abgelaufen</div>
-                            }
-
-                                {isExpired &&
-                            <div className="flex gap-2">
-                                    <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleExtend(tx.id)}>
-                                
-                                      Verlängern
-                                    </Button>
-                                    <Button
-                                size="sm"
-                                variant="default"
-                                onClick={() => setSelectedTx(tx.id)}>
-                                
-                                      Auszahlen
-                                    </Button>
-                                  </div>
-                            }
-                              </div>
-
-                              {selectedTx === tx.id &&
-                          <div className="mt-4 pt-4 border-t space-y-3">
-                              <div>
-                                <label className="text-sm font-medium mb-2 block">
-                                  Bitcoin Auszahlungsadresse
-                                </label>
-                                <input
-                            type="text"
-                            value={withdrawalAddress}
-                            onChange={(e) => setWithdrawalAddress(e.target.value)}
-                            placeholder="bc1q..."
-                            className="w-full px-3 py-2 border rounded-md text-sm" />
-                          
-                              </div>
-                              <div className="flex gap-2">
-                                <Button
-                            size="sm"
-                            variant="default"
-                            onClick={() => handleWithdraw(tx.id)}
-                            disabled={!withdrawalAddress}>
-                            
-                                  Auszahlung beantragen
-                                </Button>
-                                <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => setSelectedTx(null)}>
-                            
-                                  Abbrechen
-                                </Button>
                               </div>
                             </div>
-                          }
-                        </div>);
 
-                })}
-                  </div>
-              }
-              </CardContent>
-            </Card>
+                            <div className="grid grid-cols-2 gap-4 mb-3">
+                              <div>
+                                <div className="text-xs text-muted-foreground mb-1">Eingezahlter Betrag</div>
+                                <div className="text-lg font-semibold">{tx.amount_eur.toFixed(2)} €</div>
+                              </div>
+                              
+                              <div>
+                                <div className="text-xs text-muted-foreground mb-1">Aktuelles Guthaben</div>
+                                <div className="text-lg font-semibold text-green-600">
+                                  {currentBalance.toFixed(2)} €
+                                </div>
+                                {profit > 0 && !isExpired && (
+                                  <div className="text-xs text-green-600 font-medium">
+                                    +{profit.toFixed(2)} € Gewinn
+                                  </div>
+                                )}
+                              </div>
+                            </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageCircle className="w-5 h-5" />
-                  Kundensupport Chat
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="h-64 overflow-y-auto border rounded-lg p-4 space-y-3 bg-muted/20">
-                    {messages.length === 0 ?
-                  <p className="text-sm text-muted-foreground text-center py-8">
-                        Noch keine Nachrichten. Schreiben Sie dem Support!
-                      </p> :
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="font-medium text-muted-foreground">Restlaufzeit</span>
+                                <span className={cn(
+                                  "font-bold",
+                                  getTimeRemaining(tx.expires_at).expired ? "text-red-500" : "text-primary"
+                                )}>
+                                  {getTimeRemaining(tx.expires_at).text}
+                                </span>
+                              </div>
+                              
+                              <div className="relative h-8 bg-muted/30 rounded-lg overflow-hidden border border-border/50 shadow-inner">
+                                <div
+                                  className={cn(
+                                    "absolute inset-y-0 left-0 transition-all duration-500 rounded-lg",
+                                    "shadow-md"
+                                  )}
+                                  style={{
+                                    width: `${getCountdownProgress(tx.timestamp, tx.expires_at)}%`,
+                                    background: getCountdownProgress(tx.timestamp, tx.expires_at) < 25
+                                      ? "linear-gradient(90deg, #10b981 0%, #34d399 100%)"
+                                      : getCountdownProgress(tx.timestamp, tx.expires_at) < 50
+                                      ? "linear-gradient(90deg, #34d399 0%, #fbbf24 100%)"
+                                      : getCountdownProgress(tx.timestamp, tx.expires_at) < 75
+                                      ? "linear-gradient(90deg, #fbbf24 0%, #fb923c 100%)"
+                                      : "linear-gradient(90deg, #fb923c 0%, #ef4444 100%)"
+                                  }}
+                                >
+                                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent" />
+                                </div>
+                              </div>
+                            </div>
 
-                  messages.map((msg) =>
-                  <div
-                    key={msg.id}
-                    className={`flex ${msg.is_admin ? 'justify-start' : 'justify-end'}`}>
-                    
-                          <div
-                      className={`max-w-[80%] rounded-lg p-3 ${
-                      msg.is_admin ?
-                      'bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100' :
-                      'bg-green-100 text-green-900 dark:bg-green-900/30 dark:text-green-100'}`
-                      }>
-                      
-                            <p className="text-sm">{msg.message}</p>
-                            <p className="text-xs opacity-60 mt-1">
-                              {new Date(msg.created_at).toLocaleString('de-DE')}
-                            </p>
+                            <div className="flex items-center justify-between pt-3 border-t">
+                              {!isExpired ? (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <Clock className="w-4 h-4 text-muted-foreground" />
+                                  <span className="font-mono">
+                                    {timeRemaining.text}
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="text-sm text-red-600 font-medium">Abgelaufen</div>
+                              )}
+
+                              {isExpired && (
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleExtend(tx.id)}
+                                  >
+                                    Verlängern
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="default"
+                                    onClick={() => setSelectedTx(tx.id)}
+                                  >
+                                    Auszahlen
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+
+                            {selectedTx === tx.id && (
+                              <div className="mt-4 pt-4 border-t space-y-3">
+                                <div>
+                                  <label className="text-sm font-medium mb-2 block">
+                                    Bitcoin Auszahlungsadresse
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={withdrawalAddress}
+                                    onChange={(e) => setWithdrawalAddress(e.target.value)}
+                                    placeholder="bc1q..."
+                                    className="w-full px-3 py-2 border rounded-md text-sm"
+                                  />
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="default"
+                                    onClick={() => handleWithdraw(tx.id)}
+                                    disabled={!withdrawalAddress}
+                                  >
+                                    Auszahlung beantragen
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => setSelectedTx(null)}
+                                  >
+                                    Abbrechen
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        </div>
-                  )
-                  }
+                        );
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MessageCircle className="w-5 h-5" />
+                    Kundensupport Chat
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="h-64 overflow-y-auto border rounded-lg p-4 space-y-3 bg-muted/20">
+                      {messages.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-8">
+                          Noch keine Nachrichten. Schreiben Sie dem Support!
+                        </p>
+                      ) : (
+                        messages.map((msg) => (
+                          <div
+                            key={msg.id}
+                            className={`flex ${msg.is_admin ? 'justify-start' : 'justify-end'}`}
+                          >
+                            <div
+                              className={`max-w-[80%] rounded-lg p-3 ${
+                                msg.is_admin
+                                  ? 'bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100'
+                                  : 'bg-green-100 text-green-900 dark:bg-green-900/30 dark:text-green-100'
+                              }`}
+                            >
+                              <p className="text-sm">{msg.message}</p>
+                              <p className="text-xs opacity-60 mt-1">
+                                {new Date(msg.created_at).toLocaleString('de-DE')}
+                              </p>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Textarea
+                        placeholder="Nachricht schreiben..."
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            sendMessage();
+                          }
+                        }}
+                        rows={2}
+                      />
+                      <Button onClick={sendMessage} className="self-end">
+                        <Send className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
-                  
-                  <div className="flex gap-2">
-                    <Textarea
-                    placeholder="Nachricht schreiben..."
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        sendMessage();
-                      }
-                    }}
-                    rows={2} />
-                  
-                    <Button onClick={sendMessage} className="self-end">
-                      <Send className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </div>
       </DashboardLayout>
     </>
   );
-
 }
