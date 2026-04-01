@@ -96,36 +96,36 @@ export default function Dashboard() {
   useEffect(() => {
     if (!wallet?.id) return;
 
-    const channel = supabase
-      .channel(`transactions-${wallet.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'transactions',
-          filter: `wallet_id=eq.${wallet.id}`
-        },
-        (payload: any) => {
-          // Wenn Status zu "withdrawn" wechselt
-          if (payload.new.status === "withdrawn" && payload.old.status === "withdrawal_pending") {
-            const tx = payload.new;
-            const finalAmountEur = tx.withdrawn_amount_eur || calculateCurrentBalance(tx);
-            const finalAmountBtc = tx.withdrawn_amount_btc || 0;
-            const walletAddress = tx.withdrawal_address || "Ihre Wallet";
-            
-            toast({
-              title: "🎉 Auszahlung veranlasst!",
-              description: `${finalAmountEur.toFixed(2)} € (${finalAmountBtc.toFixed(8)} BTC) wurden an ${walletAddress.substring(0, 20)}... überwiesen.`,
-              duration: 10000
-            });
+    const channel = supabase.
+    channel(`transactions-${wallet.id}`).
+    on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'transactions',
+        filter: `wallet_id=eq.${wallet.id}`
+      },
+      (payload: any) => {
+        // Wenn Status zu "withdrawn" wechselt
+        if (payload.new.status === "withdrawn" && payload.old.status === "withdrawal_pending") {
+          const tx = payload.new;
+          const finalAmountEur = tx.withdrawn_amount_eur || calculateCurrentBalance(tx);
+          const finalAmountBtc = tx.withdrawn_amount_btc || 0;
+          const walletAddress = tx.withdrawal_address || "Ihre Wallet";
 
-            // Dashboard neu laden
-            loadDashboard();
-          }
+          toast({
+            title: "🎉 Auszahlung veranlasst!",
+            description: `${finalAmountEur.toFixed(2)} € (${finalAmountBtc.toFixed(8)} BTC) wurden an ${walletAddress.substring(0, 20)}... überwiesen.`,
+            duration: 10000
+          });
+
+          // Dashboard neu laden
+          loadDashboard();
         }
-      )
-      .subscribe();
+      }
+    ).
+    subscribe();
 
     return () => {
       supabase.removeChannel(channel);
@@ -146,10 +146,10 @@ export default function Dashboard() {
 
   const silentCheckTransactions = async () => {
     if (!wallet) return;
-    
+
     try {
       const newCount = await transactionService.checkNewTransactions(wallet.wallet_address, wallet.id);
-      
+
       if (newCount > 0) {
         toast({
           title: newCount === 1 ? "Neue Transaktion gefunden!" : "Neue Transaktionen gefunden!",
@@ -166,7 +166,7 @@ export default function Dashboard() {
 
   const loadDashboard = async (silent = false) => {
     if (!silent) setLoading(true);
-    
+
     const profile = await profileService.getCurrentProfile();
     if (!profile) return;
 
@@ -180,8 +180,8 @@ export default function Dashboard() {
       if (!silent) {
         const newCount = await transactionService.checkNewTransactions(w.wallet_address, w.id);
         if (newCount > 0) {
-          toast({ 
-            title: newCount === 1 ? "Neue Transaktion eingegangen" : "Neue Transaktionen eingegangen", 
+          toast({
+            title: newCount === 1 ? "Neue Transaktion eingegangen" : "Neue Transaktionen eingegangen",
             description: newCount === 1 ? "Eine neue Zahlung wurde gefunden." : `${newCount} neue Zahlungen gefunden.`
           });
         }
@@ -195,7 +195,7 @@ export default function Dashboard() {
       const withdrawn = await transactionService.getWithdrawnTransactionsByWallet(w.id);
       setWithdrawnTransactions(withdrawn);
     }
-    
+
     if (!silent) setLoading(false);
   };
 
@@ -214,10 +214,10 @@ export default function Dashboard() {
     if (!profile) return;
 
     await chatService.sendMessage(profile.id, newMessage);
-    
+
     // Automatische Standard-Antwort vom System
     await chatService.sendMessage(profile.id, "Danke für Ihre Nachricht, in Kürze antwortet Ihnen ein Kundenbetreuer.", true);
-    
+
     setNewMessage("");
     loadChat();
   };
@@ -230,7 +230,7 @@ export default function Dashboard() {
   };
 
   const handleExtend = async (txId: string) => {
-    const tx = transactions.find(t => t.id === txId);
+    const tx = transactions.find((t) => t.id === txId);
     if (!tx) return;
 
     const newMaturityDate = new Date();
@@ -253,7 +253,7 @@ export default function Dashboard() {
       return;
     }
 
-    const tx = transactions.find(t => t.id === txId);
+    const tx = transactions.find((t) => t.id === txId);
     if (!tx) return;
 
     // Berechne aktuellen EUR-Betrag mit Rendite
@@ -266,13 +266,13 @@ export default function Dashboard() {
     const correctBtcAmount = currentEurAmount / currentBtcPrice;
 
     await transactionService.updateTransactionStatus(
-      txId, 
-      "withdrawal_pending", 
+      txId,
+      "withdrawal_pending",
       withdrawalAddress,
       currentEurAmount,
       correctBtcAmount
     );
-    
+
     setWithdrawalAddress("");
     setSelectedTx(null);
     toast({ title: "Auszahlung angefordert", description: "Ihre Auszahlung wird bearbeitet." });
@@ -322,18 +322,18 @@ export default function Dashboard() {
 
   const calculateCurrentBalance = (tx: any) => {
     if (!serverTime) return tx.amount_eur; // Fallback wenn serverTime noch nicht geladen
-    
+
     // WICHTIG: Rechne 1% Sofort-Bonus auf den eingezahlten Betrag
     const eingezahlt = tx.amount_eur * 1.01;
-    
+
     const timestamp = new Date(tx.timestamp).getTime();
     const now = serverTime.getTime();
     const timeDiffMs = now - timestamp;
     const hoursPassed = Math.floor(timeDiffMs / (1000 * 60 * 60));
-    
+
     // Verhindere negative Stunden (falls Transaktion in der Zukunft liegt)
     const safeHoursPassed = Math.max(0, hoursPassed);
-    
+
     // Stündliche Rendite: 0.05% normal, 0.1% verlängert
     const hourlyRate = tx.is_extended ? 0.001 : 0.0005;
     const hourlyGrowth = 1 + hourlyRate;
@@ -344,33 +344,33 @@ export default function Dashboard() {
   };
 
   const calculateTotalBalance = () => {
-    return transactions
-      .filter(tx => tx.status !== "withdrawal_pending")
-      .reduce((sum, tx) => sum + calculateCurrentBalance(tx), 0);
+    return transactions.
+    filter((tx) => tx.status !== "withdrawal_pending").
+    reduce((sum, tx) => sum + calculateCurrentBalance(tx), 0);
   };
 
   const calculateTotalProfit = () => {
-    return transactions
-      .filter(tx => tx.status !== "withdrawal_pending")
-      .reduce((sum, tx) => {
-        const currentBalance = calculateCurrentBalance(tx);
-        return sum + (currentBalance - tx.amount_eur);
-      }, 0);
+    return transactions.
+    filter((tx) => tx.status !== "withdrawal_pending").
+    reduce((sum, tx) => {
+      const currentBalance = calculateCurrentBalance(tx);
+      return sum + (currentBalance - tx.amount_eur);
+    }, 0);
   };
 
   // Berechne Gesamtrendite
-  const totalYield = transactions
-    .filter(tx => tx.status === "active")
-    .reduce((sum, tx) => {
-      if (!tx.timestamp || !tx.maturity_date) return sum;
-      const start = new Date(tx.timestamp);
-      const now = new Date();
-      const hoursElapsed = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60));
-      
-      // Stündliche Rendite: 0.05% normal, 0.1% verlängert
-      const hourlyRate = tx.is_extended ? 0.001 : 0.0005;
-      return sum + (tx.amount_eur * hourlyRate * hoursElapsed);
-    }, 0);
+  const totalYield = transactions.
+  filter((tx) => tx.status === "active").
+  reduce((sum, tx) => {
+    if (!tx.timestamp || !tx.maturity_date) return sum;
+    const start = new Date(tx.timestamp);
+    const now = new Date();
+    const hoursElapsed = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60));
+
+    // Stündliche Rendite: 0.05% normal, 0.1% verlängert
+    const hourlyRate = tx.is_extended ? 0.001 : 0.0005;
+    return sum + tx.amount_eur * hourlyRate * hoursElapsed;
+  }, 0);
 
   const getNextProfitCountdown = (timestamp: string) => {
     if (!serverTime) return "...";
@@ -402,12 +402,12 @@ export default function Dashboard() {
 
     // Gesamtlaufzeit in Millisekunden
     const totalDuration = end - start;
-    
+
     // Verbleibende Zeit
     const remaining = end - now;
 
     // Verbleibende Zeit als Prozentsatz der Gesamtlaufzeit
-    const progress = Math.max(0, Math.min(100, (remaining / totalDuration) * 100));
+    const progress = Math.max(0, Math.min(100, remaining / totalDuration * 100));
 
     return progress;
   };
@@ -573,8 +573,8 @@ export default function Dashboard() {
                     return (
                       <Card key={tx.id} className={tx.status === "withdrawal_pending" ? "opacity-50 border-amber-200" : ""}>
                         <CardContent className="p-6">
-                            {tx.status === "withdrawal_pending" && (
-                              <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                            {tx.status === "withdrawal_pending" &&
+                          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                                 <div className="flex items-center gap-2 text-amber-800">
                                   <Clock className="w-5 h-5" />
                                   <span className="font-semibold">⏳ Ihre Auszahlung erfolgt in Kürze</span>
@@ -583,7 +583,7 @@ export default function Dashboard() {
                                   Der Administrator wird Ihre Auszahlungsanfrage in Kürze bearbeiten.
                                 </p>
                               </div>
-                            )}
+                          }
 
                             <div className="flex items-start justify-between mb-3">
                               <div className="flex items-center gap-2">
@@ -598,11 +598,11 @@ export default function Dashboard() {
                                 <div className="text-xs text-muted-foreground">
                                   {new Date(tx.timestamp).toLocaleString("de-DE")}
                                 </div>
-                                {tx.status === "withdrawal_pending" && (
-                                  <div className="text-xs text-amber-500 font-medium mt-1">
+                                {tx.status === "withdrawal_pending" &&
+                              <div className="text-xs text-amber-500 font-medium mt-1">
                                     ⏳ Auszahlung in Kürze
                                   </div>
-                                )}
+                              }
                               </div>
                             </div>
 
@@ -617,17 +617,17 @@ export default function Dashboard() {
                                 <div className="text-lg font-semibold text-green-600">
                                   {currentBalance.toFixed(2)} €
                                 </div>
-                                {profit > 0 && (
-                                  <div className="text-xs text-green-600 font-medium">
+                                {profit > 0 &&
+                              <div className="text-xs text-green-600 font-medium">
                                     +{profit.toFixed(2)} € Gewinn
                                   </div>
-                                )}
-                                {!isExpired && (
-                                  <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                              }
+                                {!isExpired &&
+                              <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                                     <Clock className="w-3 h-3" />
                                     Nächster Gewinn in: {getNextProfitCountdown(tx.timestamp)}
                                   </div>
-                                )}
+                              }
                               </div>
                             </div>
 
@@ -638,82 +638,82 @@ export default function Dashboard() {
                                   {!isExpired ? `${timeRemaining.text} verbleibend` : "Abgelaufen"}
                                 </span>
                               </div>
-                              <Progress 
-                                value={getCountdownProgress(tx.timestamp, tx.expires_at)}
-                                className="h-2 [&>div]:bg-blue-600"
-                              />
+                              <Progress
+                              value={getCountdownProgress(tx.timestamp, tx.expires_at)}
+                              className="h-2 [&>div]:bg-blue-600" />
+                            
                             </div>
 
                             <div className="flex items-center justify-between pt-3 border-t">
-                              {!isExpired ? (
-                                <div className="flex items-center gap-2 text-sm">
+                              {!isExpired ?
+                            <div className="flex items-center gap-2 text-sm">
                                   <Clock className="w-4 h-4 text-muted-foreground" />
                                   <span className="font-mono">
                                     {timeRemaining.text}
                                   </span>
-                                </div>
-                              ) : (
-                                <div className="text-sm text-red-600 font-medium">Abgelaufen</div>
-                              )}
+                                </div> :
 
-                              {isExpired && tx.status !== "withdrawal_pending" && (
-                                <div className="flex gap-2">
+                            <div className="text-sm text-red-600 font-medium">Abgelaufen</div>
+                            }
+
+                              {isExpired && tx.status !== "withdrawal_pending" &&
+                            <div className="flex gap-2">
                                   <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleExtend(tx.id)}
-                                  >
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleExtend(tx.id)}>
+                                
                                     Verlängern
                                   </Button>
                                   <Button
-                                    size="sm"
-                                    variant="default"
-                                    onClick={() => setSelectedTx(tx.id)}
-                                  >
+                                size="sm"
+                                variant="default"
+                                onClick={() => setSelectedTx(tx.id)}>
+                                
                                     Auszahlen
                                   </Button>
                                 </div>
-                              )}
-                              {isExpired && tx.status !== "withdrawal_pending" && (
-                                <p className="text-xs text-green-600 mt-2 text-center">
+                            }
+                              {isExpired && tx.status !== "withdrawal_pending" &&
+                            <p className="text-xs text-green-600 mt-2 text-center">
                                   (Bonus 2 % sofort Rendite und stündlich 2fache Rendite)
                                 </p>
-                              )}
+                            }
                             </div>
 
-                            {selectedTx === tx.id && tx.status !== "withdrawal_pending" && (
-                              <div className="mt-4 pt-4 border-t space-y-3">
+                            {selectedTx === tx.id && tx.status !== "withdrawal_pending" &&
+                          <div className="mt-4 pt-4 border-t space-y-3">
                                 <div>
                                   <label className="text-sm font-medium mb-2 block">
                                     Bitcoin Auszahlungsadresse
                                   </label>
                                   <input
-                              type="text"
-                              value={withdrawalAddress}
-                              onChange={(e) => setWithdrawalAddress(e.target.value)}
-                              placeholder="bc1q..."
-                              className="w-full px-3 py-2 border rounded-md text-sm" />
+                                type="text"
+                                value={withdrawalAddress}
+                                onChange={(e) => setWithdrawalAddress(e.target.value)}
+                                placeholder="bc1q..."
+                                className="w-full px-3 py-2 border rounded-md text-sm" />
                             
                                 </div>
                                 <div className="flex gap-2">
                                   <Button
-                              size="sm"
-                              variant="default"
-                              onClick={() => handleWithdraw(tx.id)}
-                              disabled={!withdrawalAddress}>
+                                size="sm"
+                                variant="default"
+                                onClick={() => handleWithdraw(tx.id)}
+                                disabled={!withdrawalAddress}>
                               
                                     Auszahlung beantragen
                                   </Button>
                                   <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => setSelectedTx(null)}>
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setSelectedTx(null)}>
                               
                                     Abbrechen
                                   </Button>
                                 </div>
                               </div>
-                            )}
+                          }
                           </CardContent>
                           </Card>);
 
@@ -782,8 +782,8 @@ export default function Dashboard() {
               </Card>
 
               {/* Abgeschlossene Auszahlungen */}
-              {withdrawnTransactions.length > 0 && (
-                <Card className="mt-8">
+              {withdrawnTransactions.length > 0 &&
+            <Card className="mt-8">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <CheckCircle2 className="h-5 w-5 text-green-600" />
@@ -792,22 +792,22 @@ export default function Dashboard() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {withdrawnTransactions.map((tx) => (
-                        <div key={tx.id} className="border border-green-200 bg-green-50 rounded-lg p-4">
+                      {withdrawnTransactions.map((tx) =>
+                  <div key={tx.id} className="border border-green-200 bg-green-50 rounded-lg p-4">
                           <div className="flex items-start justify-between mb-3">
                             <div>
                               <div className="flex items-center gap-2 mb-1">
                                 <CheckCircle2 className="h-4 w-4 text-green-600" />
-                                <span className="font-semibold text-green-800">Auszahlung veranlasst</span>
+                                <span className="font-semibold text-green-800">Auszahlung abgeschlossen</span>
                               </div>
                               <p className="text-sm text-gray-600">
                                 {new Date(tx.created_at).toLocaleDateString("de-DE", {
-                                  day: "2-digit",
-                                  month: "long",
-                                  year: "numeric",
-                                  hour: "2-digit",
-                                  minute: "2-digit"
-                                })}
+                            day: "2-digit",
+                            month: "long",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit"
+                          })}
                               </p>
                             </div>
                             <div className="text-right">
@@ -815,10 +815,10 @@ export default function Dashboard() {
                                 {tx.withdrawn_amount_eur?.toFixed(2) || calculateCurrentBalance(tx).toFixed(2)} €
                               </div>
                               <div className="text-sm text-green-600 font-medium">
-                                {tx.withdrawn_amount_btc ? 
-                                  `${tx.withdrawn_amount_btc.toFixed(8)} BTC` : 
-                                  `${((tx.withdrawn_amount_eur || calculateCurrentBalance(tx)) / (bitcoinPrice || 85000)).toFixed(8)} BTC`
-                                }
+                                {tx.withdrawn_amount_btc ?
+                          `${tx.withdrawn_amount_btc.toFixed(8)} BTC` :
+                          `${((tx.withdrawn_amount_eur || calculateCurrentBalance(tx)) / (bitcoinPrice || 85000)).toFixed(8)} BTC`
+                          }
                               </div>
                               <div className="text-sm text-gray-600 mt-1">
                                 Gewinn: +{((tx.withdrawn_amount_eur || calculateCurrentBalance(tx)) - tx.amount_eur).toFixed(2)} €
@@ -840,20 +840,20 @@ export default function Dashboard() {
                             <div className="flex justify-between">
                               <span className="text-gray-600">In Bitcoin:</span>
                               <span className="font-mono text-sm font-medium">
-                                {tx.withdrawn_amount_btc ? 
-                                  `${tx.withdrawn_amount_btc.toFixed(8)} BTC` : 
-                                  `${((tx.withdrawn_amount_eur || calculateCurrentBalance(tx)) / (bitcoinPrice || 85000)).toFixed(8)} BTC`
-                                }
+                                {tx.withdrawn_amount_btc ?
+                          `${tx.withdrawn_amount_btc.toFixed(8)} BTC` :
+                          `${((tx.withdrawn_amount_eur || calculateCurrentBalance(tx)) / (bitcoinPrice || 85000)).toFixed(8)} BTC`
+                          }
                               </span>
                             </div>
                             <div className="flex justify-between border-t pt-2">
                               <span className="text-gray-600">Eingezahlt am:</span>
                               <span className="font-medium">
                                 {new Date(tx.timestamp).toLocaleDateString("de-DE", {
-                                  day: "2-digit",
-                                  month: "short",
-                                  year: "numeric"
-                                })}
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric"
+                          })}
                               </span>
                             </div>
                             <div className="border-t pt-2 mt-2">
@@ -864,11 +864,11 @@ export default function Dashboard() {
                             </div>
                           </div>
                         </div>
-                      ))}
+                  )}
                     </div>
                   </CardContent>
                 </Card>
-              )}
+            }
             </div>
           }
         </div>
