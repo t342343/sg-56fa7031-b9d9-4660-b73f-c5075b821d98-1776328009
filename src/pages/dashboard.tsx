@@ -225,6 +225,27 @@ export default function Dashboard() {
     }, 0);
   };
 
+  const getNextProfitCountdown = (timestamp: string) => {
+    if (!serverTime) return "...";
+
+    const now = serverTime;
+    const startDate = new Date(timestamp);
+    
+    // Berechne nächste volle Stunde seit Transaktionsstart
+    const timeDiff = now.getTime() - startDate.getTime();
+    const hoursPassed = Math.floor(timeDiff / (1000 * 60 * 60));
+    const nextProfitTime = new Date(startDate.getTime() + (hoursPassed + 1) * 60 * 60 * 1000);
+    
+    const remainingMs = nextProfitTime.getTime() - now.getTime();
+    
+    if (remainingMs <= 0) return "Berechnung läuft...";
+    
+    const minutes = Math.floor(remainingMs / (1000 * 60));
+    const seconds = Math.floor((remainingMs % (1000 * 60)) / 1000);
+    
+    return `${minutes}m ${seconds}s`;
+  };
+
   const getCountdownProgress = (timestamp: string, expiresAt: string) => {
     if (!serverTime) return 0;
 
@@ -418,9 +439,15 @@ export default function Dashboard() {
                                   {currentBalance.toFixed(2)} €
                                 </div>
                                 {profit > 0 && !isExpired && (
-                                  <div className="text-xs text-green-600 font-medium">
-                                    +{profit.toFixed(2)} € Gewinn
-                                  </div>
+                                  <>
+                                    <div className="text-xs text-green-600 font-medium">
+                                      +{profit.toFixed(2)} € Gewinn
+                                    </div>
+                                    <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                                      <Clock className="w-3 h-3" />
+                                      Nächster Gewinn in: {getNextProfitCountdown(tx.timestamp)}
+                                    </div>
+                                  </>
                                 )}
                               </div>
                             </div>
