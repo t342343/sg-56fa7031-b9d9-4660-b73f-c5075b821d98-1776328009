@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageCircle, Send, Clock } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 export default function AdminPage() {
   const [profiles, setProfiles] = useState<any[]>([]);
@@ -172,6 +173,65 @@ export default function AdminPage() {
       loadData();
     } catch (error) {
       toast({ title: "Fehler", description: "Wallet konnte nicht entfernt werden", variant: "destructive" });
+    }
+  };
+
+  const handleApproveWithdrawal = async (transactionId: string) => {
+    try {
+      // Hole aktuelle Transaktion
+      const { data: transaction, error: fetchError } = await supabase
+        .from("transactions")
+        .select("*")
+        .eq("id", transactionId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Berechne finalen Auszahlungsbetrag mit Rendite
+      const eingezahlt = transaction.amount_eur;
+      const timestamp = new Date(transaction.timestamp).getTime();
+      const now = Date.now();
+      const timeDiffMs = now - timestamp;
+      const hoursPassed = Math.max(0, Math.floor(timeDiffMs / (1000 * 60 * 60)));
+      
+      // 1% Start-Bonus + 0.5% pro Stunde
+      const startBonus = eingezahlt * 1.01;
+      const wachstumFaktor = Math.pow(1.005, hoursPassed);
+      const finalAmountEur = startBonus * wachstumFaktor;
+
+      // Hole aktuellen Bitcoin-Kurs
+      const btcPriceResponse = await fetch("/api/bitcoin-price");
+      const btcPriceData = await btcPriceResponse.json();
+      const currentBtcPrice = btcPriceData.price;
+      
+      // Berechne Bitcoin-Betrag
+      const finalAmountBtc = finalAmountEur / currentBtcPrice;
+
+      // Aktualisiere Transaktion mit finalen Beträgen
+      const { error } = await supabase
+        .from("transactions")
+        .update({ 
+          status: "withdrawn",
+          withdrawn_amount_eur: finalAmountEur,
+          withdrawn_amount_btc: finalAmountBtc
+        })
+        .eq("id", transactionId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Auszahlung genehmigt",
+        description: `${finalAmountEur.toFixed(2)} € (${finalAmountBtc.toFixed(8)} BTC) wurden zur Auszahlung freigegeben.`
+      });
+
+      loadWithdrawalRequests();
+    } catch (error) {
+      console.error("Error approving withdrawal:", error);
+      toast({
+        title: "Fehler",
+        description: "Auszahlung konnte nicht genehmigt werden.",
+        variant: "destructive"
+      });
     }
   };
 

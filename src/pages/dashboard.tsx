@@ -732,10 +732,13 @@ export default function Dashboard() {
                             </div>
                             <div className="text-right">
                               <div className="text-2xl font-bold text-green-700">
-                                {calculateCurrentBalance(tx).toFixed(2)} €
+                                {tx.withdrawn_amount_eur?.toFixed(2) || calculateCurrentBalance(tx).toFixed(2)} €
                               </div>
-                              <div className="text-sm text-gray-600">
-                                Gewinn: +{(calculateCurrentBalance(tx) - tx.amount_eur).toFixed(2)} €
+                              <div className="text-sm text-green-600 font-medium">
+                                {tx.withdrawn_amount_btc?.toFixed(8) || "0.00000000"} BTC
+                              </div>
+                              <div className="text-sm text-gray-600 mt-1">
+                                Gewinn: +{((tx.withdrawn_amount_eur || calculateCurrentBalance(tx)) - tx.amount_eur).toFixed(2)} €
                               </div>
                             </div>
                           </div>
@@ -746,6 +749,18 @@ export default function Dashboard() {
                               <span className="font-medium">{tx.amount_eur.toFixed(2)} €</span>
                             </div>
                             <div className="flex justify-between">
+                              <span className="text-gray-600">Ausgezahlter Betrag:</span>
+                              <span className="font-bold text-green-700">
+                                {tx.withdrawn_amount_eur?.toFixed(2) || calculateCurrentBalance(tx).toFixed(2)} €
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">In Bitcoin:</span>
+                              <span className="font-mono text-sm font-medium">
+                                {tx.withdrawn_amount_btc?.toFixed(8) || "0.00000000"} BTC
+                              </span>
+                            </div>
+                            <div className="flex justify-between border-t pt-2">
                               <span className="text-gray-600">Eingezahlt am:</span>
                               <span className="font-medium">
                                 {new Date(tx.timestamp).toLocaleDateString("de-DE", {

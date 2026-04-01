@@ -156,6 +156,8 @@ export type Database = {
           timestamp: string
           txid: string
           wallet_id: string
+          withdrawn_amount_btc: number | null
+          withdrawn_amount_eur: number | null
         }
         Insert: {
           amount_btc: number
@@ -170,6 +172,8 @@ export type Database = {
           timestamp: string
           txid: string
           wallet_id: string
+          withdrawn_amount_btc?: number | null
+          withdrawn_amount_eur?: number | null
         }
         Update: {
           amount_btc?: number
@@ -184,6 +188,8 @@ export type Database = {
           timestamp?: string
           txid?: string
           wallet_id?: string
+          withdrawn_amount_btc?: number | null
+          withdrawn_amount_eur?: number | null
         }
         Relationships: [
           {
