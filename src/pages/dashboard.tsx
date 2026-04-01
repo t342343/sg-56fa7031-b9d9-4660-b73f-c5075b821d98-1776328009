@@ -89,13 +89,14 @@ export default function Dashboard() {
     setWallet(w);
 
     if (w) {
+      // Prüfe auf neue Transaktionen via API
       const newCount = await transactionService.checkNewTransactions(w.wallet_address, w.id);
       if (newCount > 0) {
         toast({ title: "Neue Transaktionen", description: `${newCount} neue Zahlungen gefunden.` });
       }
 
-      // WICHTIG: Nur Transaktionen zur AKTUELLEN Wallet-Adresse laden
-      const txs = await transactionService.getTransactionsByWalletAddress(w.wallet_address);
+      // WICHTIG: Nur aktive Transaktionen zur AKTUELLEN Wallet-Adresse laden
+      const txs = await transactionService.getActiveTransactionsByWallet(w.id);
       setTransactions(txs);
     }
     setLoading(false);
