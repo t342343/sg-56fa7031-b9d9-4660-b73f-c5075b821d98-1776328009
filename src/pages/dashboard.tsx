@@ -436,7 +436,19 @@ export default function Dashboard() {
 
                     return (
                       <Card key={tx.id} className={tx.status === "withdrawal_pending" ? "opacity-50" : ""}>
-                        
+                        <CardContent className="p-6">
+                            {tx.status === "withdrawal_pending" && (
+                              <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                <div className="flex items-center gap-2 text-amber-800">
+                                  <Clock className="w-5 h-5" />
+                                  <span className="font-semibold">⏳ Ihre Auszahlung erfolgt in Kürze</span>
+                                </div>
+                                <p className="text-sm text-amber-700 mt-1">
+                                  Der Administrator wird Ihre Auszahlungsanfrage in Kürze bearbeiten.
+                                </p>
+                              </div>
+                            )}
+
                             <div className="flex items-start justify-between mb-3">
                               <div className="flex items-center gap-2">
                                 <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
@@ -528,7 +540,7 @@ export default function Dashboard() {
                           <div className="text-sm text-red-600 font-medium">Abgelaufen</div>
                           }
 
-                              {isExpired &&
+                              {isExpired && tx.status !== "withdrawal_pending" &&
                           <div className="flex gap-2">
                                   <Button
                               size="sm"
@@ -581,6 +593,7 @@ export default function Dashboard() {
                                 </div>
                               </div>
                         }
+                          </CardContent>
                           </Card>);
 
                   })}
