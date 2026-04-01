@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
-import { ArrowDownLeft, Copy, Check, Clock, MessageCircle, Send, TrendingUp, Wallet } from "lucide-react";
+import { ArrowDownLeft, Copy, Check, Clock, MessageCircle, Send, TrendingUp, Wallet, Bitcoin, ArrowDownRight } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -33,6 +33,8 @@ export default function Dashboard() {
   const [serverTime, setServerTime] = useState<Date | null>(null);
   const { toast } = useToast();
   const router = useRouter();
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [countdown, setCountdown] = useState<string>("01:00:00");
 
   // Hole Server-Zeit beim Laden
   useEffect(() => {
@@ -57,10 +59,35 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadDashboard();
-    loadChat();
+
+    // Auto-refresh alle 30 Sekunden
     const interval = setInterval(loadDashboard, 30000);
-    return () => clearInterval(interval);
-  }, []);
+
+    // Countdown Update jede Sekunde
+    const countdownInterval = setInterval(() => {
+      if (transactions.length > 0) {
+        const latestTx = transactions[0];
+        const txTime = new Date(latestTx.timestamp).getTime();
+        const oneHourLater = txTime + (60 * 60 * 1000);
+        const now = Date.now();
+        const diff = oneHourLater - now;
+
+        if (diff <= 0) {
+          setCountdown("00:00:00");
+        } else {
+          const hours = Math.floor(diff / (1000 * 60 * 60));
+          const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+          setCountdown(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+        }
+      }
+    }, 1000);
+
+    return () => {
+      clearInterval(interval);
+      clearInterval(countdownInterval);
+    };
+  }, [transactions]);
 
   useEffect(() => {
     let channel: any;
@@ -266,57 +293,36 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card className="relative overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-background">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Gesamt-Guthaben
-                  </CardTitle>
-                  <Wallet className="h-4 w-4 text-primary" />
-                </div>
+          {/* Stats */}
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Gesamtgewinn</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-primary">
-                  {calculateTotalBalance().toLocaleString("de-DE", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                  })} €
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Aus {transactions.length} {transactions.length === 1 ? "Position" : "Positionen"}
-                </p>
+                <div className="text-2xl font-bold">{calculateTotalProfit().toFixed(2)} €</div>
               </CardContent>
-              <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-primary/5 blur-2xl" />
             </Card>
 
-            <Card className="relative overflow-hidden border-green-500/20 bg-gradient-to-br from-green-500/5 to-background">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Gesamt-Gewinn
-                  </CardTitle>
-                  <TrendingUp className="h-4 w-4 text-green-500" />
-                </div>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Nächster Gewinn in</CardTitle>
+                <Clock className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className={cn(
-                  "text-3xl font-bold",
-                  calculateTotalProfit() >= 0 ? "text-green-500" : "text-red-500"
-                )}>
-                  {calculateTotalProfit() >= 0 ? "+" : ""}
-                  {calculateTotalProfit().toLocaleString("de-DE", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                  })} €
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {transactions.length > 0 
-                    ? ((calculateTotalProfit() / transactions.reduce((sum, tx) => sum + tx.amount_eur, 0)) * 100).toFixed(2) 
-                    : "0.00"}% Rendite
-                </p>
+                <div className="text-2xl font-bold">{countdown}</div>
               </CardContent>
-              <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-green-500/5 blur-2xl" />
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Verfügbar für Auszahlung</CardTitle>
+                <ArrowDownRight className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{calculateTotalProfit().toFixed(2)} €</div>
+              </CardContent>
             </Card>
           </div>
 
