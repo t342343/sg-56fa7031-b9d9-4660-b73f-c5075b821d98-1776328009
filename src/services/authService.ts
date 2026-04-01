@@ -114,6 +114,27 @@ export const authService = {
   },
 
   /**
+   * Update user password
+   */
+  async updatePassword(newPassword: string) {
+    try {
+      const { data, error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        console.error("UpdatePassword error:", error);
+        return { error };
+      }
+
+      return { error: null, data };
+    } catch (err) {
+      console.error("UpdatePassword exception:", err);
+      return { error: err as any };
+    }
+  },
+
+  /**
    * OAuth Sign In
    */
   async signInWithOAuth(provider: "google" | "github") {

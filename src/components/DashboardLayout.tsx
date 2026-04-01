@@ -3,8 +3,9 @@ import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
 import { authService } from "@/services/authService";
 import { profileService } from "@/services/profileService";
-import { LogOut, LayoutDashboard, Wallet } from "lucide-react";
+import { LogOut, LayoutDashboard, Wallet, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -81,6 +82,12 @@ export function DashboardLayout({ children, requireAdmin = false }: DashboardLay
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm text-muted-foreground">Hallo, {userName}</span>
+              <Link href="/profile">
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <User className="w-4 h-4" />
+                  Profil
+                </Button>
+              </Link>
               <Button variant="outline" size="sm" onClick={handleLogout}>
                 <LogOut className="w-4 h-4 mr-2" />
                 Abmelden
