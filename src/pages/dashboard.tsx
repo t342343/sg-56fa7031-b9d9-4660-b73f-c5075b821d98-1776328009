@@ -160,11 +160,12 @@ export default function UserDashboard() {
   };
 
   const calculateCurrentBalance = (transaction: any) => {
-    const now = currentTime;
+    // WICHTIG: Verwende UTC-Zeit für konsistente Berechnungen
+    const now = new Date();
     const startDate = new Date(transaction.timestamp);
     const expiresDate = new Date(transaction.expires_at);
     
-    // Berechne vergangene Stunden seit Einzahlung
+    // Berechne vergangene Stunden seit Einzahlung (in UTC)
     const timeDiff = now.getTime() - startDate.getTime();
     const hoursPassed = Math.floor(timeDiff / (1000 * 60 * 60));
     
@@ -172,6 +173,8 @@ export default function UserDashboard() {
     console.log("Balance Calculation Debug:", {
       eingezahlt: transaction.amount_eur,
       timestamp: transaction.timestamp,
+      nowUTC: now.toISOString(),
+      timeDiffMs: timeDiff,
       hoursPassed,
       startBonus: transaction.amount_eur * 1.01,
       wachstumFaktor: Math.pow(1.0005, hoursPassed),
@@ -179,7 +182,7 @@ export default function UserDashboard() {
     });
     
     // Nur berechnen wenn Countdown noch läuft (Status active)
-    if (transaction.status !== "active" || now > expiresDate) {
+    if (transaction.status !== "active" || now.getTime() > expiresDate.getTime()) {
       // Bei Ablauf: Berechne den finalen Betrag basierend auf gesamter Laufzeit
       const totalHours = Math.floor((expiresDate.getTime() - startDate.getTime()) / (1000 * 60 * 60));
       // +1% Startbonus × (1.0005 ^ Stunden) = 0.05% pro Stunde
@@ -195,12 +198,12 @@ export default function UserDashboard() {
   };
 
   const getNextGrowthTime = () => {
-    const now = currentTime;
+    const now = new Date();
     
-    // Berechne wann die nächste Stunde beginnt
+    // Berechne wann die nächste Stunde beginnt (in UTC)
     const nextGrowth = new Date(now);
-    nextGrowth.setMinutes(0, 0, 0);
-    nextGrowth.setHours(nextGrowth.getHours() + 1);
+    nextGrowth.setUTCMinutes(0, 0, 0);
+    nextGrowth.setUTCHours(nextGrowth.getUTCHours() + 1);
     
     const timeUntilGrowth = nextGrowth.getTime() - now.getTime();
     const minutesLeft = Math.floor(timeUntilGrowth / (1000 * 60));
@@ -210,7 +213,7 @@ export default function UserDashboard() {
   };
 
   const getCountdownProgress = (timestamp: string, expiresAt: string) => {
-    const now = currentTime;
+    const now = new Date();
     const startDate = new Date(timestamp);
     const expiresDate = new Date(expiresAt);
     
@@ -222,7 +225,7 @@ export default function UserDashboard() {
   };
 
   const getTimeRemaining = (expiresAt: string) => {
-    const now = currentTime.getTime();
+    const now = new Date().getTime();
     const expiry = new Date(expiresAt).getTime();
     const diff = expiry - now;
 
