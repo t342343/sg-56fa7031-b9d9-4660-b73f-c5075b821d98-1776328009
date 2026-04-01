@@ -133,37 +133,22 @@ export default function Dashboard() {
   };
 
   const handleWithdraw = async (txId: string) => {
-    if (!withdrawalAddress.trim()) {
-      toast({ title: "Fehler", description: "Bitte geben Sie eine Auszahlungsadresse ein.", variant: "destructive" });
+    if (!wallet?.wallet_address) {
+      toast({ title: "Fehler", description: "Keine Wallet-Adresse gefunden.", variant: "destructive" });
       return;
     }
 
-    const profile = await profileService.getCurrentProfile();
-    if (!profile) return;
-
-    const tx = transactions.find((t) => t.id === txId);
+    const tx = transactions.find(t => t.id === txId);
     if (!tx) return;
 
     try {
-      await withdrawalService.createWithdrawalRequest(
-        txId,
-        profile.id,
-        withdrawalAddress,
-        tx.amount_btc,
-        tx.amount_eur
-      );
-
-      await chatService.sendMessage(
-        profile.id,
-        `Auszahlungsanfrage für ${tx.amount_btc} BTC (${tx.amount_eur.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}) an ${withdrawalAddress}`
-      );
-
-      await transactionService.updateTransactionStatus(txId, "withdrawal_requested");
-
-      toast({ title: "Auszahlung angefragt", description: "Ihre Auszahlungsanfrage wurde an den Admin gesendet." });
-      setSelectedTx(null);
-      setWithdrawalAddress("");
-      loadDashboard();
+      const success = await transactionService.requestWithdrawal(txId, wallet.wallet_address, tx.btc_amount);
+      if (success) {
+        toast({ title: "Auszahlungsanfrage gesendet", description: "Die Auszahlung erfolgt in Kürze." });
+        loadDashboard();
+      } else {
+        toast({ title: "Fehler", description: "Auszahlungsanfrage fehlgeschlagen.", variant: "destructive" });
+      }
     } catch (error) {
       toast({ title: "Fehler", description: "Auszahlungsanfrage fehlgeschlagen.", variant: "destructive" });
     }
@@ -242,17 +227,29 @@ export default function Dashboard() {
   };
 
   const calculateTotalBalance = () => {
-    return transactions.reduce((total, tx) => {
-      return total + calculateCurrentBalance(tx);
-    }, 0);
+    // Berechne Gesamt-Guthaben und Gewinn (nur active/expired Transaktionen)
+    const totalBalance = transactions
+      .filter(tx => tx.status === "active" || tx.status === "expired")
+      .reduce((sum, tx) => sum + tx.btc_amount, 0);
+
+    const totalProfit = transactions
+      .filter(tx => tx.status === "active" || tx.status === "expired")
+      .reduce((sum, tx) => sum + (tx.profit_btc || 0), 0);
+
+    return totalBalance;
   };
 
   const calculateTotalProfit = () => {
-    return transactions.reduce((total, tx) => {
-      const currentBalance = calculateCurrentBalance(tx);
-      const profit = currentBalance - tx.amount_eur;
-      return total + profit;
-    }, 0);
+    // Berechne Gesamt-Guthaben und Gewinn (nur active/expired Transaktionen)
+    const totalBalance = transactions
+      .filter(tx => tx.status === "active" || tx.status === "expired")
+      .reduce((sum, tx) => sum + tx.btc_amount, 0);
+
+    const totalProfit = transactions
+      .filter(tx => tx.status === "active" || tx.status === "expired")
+      .reduce((sum, tx) => sum + (tx.profit_btc || 0), 0);
+
+    return totalProfit;
   };
 
   const getNextProfitCountdown = (timestamp: string) => {
@@ -449,9 +446,7 @@ export default function Dashboard() {
                     const profit = currentBalance - tx.amount_eur;
 
                     return (
-                      <div
-                        key={tx.id}
-                        className={`border rounded-lg p-4 ${isExpired ? "opacity-50 bg-muted" : ""}`}>
+                      <Card key={tx.id} className={tx.status === "withdrawal_pending" ? "opacity-50" : ""}>
                         
                             <div className="flex items-start justify-between mb-3">
                               <div className="flex items-center gap-2">
@@ -592,7 +587,7 @@ export default function Dashboard() {
                                 </div>
                               </div>
                         }
-                          </div>);
+                          </Card>);
 
                   })}
                     </div>

@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import { chatService } from "./chatService";
 
 type Transaction = Database["public"]["Tables"]["transactions"]["Row"];
 type TransactionInsert = Database["public"]["Tables"]["transactions"]["Insert"];
@@ -289,5 +290,55 @@ export const transactionService = {
 
     if (error) throw error;
     return data;
+  },
+
+  async requestWithdrawal(transactionId: string, walletAddress: string, amount: number): Promise<boolean> {
+    try {
+      // Hole User-ID der Transaktion
+      const { data: tx, error: txError } = await supabase
+        .from("transactions")
+        .select("user_id")
+        .eq("id", transactionId)
+        .single();
+
+      if (txError || !tx) {
+        console.error("Error fetching transaction:", txError);
+        return false;
+      }
+
+      // Sende Chat-Nachricht an Admin
+      const message = `🏦 Auszahlungsanfrage:\n\nWallet: ${walletAddress}\nBetrag: ${amount.toFixed(8)} BTC`;
+      await chatService.sendMessage(tx.user_id, message);
+
+      // Setze Status auf withdrawal_pending
+      const { error } = await supabase
+        .from("transactions")
+        .update({ status: "withdrawal_pending" })
+        .eq("id", transactionId);
+
+      if (error) {
+        console.error("Error updating transaction status:", error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error in requestWithdrawal:", error);
+      return false;
+    }
+  },
+
+  async approveWithdrawal(transactionId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from("transactions")
+      .update({ status: "withdrawn" })
+      .eq("id", transactionId);
+
+    if (error) {
+      console.error("Error approving withdrawal:", error);
+      return false;
+    }
+
+    return true;
   }
 };
