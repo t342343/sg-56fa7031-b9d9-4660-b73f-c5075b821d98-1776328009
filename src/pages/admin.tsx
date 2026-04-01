@@ -202,7 +202,7 @@ export default function AdminPage() {
 
   const handleSetMaturityDate = async (txId: string) => {
     const days = maturityDays[txId];
-    if (days === undefined || days < 0 || days > 14) {
+    if (days === undefined || days === null || days < 0 || days > 14) {
       toast({ title: "Fehler", description: "Bitte 0-14 Tage eingeben", variant: "destructive" });
       return;
     }
@@ -760,7 +760,7 @@ export default function AdminPage() {
                                 </div>
                                 <Button
                                   onClick={() => handleSetMaturityDate(tx.id)}
-                                  disabled={maturityDays[tx.id] === undefined}
+                                  disabled={maturityDays[tx.id] === undefined || maturityDays[tx.id] === null}
                                   className="w-full"
                                 >
                                   Laufzeit setzen
