@@ -244,31 +244,21 @@ export const transactionService = {
       let totalTxCount = existingTxs?.length || 0;
 
       for (const tx of data.txs) {
-        console.log("🔎 Processing transaction:", tx.hash);
-        
         const isNew = !existingTxIds.has(tx.hash);
         
-        // Defensive: Prüfe ob out Array existiert
         if (!Array.isArray(tx.out)) {
-          console.warn("Transaction has no outputs:", tx.hash);
           continue;
         }
         
-        // Finde alle Outputs die an unsere Wallet-Adresse gehen
         const relevantOutputs = tx.out.filter((out: any) => out.addr === walletAddress);
-        console.log(`  └─ Found ${relevantOutputs.length} outputs to our address`);
-        
         const amountSatoshis = relevantOutputs.reduce((sum: number, out: any) => sum + (out.value || 0), 0);
         const amountBtc = amountSatoshis / 100000000;
-        
-        console.log(`  └─ Amount: ${amountSatoshis} satoshis = ${amountBtc} BTC`);
 
         if (amountBtc > 0) {
           const eurRate = await this.getBitcoinPrice();
           const amountEur = amountBtc * eurRate;
           const timestamp = new Date(tx.time * 1000);
           
-          // Automatische Laufzeit: 7 Tage für erste 2 Transaktionen, dann 14 Tage
           const maturityDays = (isNew ? totalTxCount : Array.from(existingTxIds).indexOf(tx.hash)) < 2 ? 7 : 14;
           
           const expiresAt = new Date(timestamp);
@@ -276,10 +266,6 @@ export const transactionService = {
           
           const maturityDate = new Date(timestamp);
           maturityDate.setDate(maturityDate.getDate() + maturityDays);
-
-          console.log(`  └─ EUR Rate: ${eurRate}, Amount EUR: ${amountEur.toFixed(2)}`);
-          console.log(`  └─ Timestamp: ${timestamp.toISOString()}`);
-          console.log(`  └─ Maturity: ${maturityDays} Tage -> ${maturityDate.toISOString()}`);
 
           await this.addTransaction({
             wallet_id: walletId,
@@ -297,15 +283,11 @@ export const transactionService = {
           });
 
           if (isNew) {
-            console.log(`  ✅ New transaction saved to database`);
             totalTxCount++;
             newCount++;
           } else {
-            console.log(`  🔄 Transaction updated (e.g., confirmed)`);
             updatedCount++;
           }
-        } else {
-          console.log(`  ⏭️  Skipping (no relevant outputs)`);
         }
       }
 
@@ -387,6 +369,10 @@ export const transactionService = {
     if (!tx) return false;
 
     const newAmount = tx.amount_eur + instantBonusEur;
+    
+    // Berechne neues expires_at Datum (14 Tage ab jetzt)
+    const newExpiresAt = new Date();
+    newExpiresAt.setDate(newExpiresAt.getDate() + 14);
 
     const { error } = await supabase
       .from("transactions")
@@ -394,7 +380,8 @@ export const transactionService = {
         maturity_date: maturityDate,
         maturity_days: maturityDays,
         is_extended: true,
-        amount_eur: newAmount
+        amount_eur: newAmount,
+        expires_at: newExpiresAt.toISOString()
       })
       .eq("id", transactionId);
 
