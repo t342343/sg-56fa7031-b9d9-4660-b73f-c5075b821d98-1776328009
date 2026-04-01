@@ -319,16 +319,17 @@ export default function Dashboard() {
   const calculateCurrentBalance = (tx: any) => {
     if (!serverTime) return tx.amount_eur; // Fallback wenn serverTime noch nicht geladen
     
-    const eingezahlt = tx.amount_eur;
+    // WICHTIG: Rechne 1% Sofort-Bonus auf den eingezahlten Betrag
+    const eingezahlt = tx.amount_eur * 1.01;
+    
     const timestamp = new Date(tx.timestamp).getTime();
-    const now = serverTime.getTime(); // Verwende serverTime statt Date.now()
+    const now = serverTime.getTime();
     const timeDiffMs = now - timestamp;
     const hoursPassed = Math.floor(timeDiffMs / (1000 * 60 * 60));
     
     // Verhindere negative Stunden (falls Transaktion in der Zukunft liegt)
     const safeHoursPassed = Math.max(0, hoursPassed);
     
-    // Eingezahlter Betrag enthält bereits 1% Bonus
     // Stündliche Rendite: 0.05% normal, 0.1% verlängert
     const hourlyRate = tx.is_extended ? 0.001 : 0.0005;
     const hourlyGrowth = 1 + hourlyRate;
