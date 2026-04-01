@@ -251,6 +251,40 @@ export default function AdminPage() {
     }
   };
 
+  const handleExtend = async (txId: string) => {
+    const tx = transactions.find(t => t.id === txId);
+    if (!tx) return;
+
+    // Verlängere automatisch auf 14 Tage
+    const newMaturityDate = new Date();
+    newMaturityDate.setDate(newMaturityDate.getDate() + 14);
+
+    // Berechne Sofortbonus (2%)
+    const instantBonus = tx.amount_eur * 0.02;
+
+    const result = await transactionService.extendMaturity(txId, newMaturityDate.toISOString(), 14, instantBonus);
+    if (result) {
+      toast({ title: "Verlängert", description: `Laufzeit um 14 Tage verlängert. Bonus: ${instantBonus.toFixed(2)} € sofort gutgeschrieben` });
+      loadData();
+    } else {
+      toast({ title: "Fehler", description: "Konnte nicht verlängert werden", variant: "destructive" });
+    }
+  };
+
+  // Berechne Gesamtrendite aller aktiven Transaktionen
+  const calculateTotalYield = () => {
+    return activeTransactions.reduce((sum, tx) => {
+      const daysActive = Math.floor((Date.now() - new Date(tx.timestamp).getTime()) / (1000 * 60 * 60 * 24));
+      const dailyYield = tx.amount_eur * 0.01; // 1% pro Tag Standard
+      
+      // Prüfe ob verlängert (maturity_days === 14 und status === "extended")
+      const isExtended = tx.status === "extended";
+      const multiplier = isExtended ? 2 : 1; // 2x Rendite bei Verlängerung
+      
+      return sum + (daysActive * dailyYield * multiplier);
+    }, 0);
+  };
+
   return (
     <>
       <SEO title="Admin-Panel - Finanzportal" />
@@ -778,6 +812,30 @@ export default function AdminPage() {
                                 </Button>
                               </div>
                             </div>
+
+                            {daysUntilMaturity !== null && daysUntilMaturity <= 0 && (
+                              <div className="pt-3 border-t">
+                                <div className="flex gap-2">
+                                  <Button
+                                    onClick={() => handleWithdraw(tx.id)}
+                                    variant="default"
+                                    className="flex-1"
+                                  >
+                                    Auszahlen
+                                  </Button>
+                                  <Button
+                                    onClick={() => handleExtend(tx.id)}
+                                    variant="outline"
+                                    className="flex-1"
+                                  >
+                                    Verlängern
+                                  </Button>
+                                </div>
+                                <p className="text-xs text-green-600 mt-2 text-center">
+                                  (Bonus 2 % sofort Rendite und täglich 2fache Rendite)
+                                </p>
+                              </div>
+                            )}
                           </>
                         );
                       })()}
