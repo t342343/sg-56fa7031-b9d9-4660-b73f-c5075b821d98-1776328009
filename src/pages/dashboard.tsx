@@ -22,7 +22,7 @@ export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [wallet, setWallet] = useState<any>(null);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [withdrawalAddress, setWithdrawalAddress] = useState("");
