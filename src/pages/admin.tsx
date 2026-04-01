@@ -12,17 +12,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageCircle, Send, Clock } from "lucide-react";
+import { MessageCircle, Send, Clock, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminPage() {
-  const [profiles, setProfiles] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [wallets, setWallets] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [pendingTransactions, setPendingTransactions] = useState<any[]>([]);
+  const [completedWithdrawals, setCompletedWithdrawals] = useState<any[]>([]);
+  const [chatMessages, setChatMessages] = useState<any[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState<string>("");
+  const [newMessage, setNewMessage] = useState("");
+  const [bitcoinAddress, setBitcoinAddress] = useState("");
+  const [selectedWalletUserId, setSelectedWalletUserId] = useState("");
   const [walletAddresses, setWalletAddresses] = useState<Record<string, string>>({});
   const [countdownDays, setCountdownDays] = useState<Record<string, number>>({});
   const [chats, setChats] = useState<any[]>([]);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
-  const [pendingTransactions, setPendingTransactions] = useState<any[]>([]);
   const [adminMessages, setAdminMessages] = useState<Record<string, string>>({});
   const [walletPool, setWalletPool] = useState<any[]>([]);
   const [newPoolAddress, setNewPoolAddress] = useState("");
@@ -35,28 +42,17 @@ export default function AdminPage() {
   }, []);
 
   const loadData = async () => {
-    const [p, w, c, wd, pt] = await Promise.all([
-      profileService.getAllProfiles(),
-      walletService.getAllWallets(),
-      chatService.getAllChats(),
-      withdrawalService.getWithdrawalRequests(),
-      transactionService.getPendingWithdrawals()
-    ]);
-    setProfiles(p.filter(u => u.role !== 'admin'));
-    setWallets(w);
+    const usersData = await profileService.getAllUsers();
+    const walletsData = await walletService.getAllWallets();
+    const txData = await transactionService.getAllTransactions();
+    const pendingTx = await transactionService.getPendingWithdrawals();
+    const completedTx = await transactionService.getCompletedWithdrawals();
     
-    const grouped = c.reduce((acc: any, msg: any) => {
-      if (!acc[msg.user_id]) acc[msg.user_id] = [];
-      acc[msg.user_id].push(msg);
-      return acc;
-    }, {});
-    setChats(Object.entries(grouped));
-    setWithdrawals(wd);
-    setPendingTransactions(pt);
-
-    // Lade Wallet-Pool
-    const pool = await walletService.getWalletPool();
-    setWalletPool(pool);
+    setUsers(usersData);
+    setWallets(walletsData);
+    setTransactions(txData);
+    setPendingTransactions(pendingTx);
+    setCompletedWithdrawals(completedTx);
   };
 
   const handleAssignWallet = async (userId: string) => {
@@ -243,10 +239,10 @@ export default function AdminPage() {
           </TabsList>
 
           <TabsContent value="users" className="space-y-4 mt-6">
-            {profiles.length === 0 ? (
+            {users.length === 0 ? (
               <p className="text-muted-foreground">Noch keine Benutzer.</p>
             ) : (
-              profiles.map(profile => {
+              users.map(profile => {
                 const wallet = wallets.find(w => w.user_id === profile.id);
                 return (
                   <Card key={profile.id}>
@@ -341,7 +337,7 @@ export default function AdminPage() {
               ) : (
                 walletPool.map(wallet => {
                   const isAssigned = !!wallet.assigned_to_user_id;
-                  const assignedUser = isAssigned ? profiles.find(p => p.id === wallet.assigned_to_user_id) : null;
+                  const assignedUser = isAssigned ? users.find(p => p.id === wallet.assigned_to_user_id) : null;
                   
                   return (
                     <Card key={wallet.id} className={isAssigned ? "bg-muted/30" : ""}>
@@ -391,7 +387,7 @@ export default function AdminPage() {
               <p className="text-muted-foreground">Keine Chats vorhanden.</p>
             ) : (
               chats.map(([userId, messages]: [string, any[]]) => {
-                const profile = profiles.find(p => p.id === userId);
+                const profile = users.find(p => p.id === userId);
                 return (
                   <Card key={userId}>
                     <CardHeader>
@@ -444,7 +440,7 @@ export default function AdminPage() {
           <TabsContent value="withdrawals" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Auszahlungsanfragen</CardTitle>
+                <CardTitle>Offene Auszahlungsanfragen</CardTitle>
               </CardHeader>
               <CardContent>
                 {pendingTransactions.length === 0 ? (
@@ -504,6 +500,88 @@ export default function AdminPage() {
                             >
                               Ablehnen
                             </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Abgeschlossene Auszahlungen</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {completedWithdrawals.length === 0 ? (
+                  <p className="text-gray-500">Keine abgeschlossenen Auszahlungen</p>
+                ) : (
+                  <div className="space-y-4">
+                    {completedWithdrawals.map((tx) => (
+                      <div key={tx.id} className="border border-green-200 bg-green-50 rounded-lg p-4 space-y-3">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 className="h-5 w-5 text-green-600" />
+                            <span className="font-semibold text-green-800">Ausgezahlt</span>
+                          </div>
+                          <div>
+                            <span className="text-sm text-gray-600">User:</span>
+                            <span className="ml-2 font-medium">{tx.bitcoin_wallets?.profiles?.email || "Unbekannt"}</span>
+                          </div>
+                          <div>
+                            <span className="text-sm text-gray-600">Eingezahlt:</span>
+                            <span className="ml-2 font-medium">{tx.amount_eur.toFixed(2)} €</span>
+                          </div>
+                          <div>
+                            <span className="text-sm text-gray-600">Ausgezahlt:</span>
+                            <span className="ml-2 font-bold text-green-700">
+                              {tx.withdrawn_amount_eur?.toFixed(2) || "N/A"} €
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-sm text-gray-600">In Bitcoin:</span>
+                            <span className="ml-2 font-mono text-sm">
+                              {tx.withdrawn_amount_btc?.toFixed(8) || "N/A"} BTC
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-sm text-gray-600">Gewinn:</span>
+                            <span className="ml-2 font-bold text-green-600">
+                              +{((tx.withdrawn_amount_eur || 0) - tx.amount_eur).toFixed(2)} €
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-sm text-gray-600">Transaktion:</span>
+                            <span className="ml-2 font-mono text-xs">{tx.txid?.substring(0, 16)}...</span>
+                          </div>
+                          <div>
+                            <span className="text-sm text-gray-600">Eingezahlt am:</span>
+                            <span className="ml-2 text-sm">
+                              {new Date(tx.timestamp).toLocaleDateString("de-DE", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric"
+                              })}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-sm text-gray-600">Ausgezahlt am:</span>
+                            <span className="ml-2 text-sm">
+                              {new Date(tx.created_at).toLocaleDateString("de-DE", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit"
+                              })}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-sm text-gray-600">Auszahlung an:</span>
+                            <div className="mt-1 font-mono text-xs bg-white p-2 rounded break-all border">
+                              {tx.withdrawal_address || "Nicht verfügbar"}
+                            </div>
                           </div>
                         </div>
                       </div>

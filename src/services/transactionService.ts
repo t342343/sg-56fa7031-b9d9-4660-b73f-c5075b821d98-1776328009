@@ -360,15 +360,48 @@ export const transactionService = {
     return true;
   },
 
-  async getPendingWithdrawals(): Promise<Transaction[]> {
+  async getPendingWithdrawals() {
     const { data, error } = await supabase
       .from("transactions")
-      .select("*")
+      .select(`
+        *,
+        bitcoin_wallets (
+          address,
+          profiles (
+            email,
+            full_name
+          )
+        )
+      `)
       .eq("status", "withdrawal_pending")
-      .order("timestamp", { ascending: false });
+      .order("created_at", { ascending: false });
 
     if (error) {
       console.error("Error fetching pending withdrawals:", error);
+      return [];
+    }
+
+    return data || [];
+  },
+
+  async getCompletedWithdrawals() {
+    const { data, error } = await supabase
+      .from("transactions")
+      .select(`
+        *,
+        bitcoin_wallets (
+          address,
+          profiles (
+            email,
+            full_name
+          )
+        )
+      `)
+      .eq("status", "withdrawn")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching completed withdrawals:", error);
       return [];
     }
 
