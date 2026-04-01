@@ -229,11 +229,16 @@ export const transactionService = {
       const response = await fetch(`/api/bitcoin-transactions?address=${walletAddress}`);
       const apiTxs = await response.json();
 
+      console.log("🔍 API Response:", apiTxs);
+      console.log("🔍 Is Array?", Array.isArray(apiTxs));
+
       // Validiere dass apiTxs ein Array ist
       if (!Array.isArray(apiTxs)) {
-        console.error("API response is not an array:", apiTxs);
+        console.error("❌ API response is not an array:", apiTxs);
         return 0;
       }
+
+      console.log("✅ API returned", apiTxs.length, "transactions");
 
       let newCount = 0;
 
