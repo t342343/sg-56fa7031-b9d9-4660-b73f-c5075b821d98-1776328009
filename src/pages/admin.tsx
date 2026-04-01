@@ -23,6 +23,7 @@ export default function AdminPage() {
   const [completedWithdrawals, setCompletedWithdrawals] = useState<any[]>([]);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string>("");
+  const [selectedTransactionId, setSelectedTransactionId] = useState<string>("");
   const [newMessage, setNewMessage] = useState("");
   const [bitcoinAddress, setBitcoinAddress] = useState("");
   const [selectedWalletUserId, setSelectedWalletUserId] = useState("");
@@ -33,7 +34,7 @@ export default function AdminPage() {
   const [adminMessages, setAdminMessages] = useState<Record<string, string>>({});
   const [walletPool, setWalletPool] = useState<any[]>([]);
   const [newPoolAddress, setNewPoolAddress] = useState("");
-  const [maturityDates, setMaturityDates] = useState<{ [key: string]: string }>({});
+  const [maturityDays, setMaturityDays] = useState<{ [key: string]: number }>({});
   const { toast } = useToast();
 
   useEffect(() => {
@@ -200,17 +201,25 @@ export default function AdminPage() {
   };
 
   const handleSetMaturityDate = async (txId: string) => {
-    const dateValue = maturityDates[txId];
-    if (!dateValue) {
-      toast({ title: "Fehler", description: "Bitte Datum eingeben", variant: "destructive" });
+    const days = maturityDays[txId];
+    if (days === undefined || days < 0 || days > 14) {
+      toast({ title: "Fehler", description: "Bitte 0-14 Tage eingeben", variant: "destructive" });
       return;
     }
 
-    const result = await transactionService.updateMaturityDate(txId, dateValue);
+    // Berechne maturity_date aus Tagen
+    const tx = transactions.find(t => t.id === txId);
+    if (!tx) return;
+
+    const transactionDate = new Date(tx.timestamp);
+    const maturityDate = new Date(transactionDate);
+    maturityDate.setDate(maturityDate.getDate() + days);
+
+    const result = await transactionService.updateMaturityDate(txId, maturityDate.toISOString());
     if (result) {
-      toast({ title: "Laufzeit gesetzt", description: "Fälligkeitsdatum wurde aktualisiert" });
+      toast({ title: "Laufzeit gesetzt", description: `Fälligkeit auf ${days} Tage gesetzt` });
       loadData();
-      setMaturityDates(prev => ({ ...prev, [txId]: "" }));
+      setMaturityDays(prev => ({ ...prev, [txId]: 0 }));
     } else {
       toast({ title: "Fehler", description: "Konnte nicht aktualisiert werden", variant: "destructive" });
     }
@@ -612,63 +621,155 @@ export default function AdminPage() {
           </TabsContent>
 
           <TabsContent value="transactions">
-            <Card>
-              <CardHeader>
-                <CardTitle>Alle Transaktionen</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {transactions.map((tx) => (
-                    <div key={tx.id} className="border rounded p-3">
-                      <div className="grid grid-cols-2 gap-3 text-sm">
-                        <div>
-                          <span className="text-gray-600">TXID:</span>
-                          <div className="font-mono text-xs break-all">{tx.txid}</div>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">Betrag:</span>
-                          <div className="font-semibold">{tx.amount_eur} €</div>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">Status:</span>
-                          <div className="font-medium">{tx.status}</div>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">Zeitstempel:</span>
-                          <div>{new Date(tx.timestamp).toLocaleString("de-DE")}</div>
-                        </div>
-                        {tx.maturity_date && (
-                          <div className="col-span-2">
-                            <span className="text-gray-600">Fälligkeit:</span>
-                            <div className="font-semibold text-green-600">
-                              {new Date(tx.maturity_date).toLocaleString("de-DE")}
+            <div className="grid grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Alle Transaktionen ({transactions.length})</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                    {transactions.map((tx) => (
+                      <div
+                        key={tx.id}
+                        onClick={() => setSelectedTransactionId(tx.id)}
+                        className={`p-3 border rounded cursor-pointer transition-colors ${
+                          selectedTransactionId === tx.id
+                            ? "bg-blue-50 border-blue-500"
+                            : "hover:bg-gray-50"
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="font-mono text-xs text-gray-600 mb-1">
+                              {tx.txid.substring(0, 20)}...
+                            </div>
+                            <div className="font-semibold text-lg">{tx.amount_eur.toFixed(2)} €</div>
+                            <div className="text-sm text-gray-600">
+                              {new Date(tx.timestamp).toLocaleDateString("de-DE")}
                             </div>
                           </div>
-                        )}
-                        <div className="col-span-2 pt-2 border-t">
-                          <div className="text-gray-600 mb-2 font-medium">Restlaufzeit festlegen:</div>
-                          <div className="flex gap-2">
-                            <input
-                              type="datetime-local"
-                              value={maturityDates[tx.id] || ""}
-                              onChange={(e) => setMaturityDates(prev => ({ ...prev, [tx.id]: e.target.value }))}
-                              className="flex-1 px-3 py-2 border rounded text-sm"
-                            />
-                            <Button
-                              size="sm"
-                              onClick={() => handleSetMaturityDate(tx.id)}
-                              disabled={!maturityDates[tx.id]}
-                            >
-                              Setzen
-                            </Button>
+                          <div className="text-right">
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                              tx.status === "active" ? "bg-green-100 text-green-800" :
+                              tx.status === "withdrawal_pending" ? "bg-yellow-100 text-yellow-800" :
+                              "bg-gray-100 text-gray-800"
+                            }`}>
+                              {tx.status}
+                            </span>
                           </div>
                         </div>
                       </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>
+                    {selectedTransactionId ? "Transaktionsdetails" : "Transaktion auswählen"}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {selectedTransactionId ? (
+                    <div className="space-y-4">
+                      {(() => {
+                        const tx = transactions.find(t => t.id === selectedTransactionId);
+                        if (!tx) return null;
+
+                        const transactionDate = new Date(tx.timestamp);
+                        const now = new Date();
+                        const daysPassed = Math.floor((now.getTime() - transactionDate.getTime()) / (1000 * 60 * 60 * 24));
+                        const maturityDate = tx.maturity_date ? new Date(tx.maturity_date) : null;
+                        const daysUntilMaturity = maturityDate 
+                          ? Math.ceil((maturityDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+                          : null;
+
+                        return (
+                          <>
+                            <div className="space-y-3 text-sm">
+                              <div>
+                                <span className="text-gray-600">TXID:</span>
+                                <div className="font-mono text-xs break-all mt-1">{tx.txid}</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Betrag:</span>
+                                <div className="font-semibold text-lg">{tx.amount_eur.toFixed(2)} €</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Status:</span>
+                                <div className="font-medium capitalize">{tx.status}</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Eingezahlt am:</span>
+                                <div>{transactionDate.toLocaleString("de-DE")}</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Tage seit Einzahlung:</span>
+                                <div className="font-semibold">{daysPassed} Tage</div>
+                              </div>
+                              {maturityDate && (
+                                <>
+                                  <div>
+                                    <span className="text-gray-600">Fälligkeitsdatum:</span>
+                                    <div className="font-semibold text-green-600">
+                                      {maturityDate.toLocaleString("de-DE")}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-600">Verbleibende Tage:</span>
+                                    <div className={`font-semibold ${daysUntilMaturity && daysUntilMaturity > 0 ? "text-green-600" : "text-red-600"}`}>
+                                      {daysUntilMaturity !== null ? (daysUntilMaturity > 0 ? `${daysUntilMaturity} Tage` : "Fällig") : "-"}
+                                    </div>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+
+                            <div className="border-t pt-4 mt-4">
+                              <div className="text-sm font-medium mb-3">Restlaufzeit festlegen</div>
+                              <div className="space-y-3">
+                                <div>
+                                  <label className="text-xs text-gray-600 block mb-1">
+                                    Laufzeit in Tagen (0-14)
+                                  </label>
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    max="14"
+                                    value={maturityDays[tx.id] || ""}
+                                    onChange={(e) => setMaturityDays(prev => ({ 
+                                      ...prev, 
+                                      [tx.id]: parseInt(e.target.value) || 0 
+                                    }))}
+                                    className="w-full px-3 py-2 border rounded"
+                                    placeholder="Tage eingeben"
+                                  />
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    0 = sofort fällig, 14 = maximale Laufzeit
+                                  </p>
+                                </div>
+                                <Button
+                                  onClick={() => handleSetMaturityDate(tx.id)}
+                                  disabled={maturityDays[tx.id] === undefined}
+                                  className="w-full"
+                                >
+                                  Laufzeit setzen
+                                </Button>
+                              </div>
+                            </div>
+                          </>
+                        );
+                      })()}
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                  ) : (
+                    <p className="text-gray-500 text-sm text-center py-8">
+                      Wähle eine Transaktion aus der Liste, um Details anzuzeigen
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </DashboardLayout>
