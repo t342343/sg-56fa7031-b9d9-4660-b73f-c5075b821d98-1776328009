@@ -31,8 +31,6 @@ export default function Dashboard() {
   const [copied, setCopied] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [serverTime, setServerTime] = useState<Date | null>(null);
-  const [withdrawAmount, setWithdrawAmount] = useState("");
-  const [transactionCountdowns, setTransactionCountdowns] = useState<Record<string, string>>({});
   const { toast } = useToast();
   const router = useRouter();
 
@@ -59,39 +57,10 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadDashboard();
-
+    loadChat();
     const interval = setInterval(loadDashboard, 30000);
-
-    // Countdown Update jede Sekunde
-    const countdownInterval = setInterval(() => {
-      if (transactions.length > 0) {
-        const newCountdowns: Record<string, string> = {};
-        
-        transactions.forEach((tx) => {
-          const txTime = new Date(tx.timestamp).getTime();
-          const oneHourLater = txTime + (60 * 60 * 1000);
-          const now = Date.now();
-          const diff = oneHourLater - now;
-
-          if (diff <= 0) {
-            newCountdowns[tx.id] = "00:00:00";
-          } else {
-            const hours = Math.floor(diff / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-            newCountdowns[tx.id] = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-          }
-        });
-        
-        setTransactionCountdowns(newCountdowns);
-      }
-    }, 1000);
-
-    return () => {
-      clearInterval(interval);
-      clearInterval(countdownInterval);
-    };
-  }, [transactions]);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     let channel: any;
@@ -449,14 +418,9 @@ export default function Dashboard() {
                                   {currentBalance.toFixed(2)} €
                                 </div>
                                 {profit > 0 && !isExpired && (
-                                  <>
-                                    <div className="text-xs text-green-600 font-medium">
-                                      +{profit.toFixed(2)} € Gewinn
-                                    </div>
-                                    <div className="text-[10px] text-muted-foreground mt-0.5">
-                                      Nächster in {transactionCountdowns[tx.id] || "01:00:00"}
-                                    </div>
-                                  </>
+                                  <div className="text-xs text-green-600 font-medium">
+                                    +{profit.toFixed(2)} € Gewinn
+                                  </div>
                                 )}
                               </div>
                             </div>
