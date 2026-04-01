@@ -37,6 +37,7 @@ export default function AdminPage() {
   const [maturityDays, setMaturityDays] = useState<{ [key: string]: number }>({});
   const [minSaldo, setMinSaldo] = useState<string>("");
   const [maxSaldo, setMaxSaldo] = useState<string>("");
+  const [saldoSort, setSaldoSort] = useState<"high" | "low" | "none">("none");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -331,10 +332,10 @@ export default function AdminPage() {
           <TabsContent value="users" className="space-y-4 mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>Filter nach Saldo</CardTitle>
+                <CardTitle>Filter & Sortierung</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex gap-4 items-center">
+                <div className="flex gap-4 items-end">
                   <div className="flex-1">
                     <label className="text-sm text-gray-600 block mb-1">Min. Saldo (€)</label>
                     <Input
@@ -357,15 +358,27 @@ export default function AdminPage() {
                       step="0.01"
                     />
                   </div>
+                  <div className="flex-1">
+                    <label className="text-sm text-gray-600 block mb-1">Sortieren nach Saldo</label>
+                    <select
+                      value={saldoSort}
+                      onChange={e => setSaldoSort(e.target.value as "high" | "low" | "none")}
+                      className="w-full h-10 px-3 rounded-md border border-input bg-background"
+                    >
+                      <option value="none">Keine Sortierung</option>
+                      <option value="high">Hoch → Niedrig</option>
+                      <option value="low">Niedrig → Hoch</option>
+                    </select>
+                  </div>
                   <Button
                     onClick={() => {
                       setMinSaldo("");
                       setMaxSaldo("");
+                      setSaldoSort("none");
                     }}
                     variant="outline"
-                    className="mt-6"
                   >
-                    Filter zurücksetzen
+                    Zurücksetzen
                   </Button>
                 </div>
               </CardContent>
@@ -380,6 +393,12 @@ export default function AdminPage() {
                   const min = minSaldo ? parseFloat(minSaldo) : 0;
                   const max = maxSaldo ? parseFloat(maxSaldo) : Infinity;
                   return balance >= min && balance <= max;
+                })
+                .sort((a, b) => {
+                  if (saldoSort === "none") return 0;
+                  const balanceA = calculateUserBalance(a.id);
+                  const balanceB = calculateUserBalance(b.id);
+                  return saldoSort === "high" ? balanceB - balanceA : balanceA - balanceB;
                 })
                 .map(profile => {
                 const wallet = wallets.find(w => w.user_id === profile.id);
