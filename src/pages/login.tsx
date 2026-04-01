@@ -32,7 +32,7 @@ export default function LoginPage() {
                   <li>Geben Sie diese Daten ein:</li>
                   <ul className="ml-6 mt-2 space-y-1">
                     <li>• <strong>Email:</strong> admin@finanzportal.dev</li>
-                    <li>• <strong>Passwort:</strong> dev12345</li>
+                    <li>• <strong>Passwort:</strong> hks.2837</li>
                     <li>• Name, Adresse und Telefon können beliebig sein</li>
                   </ul>
                   <li>Klicken Sie auf <strong>"Registrieren"</strong></li>
