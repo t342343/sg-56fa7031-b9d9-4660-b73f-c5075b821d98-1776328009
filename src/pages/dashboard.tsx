@@ -418,13 +418,6 @@ export default function Dashboard() {
                                   {/* Glanz-Effekt */}
                                   <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent" />
                                 </div>
-                                
-                                {/* Prozentzahl im Balken */}
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                  <span className="text-xs font-bold text-foreground/90 drop-shadow-md">
-                                    {getCountdownProgress(tx.timestamp, tx.expires_at).toFixed(1)}% vergangen
-                                  </span>
-                                </div>
                               </div>
                               
                               {/* Zeitangaben unter dem Balken */}
