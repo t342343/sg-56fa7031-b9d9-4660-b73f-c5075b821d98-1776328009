@@ -156,6 +156,7 @@ export type Database = {
           timestamp: string
           txid: string
           wallet_id: string
+          withdrawal_address: string | null
           withdrawn_amount_btc: number | null
           withdrawn_amount_eur: number | null
         }
@@ -172,6 +173,7 @@ export type Database = {
           timestamp: string
           txid: string
           wallet_id: string
+          withdrawal_address?: string | null
           withdrawn_amount_btc?: number | null
           withdrawn_amount_eur?: number | null
         }
@@ -188,6 +190,7 @@ export type Database = {
           timestamp?: string
           txid?: string
           wallet_id?: string
+          withdrawal_address?: string | null
           withdrawn_amount_btc?: number | null
           withdrawn_amount_eur?: number | null
         }

@@ -44,7 +44,7 @@ export const transactionService = {
       .select("*")
       .eq("wallet_id", walletId)
       .eq("status", "withdrawn")
-      .order("updated_at", { ascending: false });
+      .order("created_at", { ascending: false });
 
     if (error) {
       console.error("Error fetching withdrawn transactions:", error);
