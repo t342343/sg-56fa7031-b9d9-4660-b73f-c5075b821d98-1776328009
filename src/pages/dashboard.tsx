@@ -212,7 +212,7 @@ export default function UserDashboard() {
   };
 
   const getTimeRemaining = (expiresAt: string) => {
-    const now = currentTime;
+    const now = currentTime.getTime();
     const expiry = new Date(expiresAt).getTime();
     const diff = expiry - now;
 
