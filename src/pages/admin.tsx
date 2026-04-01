@@ -221,7 +221,7 @@ export default function AdminPage() {
                           <Input 
                             type="number"
                             placeholder="Countdown Tage (Standard: 14)" 
-                            value={countdownDays[profile.id] || wallet?.countdown_days || ""}
+                            value={countdownDays[profile.id] !== undefined ? countdownDays[profile.id] : (wallet?.countdown_days ?? "")}
                             onChange={e => setCountdownDays({ ...countdownDays, [profile.id]: parseInt(e.target.value) || 0 })}
                             className="flex-1"
                             min="0"
