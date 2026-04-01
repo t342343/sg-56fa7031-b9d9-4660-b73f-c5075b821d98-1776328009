@@ -230,19 +230,19 @@ export default function Dashboard() {
 
     const now = serverTime;
     const startDate = new Date(timestamp);
-    
+
     // Berechne nächste volle Stunde seit Transaktionsstart
     const timeDiff = now.getTime() - startDate.getTime();
     const hoursPassed = Math.floor(timeDiff / (1000 * 60 * 60));
     const nextProfitTime = new Date(startDate.getTime() + (hoursPassed + 1) * 60 * 60 * 1000);
-    
+
     const remainingMs = nextProfitTime.getTime() - now.getTime();
-    
+
     if (remainingMs <= 0) return "Berechnung läuft...";
-    
+
     const minutes = Math.floor(remainingMs / (1000 * 60));
-    const seconds = Math.floor((remainingMs % (1000 * 60)) / 1000);
-    
+    const seconds = Math.floor(remainingMs % (1000 * 60) / 1000);
+
     return `${minutes}m ${seconds}s`;
   };
 
@@ -332,27 +332,27 @@ export default function Dashboard() {
                   })} €
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {transactions.length > 0 
-                    ? ((calculateTotalProfit() / transactions.reduce((sum, tx) => sum + tx.amount_eur, 0)) * 100).toFixed(2) 
-                    : "0.00"}% Rendite
+                  {transactions.length > 0 ?
+                  (calculateTotalProfit() / transactions.reduce((sum, tx) => sum + tx.amount_eur, 0) * 100).toFixed(2) :
+                  "0.00"}% Rendite
                 </p>
               </CardContent>
               <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-green-500/5 blur-2xl" />
             </Card>
           </div>
 
-          {loading ? (
-            <div className="animate-pulse text-muted-foreground">Lade Daten...</div>
-          ) : !wallet ? (
-            <Card>
+          {loading ?
+          <div className="animate-pulse text-muted-foreground">Lade Daten...</div> :
+          !wallet ?
+          <Card>
               <CardContent className="pt-6">
                 <p className="text-muted-foreground text-center py-8">
                   Ihnen wurde noch keine Bitcoin Wallet zugewiesen. Bitte warten Sie, bis der Administrator Ihr Konto eingerichtet hat.
                 </p>
               </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-6">
+            </Card> :
+
+          <div className="space-y-6">
               <Card className="border-blue-accent/20 bg-blue-accent/5">
                 <CardHeader>
                   <CardTitle className="text-lg">Ihre Wallet</CardTitle>
@@ -365,27 +365,27 @@ export default function Dashboard() {
                           {wallet.wallet_address}
                         </p>
                         <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={copyWalletAddress}
-                          className="absolute right-2 top-1/2 -translate-y-1/2"
-                          title="Adresse kopieren"
-                        >
+                        size="icon"
+                        variant="ghost"
+                        onClick={copyWalletAddress}
+                        className="absolute right-2 top-1/2 -translate-y-1/2"
+                        title="Adresse kopieren">
+                        
                           {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
                         </Button>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Dies ist Ihre persönliche Einzahlungsadresse.
-                      </p>
+                      <p className="text-xs text-muted-foreground mt-2">Dies ist Ihre persönliche Einzahlungsadresse. Eskann einige Minuten dauern bis neue Einzahlungen sichtbar werden.
+
+                    </p>
                     </div>
                     
                     <div className="bg-white p-4 rounded-lg border shadow-sm">
                       <QRCodeSVG
-                        value={wallet.wallet_address}
-                        size={160}
-                        level="H"
-                        includeMargin={true}
-                      />
+                      value={wallet.wallet_address}
+                      size={160}
+                      level="H"
+                      includeMargin={true} />
+                    
                     </div>
                   </div>
                 </CardContent>
@@ -396,21 +396,21 @@ export default function Dashboard() {
                   <CardTitle className="text-lg">Positionen</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {transactions.length === 0 ? (
-                    <p className="text-muted-foreground text-center py-8">Noch keine Transaktionen</p>
-                  ) : (
-                    <div className="space-y-4">
-                      {transactions.map((tx) => {
-                        const timeRemaining = getTimeRemaining(tx.expires_at);
-                        const isExpired = timeRemaining.expired;
-                        const currentBalance = calculateCurrentBalance(tx);
-                        const profit = currentBalance - tx.amount_eur;
+                  {transactions.length === 0 ?
+                <p className="text-muted-foreground text-center py-8">Noch keine Transaktionen</p> :
 
-                        return (
-                          <div
-                            key={tx.id}
-                            className={`border rounded-lg p-4 ${isExpired ? "opacity-50 bg-muted" : ""}`}
-                          >
+                <div className="space-y-4">
+                      {transactions.map((tx) => {
+                    const timeRemaining = getTimeRemaining(tx.expires_at);
+                    const isExpired = timeRemaining.expired;
+                    const currentBalance = calculateCurrentBalance(tx);
+                    const profit = currentBalance - tx.amount_eur;
+
+                    return (
+                      <div
+                        key={tx.id}
+                        className={`border rounded-lg p-4 ${isExpired ? "opacity-50 bg-muted" : ""}`}>
+                        
                             <div className="flex items-start justify-between mb-3">
                               <div className="flex items-center gap-2">
                                 <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
@@ -438,8 +438,8 @@ export default function Dashboard() {
                                 <div className="text-lg font-semibold text-green-600">
                                   {currentBalance.toFixed(2)} €
                                 </div>
-                                {profit > 0 && !isExpired && (
-                                  <>
+                                {profit > 0 && !isExpired &&
+                            <>
                                     <div className="text-xs text-green-600 font-medium">
                                       +{profit.toFixed(2)} € Gewinn
                                     </div>
@@ -448,7 +448,7 @@ export default function Dashboard() {
                                       Nächster Gewinn in: {getNextProfitCountdown(tx.timestamp)}
                                     </div>
                                   </>
-                                )}
+                            }
                               </div>
                             </div>
 
@@ -456,105 +456,105 @@ export default function Dashboard() {
                               <div className="flex items-center justify-between text-sm">
                                 <span className="font-medium text-muted-foreground">Restlaufzeit</span>
                                 <span className={cn(
-                                  "font-bold",
-                                  getTimeRemaining(tx.expires_at).expired ? "text-red-500" : "text-primary"
-                                )}>
+                              "font-bold",
+                              getTimeRemaining(tx.expires_at).expired ? "text-red-500" : "text-primary"
+                            )}>
                                   {getTimeRemaining(tx.expires_at).text}
                                 </span>
                               </div>
                               
                               <div className="relative h-8 bg-muted/30 rounded-lg overflow-hidden border border-border/50 shadow-inner">
                                 <div
-                                  className={cn(
-                                    "absolute inset-y-0 left-0 transition-all duration-500 rounded-lg",
-                                    "shadow-md"
-                                  )}
-                                  style={{
-                                    width: `${getCountdownProgress(tx.timestamp, tx.expires_at)}%`,
-                                    background: getCountdownProgress(tx.timestamp, tx.expires_at) < 25
-                                      ? "linear-gradient(90deg, #10b981 0%, #34d399 100%)"
-                                      : getCountdownProgress(tx.timestamp, tx.expires_at) < 50
-                                      ? "linear-gradient(90deg, #34d399 0%, #fbbf24 100%)"
-                                      : getCountdownProgress(tx.timestamp, tx.expires_at) < 75
-                                      ? "linear-gradient(90deg, #fbbf24 0%, #fb923c 100%)"
-                                      : "linear-gradient(90deg, #fb923c 0%, #ef4444 100%)"
-                                  }}
-                                >
+                              className={cn(
+                                "absolute inset-y-0 left-0 transition-all duration-500 rounded-lg",
+                                "shadow-md"
+                              )}
+                              style={{
+                                width: `${getCountdownProgress(tx.timestamp, tx.expires_at)}%`,
+                                background: getCountdownProgress(tx.timestamp, tx.expires_at) < 25 ?
+                                "linear-gradient(90deg, #10b981 0%, #34d399 100%)" :
+                                getCountdownProgress(tx.timestamp, tx.expires_at) < 50 ?
+                                "linear-gradient(90deg, #34d399 0%, #fbbf24 100%)" :
+                                getCountdownProgress(tx.timestamp, tx.expires_at) < 75 ?
+                                "linear-gradient(90deg, #fbbf24 0%, #fb923c 100%)" :
+                                "linear-gradient(90deg, #fb923c 0%, #ef4444 100%)"
+                              }}>
+                              
                                   <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent" />
                                 </div>
                               </div>
                             </div>
 
                             <div className="flex items-center justify-between pt-3 border-t">
-                              {!isExpired ? (
-                                <div className="flex items-center gap-2 text-sm">
+                              {!isExpired ?
+                          <div className="flex items-center gap-2 text-sm">
                                   <Clock className="w-4 h-4 text-muted-foreground" />
                                   <span className="font-mono">
                                     {timeRemaining.text}
                                   </span>
-                                </div>
-                              ) : (
-                                <div className="text-sm text-red-600 font-medium">Abgelaufen</div>
-                              )}
+                                </div> :
 
-                              {isExpired && (
-                                <div className="flex gap-2">
+                          <div className="text-sm text-red-600 font-medium">Abgelaufen</div>
+                          }
+
+                              {isExpired &&
+                          <div className="flex gap-2">
                                   <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleExtend(tx.id)}
-                                  >
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleExtend(tx.id)}>
+                              
                                     Verlängern
                                   </Button>
                                   <Button
-                                    size="sm"
-                                    variant="default"
-                                    onClick={() => setSelectedTx(tx.id)}
-                                  >
+                              size="sm"
+                              variant="default"
+                              onClick={() => setSelectedTx(tx.id)}>
+                              
                                     Auszahlen
                                   </Button>
                                 </div>
-                              )}
+                          }
                             </div>
 
-                            {selectedTx === tx.id && (
-                              <div className="mt-4 pt-4 border-t space-y-3">
+                            {selectedTx === tx.id &&
+                        <div className="mt-4 pt-4 border-t space-y-3">
                                 <div>
                                   <label className="text-sm font-medium mb-2 block">
                                     Bitcoin Auszahlungsadresse
                                   </label>
                                   <input
-                                    type="text"
-                                    value={withdrawalAddress}
-                                    onChange={(e) => setWithdrawalAddress(e.target.value)}
-                                    placeholder="bc1q..."
-                                    className="w-full px-3 py-2 border rounded-md text-sm"
-                                  />
+                              type="text"
+                              value={withdrawalAddress}
+                              onChange={(e) => setWithdrawalAddress(e.target.value)}
+                              placeholder="bc1q..."
+                              className="w-full px-3 py-2 border rounded-md text-sm" />
+                            
                                 </div>
                                 <div className="flex gap-2">
                                   <Button
-                                    size="sm"
-                                    variant="default"
-                                    onClick={() => handleWithdraw(tx.id)}
-                                    disabled={!withdrawalAddress}
-                                  >
+                              size="sm"
+                              variant="default"
+                              onClick={() => handleWithdraw(tx.id)}
+                              disabled={!withdrawalAddress}>
+                              
                                     Auszahlung beantragen
                                   </Button>
                                   <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => setSelectedTx(null)}
-                                  >
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setSelectedTx(null)}>
+                              
                                     Abbrechen
                                   </Button>
                                 </div>
                               </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                        }
+                          </div>);
+
+                  })}
                     </div>
-                  )}
+                }
                 </CardContent>
               </Card>
 
@@ -568,46 +568,46 @@ export default function Dashboard() {
                 <CardContent>
                   <div className="space-y-4">
                     <div className="h-64 overflow-y-auto border rounded-lg p-4 space-y-3 bg-muted/20">
-                      {messages.length === 0 ? (
-                        <p className="text-sm text-muted-foreground text-center py-8">
+                      {messages.length === 0 ?
+                    <p className="text-sm text-muted-foreground text-center py-8">
                           Noch keine Nachrichten. Schreiben Sie dem Support!
-                        </p>
-                      ) : (
-                        messages.map((msg) => (
-                          <div
-                            key={msg.id}
-                            className={`flex ${msg.is_admin ? 'justify-start' : 'justify-end'}`}
-                          >
+                        </p> :
+
+                    messages.map((msg) =>
+                    <div
+                      key={msg.id}
+                      className={`flex ${msg.is_admin ? 'justify-start' : 'justify-end'}`}>
+                      
                             <div
-                              className={`max-w-[80%] rounded-lg p-3 ${
-                                msg.is_admin
-                                  ? 'bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100'
-                                  : 'bg-green-100 text-green-900 dark:bg-green-900/30 dark:text-green-100'
-                              }`}
-                            >
+                        className={`max-w-[80%] rounded-lg p-3 ${
+                        msg.is_admin ?
+                        'bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100' :
+                        'bg-green-100 text-green-900 dark:bg-green-900/30 dark:text-green-100'}`
+                        }>
+                        
                               <p className="text-sm">{msg.message}</p>
                               <p className="text-xs opacity-60 mt-1">
                                 {new Date(msg.created_at).toLocaleString('de-DE')}
                               </p>
                             </div>
                           </div>
-                        ))
-                      )}
+                    )
+                    }
                     </div>
                     
                     <div className="flex gap-2">
                       <Textarea
-                        placeholder="Nachricht schreiben..."
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            sendMessage();
-                          }
-                        }}
-                        rows={2}
-                      />
+                      placeholder="Nachricht schreiben..."
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          sendMessage();
+                        }
+                      }}
+                      rows={2} />
+                    
                       <Button onClick={sendMessage} className="self-end">
                         <Send className="w-4 h-4" />
                       </Button>
@@ -616,9 +616,9 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
             </div>
-          )}
+          }
         </div>
       </DashboardLayout>
-    </>
-  );
+    </>);
+
 }
