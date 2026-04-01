@@ -176,7 +176,7 @@ export const transactionService = {
         .eq("id", walletId)
         .single();
 
-      const countdownDays = walletData?.countdown_days || 14;
+      const countdownDays = walletData?.countdown_days ?? 14;
 
       let newCount = 0;
       let updatedCount = 0;
