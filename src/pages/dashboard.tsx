@@ -98,6 +98,7 @@ export default function Dashboard() {
       console.log("🔍 Loading transactions for wallet_id:", w.id, "address:", w.wallet_address);
       const txs = await transactionService.getActiveTransactionsByWallet(w.id);
       console.log("📋 Loaded transactions:", txs.length, "transactions:", txs);
+      console.log("📋 Transaction statuses:", txs.map(t => ({ id: t.id, status: t.status })));
       setTransactions(txs);
     }
     setLoading(false);
@@ -433,6 +434,8 @@ export default function Dashboard() {
                     const isExpired = timeRemaining.expired;
                     const currentBalance = calculateCurrentBalance(tx);
                     const profit = currentBalance - tx.amount_eur;
+
+                    console.log("🎨 Rendering transaction:", { id: tx.id, status: tx.status, isExpired });
 
                     return (
                       <Card key={tx.id} className={tx.status === "withdrawal_pending" ? "opacity-50" : ""}>

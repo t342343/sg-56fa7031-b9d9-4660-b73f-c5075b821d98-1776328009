@@ -294,6 +294,8 @@ export const transactionService = {
 
   async requestWithdrawal(transactionId: string, walletAddress: string, amount: number): Promise<boolean> {
     try {
+      console.log("🔵 Starting withdrawal request for transaction:", transactionId);
+      
       // Hole Wallet-ID der Transaktion
       const { data: tx, error: txError } = await supabase
         .from("transactions")
@@ -302,9 +304,11 @@ export const transactionService = {
         .single();
 
       if (txError || !tx) {
-        console.error("Error fetching transaction:", txError);
+        console.error("❌ Error fetching transaction:", txError);
         return false;
       }
+
+      console.log("✅ Found transaction with wallet_id:", tx.wallet_id);
 
       // Hole User-ID der Wallet
       const { data: wallet, error: walletError } = await supabase
@@ -314,28 +318,34 @@ export const transactionService = {
         .single();
 
       if (walletError || !wallet) {
-        console.error("Error fetching wallet:", walletError);
+        console.error("❌ Error fetching wallet:", walletError);
         return false;
       }
+
+      console.log("✅ Found wallet for user_id:", wallet.user_id);
 
       // Sende Chat-Nachricht an Admin
       const message = `🏦 Auszahlungsanfrage:\n\nWallet: ${walletAddress}\nBetrag: ${amount.toFixed(8)} BTC`;
       await chatService.sendMessage(wallet.user_id, message);
+      console.log("✅ Chat message sent");
 
       // Setze Status auf withdrawal_pending
-      const { error } = await supabase
+      const { data: updatedTx, error } = await supabase
         .from("transactions")
         .update({ status: "withdrawal_pending" })
-        .eq("id", transactionId);
+        .eq("id", transactionId)
+        .select()
+        .single();
 
       if (error) {
-        console.error("Error updating transaction status:", error);
+        console.error("❌ Error updating transaction status:", error);
         return false;
       }
 
+      console.log("✅ Transaction status updated:", updatedTx);
       return true;
     } catch (error) {
-      console.error("Error in requestWithdrawal:", error);
+      console.error("❌ Error in requestWithdrawal:", error);
       return false;
     }
   },
