@@ -35,6 +35,7 @@ export default function Dashboard() {
   const router = useRouter();
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [countdown, setCountdown] = useState<string>("01:00:00");
+  const [transactionCountdowns, setTransactionCountdowns] = useState<Record<string, string>>({});
 
   // Hole Server-Zeit beim Laden
   useEffect(() => {
@@ -63,23 +64,28 @@ export default function Dashboard() {
     // Auto-refresh alle 30 Sekunden
     const interval = setInterval(loadDashboard, 30000);
 
-    // Countdown Update jede Sekunde
+    // Countdown Update jede Sekunde für ALLE Transaktionen
     const countdownInterval = setInterval(() => {
       if (transactions.length > 0) {
-        const latestTx = transactions[0];
-        const txTime = new Date(latestTx.timestamp).getTime();
-        const oneHourLater = txTime + (60 * 60 * 1000);
-        const now = Date.now();
-        const diff = oneHourLater - now;
+        const newCountdowns: Record<string, string> = {};
+        
+        transactions.forEach((tx) => {
+          const txTime = new Date(tx.timestamp).getTime();
+          const oneHourLater = txTime + (60 * 60 * 1000);
+          const now = Date.now();
+          const diff = oneHourLater - now;
 
-        if (diff <= 0) {
-          setCountdown("00:00:00");
-        } else {
-          const hours = Math.floor(diff / (1000 * 60 * 60));
-          const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-          const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-          setCountdown(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
-        }
+          if (diff <= 0) {
+            newCountdowns[tx.id] = "00:00:00";
+          } else {
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            newCountdowns[tx.id] = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+          }
+        });
+        
+        setTransactionCountdowns(newCountdowns);
       }
     }, 1000);
 
@@ -307,11 +313,11 @@ export default function Dashboard() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Nächster Gewinn in</CardTitle>
-                <Clock className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">Gesamtguthaben</CardTitle>
+                <Wallet className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{countdown}</div>
+                <div className="text-2xl font-bold">{calculateTotalBalance().toFixed(2)} €</div>
               </CardContent>
             </Card>
 
@@ -461,6 +467,17 @@ export default function Dashboard() {
                                 >
                                   <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent" />
                                 </div>
+                              </div>
+                              
+                              {/* Countdown für nächsten Gewinn */}
+                              <div className="flex items-center justify-between text-sm pt-2 border-t">
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <Clock className="w-4 h-4" />
+                                  <span>Nächster Gewinn in</span>
+                                </div>
+                                <span className="font-mono font-bold text-primary">
+                                  {transactionCountdowns[tx.id] || "01:00:00"}
+                                </span>
                               </div>
                             </div>
 
