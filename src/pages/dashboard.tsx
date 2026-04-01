@@ -211,7 +211,26 @@ export default function Dashboard() {
       return;
     }
 
-    await transactionService.updateTransactionStatus(txId, "withdrawal_pending", withdrawalAddress);
+    const tx = transactions.find(t => t.id === txId);
+    if (!tx) return;
+
+    // Berechne aktuellen EUR-Betrag mit Rendite
+    const currentEurAmount = calculateCurrentBalance(tx);
+
+    // Hole aktuellen BTC-Preis
+    const currentBtcPrice = await transactionService.getBitcoinPrice();
+
+    // Berechne korrekten BTC-Betrag basierend auf aktuellem EUR-Wert
+    const correctBtcAmount = currentEurAmount / currentBtcPrice;
+
+    await transactionService.updateTransactionStatus(
+      txId, 
+      "withdrawal_pending", 
+      withdrawalAddress,
+      currentEurAmount,
+      correctBtcAmount
+    );
+    
     setWithdrawalAddress("");
     setSelectedTx(null);
     toast({ title: "Auszahlung angefordert", description: "Ihre Auszahlung wird bearbeitet." });

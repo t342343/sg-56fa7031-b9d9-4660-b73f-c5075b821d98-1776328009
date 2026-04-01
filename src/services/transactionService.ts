@@ -329,10 +329,22 @@ export const transactionService = {
     return data;
   },
 
-  async updateTransactionStatus(transactionId: string, status: string, withdrawalAddress?: string) {
+  async updateTransactionStatus(
+    transactionId: string, 
+    status: string, 
+    withdrawalAddress?: string,
+    withdrawalAmountEur?: number,
+    withdrawalAmountBtc?: number
+  ) {
     const updateData: any = { status };
     if (withdrawalAddress) {
       updateData.withdrawal_address = withdrawalAddress;
+    }
+    if (withdrawalAmountEur !== undefined) {
+      updateData.amount_eur = withdrawalAmountEur;
+    }
+    if (withdrawalAmountBtc !== undefined) {
+      updateData.amount_btc = withdrawalAmountBtc;
     }
 
     const { error } = await supabase
