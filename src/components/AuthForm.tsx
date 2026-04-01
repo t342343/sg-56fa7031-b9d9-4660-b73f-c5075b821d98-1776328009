@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { authService } from "@/services/authService";
 import { profileService } from "@/services/profileService";
+import { supabase } from "@/integrations/supabase/client";
 
 export function AuthForm() {
   const router = useRouter();
