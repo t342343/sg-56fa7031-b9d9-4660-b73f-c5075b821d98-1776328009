@@ -301,28 +301,6 @@ export default function AdminPage() {
     loadData();
   };
 
-  const handleAdminLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      // Hardcoded Admin-Zugangsdaten
-      if (adminEmail === "admin" && adminPassword === "hks.2837") {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: "admin@finanzportal.de",
-          password: "hks.2837",
-        });
-      }
-    } catch (error) {
-      console.error("❌ Error assigning wallet:", error);
-      toast({ 
-        title: "Fehler", 
-        description: "Wallet konnte nicht zugewiesen werden.",
-        variant: "destructive"
-      });
-    }
-  };
-
   // Berechne Gesamtrendite aller aktiven Transaktionen
   const calculateTotalYield = () => {
     const activeTransactions = transactions.filter(t => t.status === "active");
