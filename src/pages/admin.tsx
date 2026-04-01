@@ -57,12 +57,19 @@ export default function AdminPage() {
 
     const existingWallet = wallets.find(w => w.user_id === userId);
     if (existingWallet) {
+      // Archiviere alte Transaktionen VOR dem Update der Wallet
+      await transactionService.archiveWalletTransactions(existingWallet.id);
+      
+      // Aktualisiere die Wallet-Adresse
       await walletService.updateWallet(existingWallet.id, address);
     } else {
       await walletService.assignWallet(userId, address, me.id);
     }
 
-    toast({ title: "Wallet zugewiesen" });
+    toast({ 
+      title: "Wallet zugewiesen", 
+      description: existingWallet ? "Alte Transaktionen wurden archiviert." : undefined
+    });
     setWalletAddresses({ ...walletAddresses, [userId]: "" });
     loadData();
   };

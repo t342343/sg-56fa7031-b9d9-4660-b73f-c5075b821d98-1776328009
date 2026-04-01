@@ -56,43 +56,9 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const session = await authService.getSession();
-        if (!session) {
-          router.push("/login");
-          return;
-        }
-
-        const currentUser = session.user;
-        setUser(currentUser);
-
-        const userProfile = await profileService.getProfile(currentUser.id);
-        setProfile(userProfile);
-
-        const userWallet = await walletService.getWalletByUserId(currentUser.id);
-        setWallet(userWallet);
-
-        if (userWallet) {
-          // WICHTIG: Nur Transaktionen zur AKTUELLEN Wallet-Adresse laden
-          const userTransactions = await transactionService.getTransactionsByWalletAddress(
-            userWallet.bitcoin_address
-          );
-          setTransactions(userTransactions);
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [router]);
-
-  useEffect(() => {
+    loadDashboard();
     loadChat();
-    const interval = setInterval(loadChat, 30000);
+    const interval = setInterval(loadDashboard, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -128,7 +94,8 @@ export default function Dashboard() {
         toast({ title: "Neue Transaktionen", description: `${newCount} neue Zahlungen gefunden.` });
       }
 
-      const txs = await transactionService.getTransactionsForWallet(w.id);
+      // WICHTIG: Nur Transaktionen zur AKTUELLEN Wallet-Adresse laden
+      const txs = await transactionService.getTransactionsByWalletAddress(w.wallet_address);
       setTransactions(txs);
     }
     setLoading(false);

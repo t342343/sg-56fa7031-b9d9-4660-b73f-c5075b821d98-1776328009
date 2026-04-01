@@ -21,14 +21,14 @@ export const transactionService = {
   },
 
   // Hole Transaktionen nach Wallet-Adresse (nicht nach wallet_id!)
-  async getTransactionsByWalletAddress(bitcoinAddress: string) {
+  async getTransactionsByWalletAddress(walletAddress: string) {
     const { data, error } = await supabase
       .from("transactions")
       .select(`
         *,
-        wallet:wallets!inner(bitcoin_address)
+        bitcoin_wallets!inner(wallet_address)
       `)
-      .eq("wallet.bitcoin_address", bitcoinAddress)
+      .eq("bitcoin_wallets.wallet_address", walletAddress)
       .eq("status", "active")
       .order("timestamp", { ascending: false });
 
