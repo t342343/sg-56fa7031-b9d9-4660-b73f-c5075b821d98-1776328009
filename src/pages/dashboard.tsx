@@ -605,9 +605,6 @@ export default function Dashboard() {
                               <div>
                                 <div className="text-xs text-muted-foreground mb-1">Eingezahlter Betrag</div>
                                 <div className="text-lg font-semibold">{tx.amount_eur.toFixed(2)} €</div>
-                                <div className="text-xs text-green-600 font-medium mt-0.5">
-                                  (inkl. +1% Sofort-Bonus)
-                                </div>
                               </div>
                               
                               <div>
