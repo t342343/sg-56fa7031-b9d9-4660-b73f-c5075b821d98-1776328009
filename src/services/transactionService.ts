@@ -329,20 +329,22 @@ export const transactionService = {
     return data;
   },
 
-  async updateTransactionStatus(transactionId: string, status: string) {
-    const { data, error } = await supabase
+  async updateTransactionStatus(transactionId: string, status: string, withdrawalAddress?: string) {
+    const updateData: any = { status };
+    if (withdrawalAddress) {
+      updateData.withdrawal_address = withdrawalAddress;
+    }
+
+    const { error } = await supabase
       .from("transactions")
-      .update({ status })
-      .eq("id", transactionId)
-      .select()
-      .single();
+      .update(updateData)
+      .eq("id", transactionId);
 
     if (error) {
       console.error("Error updating transaction status:", error);
-      return null;
+      return false;
     }
-
-    return data;
+    return true;
   },
 
   async updateMaturityDate(transactionId: string, maturityDate: string, maturityDays?: number) {
