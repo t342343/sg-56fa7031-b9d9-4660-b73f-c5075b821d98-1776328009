@@ -180,30 +180,30 @@ export default function Dashboard() {
 
   const manualCheckTransactions = async () => {
     if (!wallet) return;
-    
+
     setCheckingTransactions(true);
     toast({ title: "Prüfe Transaktionen...", description: "Suche nach neuen Zahlungseingängen." });
-    
+
     try {
       const newCount = await transactionService.checkNewTransactions(wallet.wallet_address, wallet.id);
-      
+
       if (newCount > 0) {
-        toast({ 
-          title: "Neue Transaktionen gefunden!", 
-          description: `${newCount} neue Zahlungen wurden erkannt und hinzugefügt.` 
+        toast({
+          title: "Neue Transaktionen gefunden!",
+          description: `${newCount} neue Zahlungen wurden erkannt und hinzugefügt.`
         });
         await loadDashboard();
       } else {
-        toast({ 
-          title: "Keine neuen Transaktionen", 
-          description: "Es wurden keine neuen Zahlungen gefunden." 
+        toast({
+          title: "Keine neuen Transaktionen",
+          description: "Es wurden keine neuen Zahlungen gefunden."
         });
       }
     } catch (error) {
-      toast({ 
-        title: "Fehler", 
-        description: "Transaktionsprüfung fehlgeschlagen.", 
-        variant: "destructive" 
+      toast({
+        title: "Fehler",
+        description: "Transaktionsprüfung fehlgeschlagen.",
+        variant: "destructive"
       });
     } finally {
       setCheckingTransactions(false);
@@ -404,31 +404,31 @@ export default function Dashboard() {
                           {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
                         </Button>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-2">Dies ist Ihre persönliche Einzahlungsadresse. Eskann einige Minuten dauern bis neue Einzahlungen sichtbar werden.
+                      <p className="text-xs text-muted-foreground mt-2">Dies ist Ihre persönliche Einzahlungsadresse. Es kann einige Minuten dauern, bis neue Einzahlungen sichtbar werden.
 
                     </p>
                     </div>
                     
                     <div className="bg-white p-4 rounded-lg border shadow-sm">
                       <QRCodeSVG
-                        value={wallet.wallet_address}
-                        size={160}
-                        level="H"
-                        includeMargin={true}
-                      />
+                      value={wallet.wallet_address}
+                      size={160}
+                      level="H"
+                      includeMargin={true} />
+                    
                     </div>
                   </div>
                   
                   <div className="flex items-center gap-2 pt-3 border-t">
                     <Button
-                      onClick={manualCheckTransactions}
-                      disabled={checkingTransactions}
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                    >
-                      {checkingTransactions ? "Prüfe..." : "Transaktionen jetzt prüfen"}
-                    </Button>
+                    onClick={manualCheckTransactions}
+                    disabled={checkingTransactions}
+                    variant="outline"
+                    size="sm"
+                    className="flex-1">Transaktionen aktualisieren
+
+
+                  </Button>
                   </div>
                 </CardContent>
               </Card>
