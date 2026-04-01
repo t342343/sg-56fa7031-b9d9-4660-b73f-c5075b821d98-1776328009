@@ -339,7 +339,7 @@ export const transactionService = {
   async updateMaturityDate(transactionId: string, maturityDate: string) {
     const { data, error } = await supabase
       .from("transactions")
-      .update({ maturity_date: maturityDate })
+      .update({ maturity_date: maturityDate } as any)
       .eq("id", transactionId)
       .select()
       .single();
