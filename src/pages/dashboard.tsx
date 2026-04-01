@@ -214,6 +214,10 @@ export default function Dashboard() {
     if (!profile) return;
 
     await chatService.sendMessage(profile.id, newMessage);
+    
+    // Automatische Standard-Antwort vom System
+    await chatService.sendMessage(profile.id, "Danke für Ihre Nachricht, in Kürze antwortet Ihnen ein Kundenbetreuer.", true);
+    
     setNewMessage("");
     loadChat();
   };
