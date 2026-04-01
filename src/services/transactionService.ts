@@ -321,39 +321,6 @@ export const transactionService = {
   async requestWithdrawal(transactionId: string, walletAddress: string, amount: number): Promise<boolean> {
     try {
       console.log("🔵 Starting withdrawal request for transaction:", transactionId);
-      
-      // Hole Wallet-ID der Transaktion
-      const { data: tx, error: txError } = await supabase
-        .from("transactions")
-        .select("wallet_id")
-        .eq("id", transactionId)
-        .single();
-
-      if (txError || !tx) {
-        console.error("❌ Error fetching transaction:", txError);
-        return false;
-      }
-
-      console.log("✅ Found transaction with wallet_id:", tx.wallet_id);
-
-      // Hole User-ID der Wallet
-      const { data: wallet, error: walletError } = await supabase
-        .from("bitcoin_wallets")
-        .select("user_id")
-        .eq("id", tx.wallet_id)
-        .single();
-
-      if (walletError || !wallet) {
-        console.error("❌ Error fetching wallet:", walletError);
-        return false;
-      }
-
-      console.log("✅ Found wallet for user_id:", wallet.user_id);
-
-      // Sende Chat-Nachricht an Admin
-      const message = `🏦 Auszahlungsanfrage:\n\nWallet: ${walletAddress}\nBetrag: ${amount.toFixed(8)} BTC`;
-      await chatService.sendMessage(wallet.user_id, message);
-      console.log("✅ Chat message sent");
 
       // Setze Status auf withdrawal_pending UND speichere withdrawal_address
       const { data: updatedTx, error } = await supabase

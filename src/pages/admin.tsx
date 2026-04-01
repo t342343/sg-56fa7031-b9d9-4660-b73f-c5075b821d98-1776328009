@@ -441,118 +441,77 @@ export default function AdminPage() {
             )}
           </TabsContent>
 
-          <TabsContent value="withdrawals" className="space-y-4 mt-6">
-            {withdrawals.length === 0 && pendingTransactions.length === 0 ? (
-              <p className="text-muted-foreground">Keine Auszahlungsanfragen.</p>
-            ) : (
-              <>
-                {pendingTransactions.map(tx => {
-                  const wallet = wallets.find(w => w.id === tx.wallet_id);
-                  const profile = profiles.find(p => p.id === wallet?.user_id);
-                  return (
-                    <Card key={tx.id} className="border-amber-200 bg-amber-50/10">
-                      <CardHeader>
-                        <CardTitle className="flex items-center justify-between">
-                          <span>{profile?.full_name || profile?.email || "Unbekannt"}</span>
-                          <span className="text-sm px-3 py-1 rounded-full bg-yellow-100 text-yellow-800">
-                            Ausstehend (Transaktion)
-                          </span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <strong>Betrag:</strong> {tx.amount_btc.toFixed(8)} BTC
+          <TabsContent value="withdrawals" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Auszahlungsanfragen</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {withdrawalRequests.length === 0 ? (
+                  <p className="text-gray-500">Keine offenen Auszahlungsanfragen</p>
+                ) : (
+                  <div className="space-y-4">
+                    {withdrawalRequests.map((tx) => (
+                      <div key={tx.id} className="border rounded-lg p-4 space-y-3">
+                        <div className="flex justify-between items-start">
+                          <div className="space-y-2">
+                            <div>
+                              <span className="text-sm text-gray-600">User:</span>
+                              <span className="ml-2 font-medium">{tx.bitcoin_wallets?.profiles?.email || "Unbekannt"}</span>
+                            </div>
+                            <div>
+                              <span className="text-sm text-gray-600">Eingezahlt:</span>
+                              <span className="ml-2 font-medium">{tx.amount_eur.toFixed(2)} €</span>
+                            </div>
+                            <div>
+                              <span className="text-sm text-gray-600">Aktueller Wert:</span>
+                              <span className="ml-2 font-bold text-green-600">
+                                {(() => {
+                                  const eingezahlt = tx.amount_eur;
+                                  const timestamp = new Date(tx.timestamp).getTime();
+                                  const now = Date.now();
+                                  const hoursPassed = Math.max(0, Math.floor((now - timestamp) / (1000 * 60 * 60)));
+                                  const startBonus = eingezahlt * 1.01;
+                                  const wachstumFaktor = Math.pow(1.0005, hoursPassed);
+                                  const finalBalance = startBonus * wachstumFaktor;
+                                  return finalBalance.toFixed(2);
+                                })()} €
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-sm text-gray-600">Transaktion:</span>
+                              <span className="ml-2 font-mono text-xs">{tx.txid?.substring(0, 16)}...</span>
+                            </div>
+                            <div>
+                              <span className="text-sm text-gray-600">Auszahlung an:</span>
+                              <div className="mt-1 font-mono text-xs bg-gray-100 p-2 rounded break-all">
+                                {tx.withdrawal_address || "Wallet-Adresse nicht verfügbar"}
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <strong>EUR-Wert:</strong> {Number(tx.amount_eur).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
-                          </div>
-                          <div className="col-span-2">
-                            <strong>Auszahlungsadresse:</strong>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              (Siehe Kunden-Chat für die mitgeteilte Wallet-Adresse)
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex gap-2">
-                          <Button
-                            onClick={() => handleTransactionWithdrawal(tx.id, "withdrawn")}
-                            className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                          >
-                            Genehmigen
-                          </Button>
-                          <Button
-                            onClick={() => handleTransactionWithdrawal(tx.id, "active")}
-                            variant="destructive"
-                            className="flex-1"
-                          >
-                            Ablehnen
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-
-                {withdrawals.map(wd => {
-                  const profile = profiles.find(p => p.id === wd.user_id);
-                  return (
-                    <Card key={wd.id}>
-                      <CardHeader>
-                        <CardTitle className="flex items-center justify-between">
-                          <span>{profile?.full_name || profile?.email || "Unbekannt"}</span>
-                          <span className={`text-sm px-3 py-1 rounded-full ${
-                            wd.status === "pending" ? "bg-yellow-100 text-yellow-800" :
-                            wd.status === "approved" ? "bg-green-100 text-green-800" :
-                            "bg-red-100 text-red-800"
-                          }`}>
-                            {wd.status === "pending" ? "Ausstehend" : wd.status === "approved" ? "Genehmigt" : "Abgelehnt"}
-                          </span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <strong>Betrag:</strong> {wd.amount_btc} BTC
-                          </div>
-                          <div>
-                            <strong>EUR-Wert:</strong> {Number(wd.amount_eur).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
-                          </div>
-                          <div className="col-span-2">
-                            <strong>Auszahlungsadresse:</strong>
-                            <p className="font-mono text-xs bg-muted p-2 rounded mt-1 break-all">
-                              {wd.withdrawal_address}
-                            </p>
-                          </div>
-                          <div className="col-span-2 text-xs text-muted-foreground">
-                            Angefragt: {new Date(wd.created_at).toLocaleString('de-DE')}
-                          </div>
-                        </div>
-
-                        {wd.status === "pending" && (
                           <div className="flex gap-2">
                             <Button
-                              onClick={() => handleWithdrawal(wd.id, "approved")}
-                              className="flex-1"
+                              size="sm"
+                              onClick={() => handleTransactionWithdrawal(tx.id, "withdrawn")}
+                              className="bg-green-600 hover:bg-green-700"
                             >
                               Genehmigen
                             </Button>
                             <Button
-                              onClick={() => handleWithdrawal(wd.id, "rejected")}
+                              size="sm"
                               variant="destructive"
-                              className="flex-1"
+                              onClick={() => handleTransactionWithdrawal(tx.id, "active")}
                             >
                               Ablehnen
                             </Button>
                           </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </>
-            )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </DashboardLayout>
