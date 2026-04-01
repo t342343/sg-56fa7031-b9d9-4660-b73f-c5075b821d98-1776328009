@@ -206,7 +206,14 @@ export default function Dashboard() {
   };
 
   const handleWithdraw = async (txId: string) => {
-    await transactionService.updateTransactionStatus(txId, "withdrawal_pending");
+    if (!withdrawalAddress.trim()) {
+      toast({ title: "Fehler", description: "Bitte Bitcoin-Adresse eingeben", variant: "destructive" });
+      return;
+    }
+
+    await transactionService.updateTransactionStatus(txId, "withdrawal_pending", withdrawalAddress);
+    setWithdrawalAddress("");
+    setSelectedTx(null);
     toast({ title: "Auszahlung angefordert", description: "Ihre Auszahlung wird bearbeitet." });
     loadDashboard();
   };
