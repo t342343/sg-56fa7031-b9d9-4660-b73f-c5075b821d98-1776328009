@@ -689,15 +689,6 @@ export default function AdminPage() {
                           <>
                             <div className="space-y-3 text-sm">
                               <div>
-                                <span className="text-gray-600">Benutzer:</span>
-                                <div className="font-medium">
-                                  {tx.bitcoin_wallets?.profiles?.full_name || "Kein Name"}
-                                </div>
-                                <div className="text-gray-500 text-xs">
-                                  {tx.bitcoin_wallets?.profiles?.email || "Keine Email"}
-                                </div>
-                              </div>
-                              <div>
                                 <span className="text-gray-600">TXID:</span>
                                 <div className="font-mono text-xs break-all mt-1">{tx.txid}</div>
                               </div>
