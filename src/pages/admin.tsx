@@ -60,11 +60,18 @@ export default function AdminPage() {
       const existingWallet = wallets.find(w => w.user_id === userId);
       
       if (existingWallet) {
+        console.log("🔄 Updating wallet for user:", userId);
+        console.log("📍 Old address:", existingWallet.wallet_address);
+        console.log("📍 New address:", address);
+        
         // Archiviere ALLE alten Transaktionen BEVOR die Wallet-Adresse geändert wird
+        console.log("🗄️ Archiving old transactions for wallet_id:", existingWallet.id);
         await transactionService.archiveWalletTransactions(existingWallet.id);
         
         // Aktualisiere die Wallet-Adresse
+        console.log("💾 Updating wallet address...");
         await walletService.updateWallet(existingWallet.id, address);
+        console.log("✅ Wallet updated successfully");
         
         toast({ 
           title: "Wallet aktualisiert", 
@@ -72,6 +79,7 @@ export default function AdminPage() {
         });
       } else {
         // Erstelle neue Wallet
+        console.log("➕ Creating new wallet for user:", userId);
         await walletService.assignWallet(userId, address, me.id);
         
         toast({ 
@@ -82,7 +90,7 @@ export default function AdminPage() {
       setWalletAddresses({ ...walletAddresses, [userId]: "" });
       loadData();
     } catch (error) {
-      console.error("Error assigning wallet:", error);
+      console.error("❌ Error assigning wallet:", error);
       toast({ 
         title: "Fehler", 
         description: "Wallet konnte nicht zugewiesen werden.",

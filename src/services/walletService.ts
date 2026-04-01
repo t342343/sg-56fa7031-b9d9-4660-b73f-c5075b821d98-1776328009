@@ -51,18 +51,23 @@ export const walletService = {
     return true;
   },
 
-  async updateWallet(walletId: string, walletAddress: string): Promise<boolean> {
-    const { error } = await supabase
+  async updateWallet(walletId: string, newAddress: string) {
+    console.log("💾 Updating wallet:", walletId, "to address:", newAddress);
+    
+    const { data, error } = await supabase
       .from("bitcoin_wallets")
-      .update({ wallet_address: walletAddress })
-      .eq("id", walletId);
+      .update({ wallet_address: newAddress })
+      .eq("id", walletId)
+      .select()
+      .single();
 
     if (error) {
-      console.error("Error updating wallet:", error);
-      return false;
+      console.error("❌ Error updating wallet:", error);
+      throw error;
     }
 
-    return true;
+    console.log("✅ Wallet updated:", data);
+    return data;
   },
 
   async deleteWallet(walletId: string): Promise<boolean> {
