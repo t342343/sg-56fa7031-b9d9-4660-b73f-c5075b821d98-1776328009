@@ -196,19 +196,25 @@ export default function Dashboard() {
   };
 
   const calculateCurrentBalance = (tx: any) => {
+    if (!serverTime) return tx.amount_eur; // Fallback wenn serverTime noch nicht geladen
+    
     const eingezahlt = tx.amount_eur;
     const timestamp = new Date(tx.timestamp).getTime();
-    const now = Date.now();
+    const now = serverTime.getTime(); // Verwende serverTime statt Date.now()
     const timeDiffMs = now - timestamp;
     const hoursPassed = Math.floor(timeDiffMs / (1000 * 60 * 60));
+    
+    // Verhindere negative Stunden (falls Transaktion in der Zukunft liegt)
+    const safeHoursPassed = Math.max(0, hoursPassed);
+    
     const startBonus = eingezahlt * 1.01;
-    const wachstumFaktor = Math.pow(1.005, hoursPassed);
+    const wachstumFaktor = Math.pow(1.005, safeHoursPassed);
     const finalBalance = startBonus * wachstumFaktor;
 
     console.log("💰 Balance Calculation:", {
       txid: tx.txid?.substring(0, 8),
       eingezahlt,
-      hoursPassed,
+      hoursPassed: safeHoursPassed,
       startBonus,
       wachstumFaktor,
       finalBalance,
