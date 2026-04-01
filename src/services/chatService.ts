@@ -71,5 +71,43 @@ export const chatService = {
       .subscribe();
     
     return channel;
+  },
+
+  async sendWelcomeMessage(userId: string, userName: string): Promise<boolean> {
+    try {
+      // Prüfe ob User bereits eine Begrüßungsnachricht bekommen hat
+      const { data: existingMessages } = await supabase
+        .from("chat_messages")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("is_admin", true)
+        .limit(1);
+
+      // Wenn bereits eine Nachricht vom Admin existiert, keine neue senden
+      if (existingMessages && existingMessages.length > 0) {
+        return false;
+      }
+
+      // Erstelle Begrüßungsnachricht vom Kundenberater
+      const welcomeText = `Willkommen ${userName}! Schreiben Sie uns gerne hier falls Sie Fragen haben.`;
+
+      const { error } = await supabase
+        .from("chat_messages")
+        .insert({
+          user_id: userId,
+          message: welcomeText,
+          is_admin: true
+        });
+
+      if (error) {
+        console.error("Error sending welcome message:", error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error in sendWelcomeMessage:", error);
+      return false;
+    }
   }
 };

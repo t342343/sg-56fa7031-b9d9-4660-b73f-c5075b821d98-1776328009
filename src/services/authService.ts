@@ -1,4 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
+import { chatService } from "./chatService";
+
+type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
 /**
  * Helper function to get the current URL for auth redirects
@@ -89,6 +93,22 @@ export const authService = {
         console.error("GetSession error:", error);
         return null;
       }
+
+      if (session?.user) {
+        // Hole Profil-Daten für Begrüßungsnachricht
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", session.user.id)
+          .single();
+
+        // Sende automatische Begrüßungsnachricht vom Kundenberater
+        if (profile) {
+          const userName = profile.full_name || session.user.email?.split("@")[0] || "User";
+          await chatService.sendWelcomeMessage(session.user.id, userName);
+        }
+      }
+
       return session;
     } catch (err) {
       console.error("GetSession exception:", err);
