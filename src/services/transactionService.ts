@@ -20,6 +20,42 @@ export const transactionService = {
     return data || [];
   },
 
+  // Hole Transaktionen nach Wallet-Adresse (nicht nach wallet_id!)
+  async getTransactionsByWalletAddress(bitcoinAddress: string) {
+    const { data, error } = await supabase
+      .from("transactions")
+      .select(`
+        *,
+        wallet:wallets!inner(bitcoin_address)
+      `)
+      .eq("wallet.bitcoin_address", bitcoinAddress)
+      .eq("status", "active")
+      .order("timestamp", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching transactions by address:", error);
+      throw error;
+    }
+
+    return data || [];
+  },
+
+  // Archiviere alle Transaktionen einer Wallet (beim Wallet-Wechsel)
+  async archiveWalletTransactions(walletId: string) {
+    const { data, error } = await supabase
+      .from("transactions")
+      .update({ status: "archived" })
+      .eq("wallet_id", walletId)
+      .eq("status", "active");
+
+    if (error) {
+      console.error("Error archiving transactions:", error);
+      throw error;
+    }
+
+    return data;
+  },
+
   async addTransaction(transaction: {
     wallet_id: string;
     txid: string;

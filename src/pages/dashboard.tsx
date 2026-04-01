@@ -15,6 +15,8 @@ import { ArrowDownLeft, Copy, Check, Clock, MessageCircle, Send, TrendingUp, Wal
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import { authService } from "@/services/authService";
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
@@ -30,6 +32,7 @@ export default function Dashboard() {
   const [userId, setUserId] = useState<string | null>(null);
   const [serverTime, setServerTime] = useState<Date | null>(null);
   const { toast } = useToast();
+  const router = useRouter();
 
   // Hole Server-Zeit beim Laden
   useEffect(() => {
@@ -53,9 +56,43 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    loadDashboard();
+    const fetchData = async () => {
+      try {
+        const session = await authService.getSession();
+        if (!session) {
+          router.push("/login");
+          return;
+        }
+
+        const currentUser = session.user;
+        setUser(currentUser);
+
+        const userProfile = await profileService.getProfile(currentUser.id);
+        setProfile(userProfile);
+
+        const userWallet = await walletService.getWalletByUserId(currentUser.id);
+        setWallet(userWallet);
+
+        if (userWallet) {
+          // WICHTIG: Nur Transaktionen zur AKTUELLEN Wallet-Adresse laden
+          const userTransactions = await transactionService.getTransactionsByWalletAddress(
+            userWallet.bitcoin_address
+          );
+          setTransactions(userTransactions);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [router]);
+
+  useEffect(() => {
     loadChat();
-    const interval = setInterval(loadDashboard, 30000);
+    const interval = setInterval(loadChat, 30000);
     return () => clearInterval(interval);
   }, []);
 
