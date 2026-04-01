@@ -38,6 +38,22 @@ export const transactionService = {
     return data || [];
   },
 
+  async getWithdrawnTransactionsByWallet(walletId: string) {
+    const { data, error } = await supabase
+      .from("transactions")
+      .select("*")
+      .eq("wallet_id", walletId)
+      .eq("status", "withdrawn")
+      .order("updated_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching withdrawn transactions:", error);
+      return [];
+    }
+
+    return data || [];
+  },
+
   // Hole Transaktionen nach Wallet-Adresse (nicht nach wallet_id!)
   async getTransactionsByWalletAddress(walletAddress: string) {
     // Erst hole die Wallet ID für die Adresse

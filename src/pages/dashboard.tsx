@@ -77,6 +77,44 @@ export default function Dashboard() {
     };
   }, [userId]);
 
+  // Realtime-Listener für Auszahlungsgenehmigungen
+  useEffect(() => {
+    if (!wallet?.id) return;
+
+    const channel = supabase
+      .channel(`transactions-${wallet.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'transactions',
+          filter: `wallet_id=eq.${wallet.id}`
+        },
+        (payload: any) => {
+          // Wenn Status zu "withdrawn" wechselt
+          if (payload.new.status === "withdrawn" && payload.old.status === "withdrawal_pending") {
+            const tx = payload.new;
+            const finalBalance = calculateCurrentBalance(tx);
+            
+            toast({
+              title: "🎉 Auszahlung veranlasst!",
+              description: `${finalBalance.toFixed(2)} € wurden an ${tx.withdrawal_address?.substring(0, 20)}... überwiesen.`,
+              duration: 10000
+            });
+
+            // Dashboard neu laden
+            loadDashboard();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [wallet?.id]);
+
   const loadDashboard = async () => {
     setLoading(true);
     const profile = await profileService.getCurrentProfile();
