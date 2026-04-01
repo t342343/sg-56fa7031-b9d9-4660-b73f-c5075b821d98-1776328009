@@ -20,17 +20,37 @@ export const transactionService = {
     return data || [];
   },
 
-  async addTransaction(transaction: TransactionInsert): Promise<boolean> {
-    const { error } = await supabase
+  async addTransaction(transaction: {
+    wallet_id: string;
+    txid: string;
+    amount_btc: number;
+    eur_rate: number;
+    amount_eur: number;
+    timestamp: string;
+    block_height: number | null;
+    expires_at: string;
+    status?: string;
+  }) {
+    // WICHTIG: Verwende immer die aktuelle Serverzeit für timestamp
+    // um sicherzustellen dass hoursPassed korrekt berechnet wird
+    const now = new Date().toISOString();
+    
+    const { data, error } = await supabase
       .from("transactions")
-      .insert(transaction);
+      .insert({
+        ...transaction,
+        timestamp: now, // Überschreibe mit aktueller Zeit
+        status: transaction.status || "active"
+      })
+      .select()
+      .single();
 
     if (error) {
       console.error("Error adding transaction:", error);
-      return false;
+      throw error;
     }
 
-    return true;
+    return data;
   },
 
   async getBitcoinPrice(): Promise<number> {
