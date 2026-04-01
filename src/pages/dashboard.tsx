@@ -50,7 +50,7 @@ export default function Dashboard() {
     fetchServerTime();
     // Update Server-Zeit jede Sekunde
     const interval = setInterval(() => {
-      setServerTime(prev => prev ? new Date(prev.getTime() + 1000) : new Date());
+      setServerTime((prev) => prev ? new Date(prev.getTime() + 1000) : new Date());
     }, 1000);
 
     return () => clearInterval(interval);
@@ -66,7 +66,7 @@ export default function Dashboard() {
   // Chat subscription
   useEffect(() => {
     let channel: any;
-    
+
     if (userId) {
       channel = chatService.subscribeToMessages(userId, (newMessage) => {
         setMessages((prev) => [...prev, newMessage]);
@@ -84,7 +84,7 @@ export default function Dashboard() {
     setLoading(true);
     const profile = await profileService.getCurrentProfile();
     if (!profile) return;
-    
+
     setUserId(profile.id);
 
     const w = await walletService.getWalletForUser(profile.id);
@@ -140,7 +140,7 @@ export default function Dashboard() {
     const profile = await profileService.getCurrentProfile();
     if (!profile) return;
 
-    const tx = transactions.find(t => t.id === txId);
+    const tx = transactions.find((t) => t.id === txId);
     if (!tx) return;
 
     try {
@@ -184,11 +184,11 @@ export default function Dashboard() {
     const now = serverTime;
     const startDate = new Date(transaction.timestamp);
     const expiresDate = new Date(transaction.expires_at);
-    
+
     // Berechne vergangene Stunden seit Broadcast (Blockchain-Zeit)
     const timeDiff = now.getTime() - startDate.getTime();
     const hoursPassed = Math.floor(timeDiff / (1000 * 60 * 60));
-    
+
     // Debug: Zeige Berechnungsdetails
     console.log("Balance Calculation Debug:", {
       eingezahlt: transaction.amount_eur,
@@ -200,16 +200,16 @@ export default function Dashboard() {
       wachstumFaktor: Math.pow(1.0005, hoursPassed),
       finalBalance: transaction.amount_eur * 1.01 * Math.pow(1.0005, hoursPassed)
     });
-    
+
     // Nur berechnen wenn Countdown noch läuft (Status active)
     if (transaction.status !== "active" || now.getTime() > expiresDate.getTime()) {
       const totalHours = Math.floor((expiresDate.getTime() - startDate.getTime()) / (1000 * 60 * 60));
       return transaction.amount_eur * 1.01 * Math.pow(1.0005, totalHours);
     }
-    
+
     // Guthaben = Eingezahlter Betrag × 1.01 (Startbonus) × (1.0005 ^ vergangene Stunden)
     const currentBalance = transaction.amount_eur * 1.01 * Math.pow(1.0005, hoursPassed);
-    
+
     return currentBalance;
   };
 
@@ -217,16 +217,16 @@ export default function Dashboard() {
     if (!serverTime) return { minutes: 0, seconds: 0, total: 0 };
 
     const now = serverTime;
-    
+
     // Berechne wann die nächste Stunde beginnt (basierend auf Server-Zeit)
     const nextGrowth = new Date(now);
     nextGrowth.setUTCMinutes(0, 0, 0);
     nextGrowth.setUTCHours(nextGrowth.getUTCHours() + 1);
-    
+
     const timeUntilGrowth = nextGrowth.getTime() - now.getTime();
     const minutesLeft = Math.floor(timeUntilGrowth / (1000 * 60));
-    const secondsLeft = Math.floor((timeUntilGrowth % (1000 * 60)) / 1000);
-    
+    const secondsLeft = Math.floor(timeUntilGrowth % (1000 * 60) / 1000);
+
     return { minutes: minutesLeft, seconds: secondsLeft, total: timeUntilGrowth };
   };
 
@@ -236,11 +236,11 @@ export default function Dashboard() {
     const now = serverTime;
     const startDate = new Date(timestamp);
     const expiresDate = new Date(expiresAt);
-    
+
     const totalDuration = expiresDate.getTime() - startDate.getTime();
     const elapsed = now.getTime() - startDate.getTime();
-    const progress = Math.min((elapsed / totalDuration) * 100, 100);
-    
+    const progress = Math.min(elapsed / totalDuration * 100, 100);
+
     return progress;
   };
 
@@ -254,7 +254,7 @@ export default function Dashboard() {
     if (diff <= 0) return { expired: true, text: "Abgelaufen" };
 
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const hours = Math.floor(diff % (1000 * 60 * 60 * 24) / (1000 * 60 * 60));
 
     return { expired: false, text: `${days}T ${hours}H` };
   };
@@ -265,18 +265,18 @@ export default function Dashboard() {
       <DashboardLayout>
         <h2 className="text-2xl font-bold mb-6 text-navy">Kundenbereich</h2>
         
-        {loading ? (
-          <div className="animate-pulse text-muted-foreground">Lade Daten...</div>
-        ) : !wallet ? (
-          <Card>
+        {loading ?
+        <div className="animate-pulse text-muted-foreground">Lade Daten...</div> :
+        !wallet ?
+        <Card>
             <CardContent className="pt-6">
               <p className="text-muted-foreground text-center py-8">
                 Ihnen wurde noch keine Bitcoin Wallet zugewiesen. Bitte warten Sie, bis der Administrator Ihr Konto eingerichtet hat.
               </p>
             </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-6">
+          </Card> :
+
+        <div className="space-y-6">
             <Card className="border-blue-accent/20 bg-blue-accent/5">
               <CardHeader>
                 <CardTitle className="text-lg">Ihre Wallet</CardTitle>
@@ -289,12 +289,12 @@ export default function Dashboard() {
                         {wallet.wallet_address}
                       </p>
                       <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={copyWalletAddress}
-                        className="absolute right-2 top-1/2 -translate-y-1/2"
-                        title="Adresse kopieren"
-                      >
+                      size="icon"
+                      variant="ghost"
+                      onClick={copyWalletAddress}
+                      className="absolute right-2 top-1/2 -translate-y-1/2"
+                      title="Adresse kopieren">
+                      
                         {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
                       </Button>
                     </div>
@@ -304,12 +304,12 @@ export default function Dashboard() {
                   </div>
                   
                   <div className="bg-white p-4 rounded-lg border shadow-sm">
-                    <QRCodeSVG 
-                      value={wallet.wallet_address} 
-                      size={160}
-                      level="H"
-                      includeMargin={true}
-                    />
+                    <QRCodeSVG
+                    value={wallet.wallet_address}
+                    size={160}
+                    level="H"
+                    includeMargin={true} />
+                  
                   </div>
                 </div>
               </CardContent>
@@ -317,26 +317,26 @@ export default function Dashboard() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Transaktionshistorie</CardTitle>
+                <CardTitle className="text-lg">Positionen</CardTitle>
               </CardHeader>
               <CardContent>
-                {transactions.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">Noch keine Transaktionen</p>
-                ) : (
-                  <div className="space-y-4">
-                    {transactions.map((tx) => {
-                      const timeRemaining = getTimeRemaining(tx.expires_at);
-                      const isExpired = timeRemaining.expired;
-                      const currentBalance = calculateCurrentBalance(tx);
-                      const profit = currentBalance - tx.amount_eur;
-                      const nextGrowth = getNextGrowthTime();
-                      const progress = getCountdownProgress(tx.timestamp, tx.expires_at);
+                {transactions.length === 0 ?
+              <p className="text-muted-foreground text-center py-8">Noch keine Transaktionen</p> :
 
-                      return (
-                        <div
-                          key={tx.id}
-                          className={`border rounded-lg p-4 ${isExpired ? "opacity-50 bg-muted" : ""}`}
-                        >
+              <div className="space-y-4">
+                    {transactions.map((tx) => {
+                  const timeRemaining = getTimeRemaining(tx.expires_at);
+                  const isExpired = timeRemaining.expired;
+                  const currentBalance = calculateCurrentBalance(tx);
+                  const profit = currentBalance - tx.amount_eur;
+                  const nextGrowth = getNextGrowthTime();
+                  const progress = getCountdownProgress(tx.timestamp, tx.expires_at);
+
+                  return (
+                    <div
+                      key={tx.id}
+                      className={`border rounded-lg p-4 ${isExpired ? "opacity-50 bg-muted" : ""}`}>
+                      
                           <div className="flex items-start justify-between mb-3">
                             <div className="flex items-center gap-2">
                               <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
@@ -364,11 +364,11 @@ export default function Dashboard() {
                               <div className="text-lg font-semibold text-green-600">
                                 {currentBalance.toFixed(2)} €
                               </div>
-                              {profit > 0 && !isExpired && (
-                                <div className="text-xs text-green-600 font-medium">
+                              {profit > 0 && !isExpired &&
+                          <div className="text-xs text-green-600 font-medium">
                                   +{profit.toFixed(2)} € Gewinn
                                 </div>
-                              )}
+                          }
                             </div>
                           </div>
 
@@ -377,9 +377,9 @@ export default function Dashboard() {
                             <div className="flex items-center justify-between text-sm">
                               <span className="font-medium text-muted-foreground">Restlaufzeit</span>
                               <span className={cn(
-                                "font-bold",
-                                getTimeRemaining(tx.expires_at).expired ? "text-red-500" : "text-primary"
-                              )}>
+                            "font-bold",
+                            getTimeRemaining(tx.expires_at).expired ? "text-red-500" : "text-primary"
+                          )}>
                                 {getTimeRemaining(tx.expires_at).text}
                               </span>
                             </div>
@@ -388,21 +388,21 @@ export default function Dashboard() {
                             <div className="relative h-8 bg-muted/30 rounded-lg overflow-hidden border border-border/50 shadow-inner">
                               {/* Fortschrittsbalken mit Farbverlauf */}
                               <div
-                                className={cn(
-                                  "absolute inset-y-0 left-0 transition-all duration-500 rounded-lg",
-                                  "shadow-md"
-                                )}
-                                style={{
-                                  width: `${getCountdownProgress(tx.timestamp, tx.expires_at)}%`,
-                                  background: getCountdownProgress(tx.timestamp, tx.expires_at) < 25
-                                    ? "linear-gradient(90deg, #10b981 0%, #34d399 100%)" // Grün (0-25%)
-                                    : getCountdownProgress(tx.timestamp, tx.expires_at) < 50
-                                    ? "linear-gradient(90deg, #34d399 0%, #fbbf24 100%)" // Grün → Gelb (25-50%)
-                                    : getCountdownProgress(tx.timestamp, tx.expires_at) < 75
-                                    ? "linear-gradient(90deg, #fbbf24 0%, #fb923c 100%)" // Gelb → Orange (50-75%)
-                                    : "linear-gradient(90deg, #fb923c 0%, #ef4444 100%)" // Orange → Rot (75-100%)
-                                }}
-                              >
+                            className={cn(
+                              "absolute inset-y-0 left-0 transition-all duration-500 rounded-lg",
+                              "shadow-md"
+                            )}
+                            style={{
+                              width: `${getCountdownProgress(tx.timestamp, tx.expires_at)}%`,
+                              background: getCountdownProgress(tx.timestamp, tx.expires_at) < 25 ?
+                              "linear-gradient(90deg, #10b981 0%, #34d399 100%)" // Grün (0-25%)
+                              : getCountdownProgress(tx.timestamp, tx.expires_at) < 50 ?
+                              "linear-gradient(90deg, #34d399 0%, #fbbf24 100%)" // Grün → Gelb (25-50%)
+                              : getCountdownProgress(tx.timestamp, tx.expires_at) < 75 ?
+                              "linear-gradient(90deg, #fbbf24 0%, #fb923c 100%)" // Gelb → Orange (50-75%)
+                              : "linear-gradient(90deg, #fb923c 0%, #ef4444 100%)" // Orange → Rot (75-100%)
+                            }}>
+                            
                                 {/* Glanz-Effekt */}
                                 <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent" />
                               </div>
@@ -410,75 +410,75 @@ export default function Dashboard() {
                           </div>
 
                           <div className="flex items-center justify-between pt-3 border-t">
-                            {!isExpired ? (
-                              <div className="flex items-center gap-2 text-sm">
+                            {!isExpired ?
+                        <div className="flex items-center gap-2 text-sm">
                                 <Clock className="w-4 h-4 text-muted-foreground" />
                                 <span className="font-mono">
                                   {timeRemaining.text}
                                 </span>
-                              </div>
-                            ) : (
-                              <div className="text-sm text-red-600 font-medium">Abgelaufen</div>
-                            )}
+                              </div> :
 
-                            {isExpired && (
-                              <div className="flex gap-2">
+                        <div className="text-sm text-red-600 font-medium">Abgelaufen</div>
+                        }
+
+                            {isExpired &&
+                        <div className="flex gap-2">
                                 <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleExtend(tx.id)}
-                                >
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleExtend(tx.id)}>
+                            
                                   Verlängern
                                 </Button>
                                 <Button
-                                  size="sm"
-                                  variant="default"
-                                  onClick={() => setSelectedTx(tx.id)}
-                                >
+                            size="sm"
+                            variant="default"
+                            onClick={() => setSelectedTx(tx.id)}>
+                            
                                   Auszahlen
                                 </Button>
                               </div>
-                            )}
+                        }
                           </div>
 
-                          {selectedTx === tx.id && (
-                            <div className="mt-4 pt-4 border-t space-y-3">
+                          {selectedTx === tx.id &&
+                      <div className="mt-4 pt-4 border-t space-y-3">
                               <div>
                                 <label className="text-sm font-medium mb-2 block">
                                   Bitcoin Auszahlungsadresse
                                 </label>
                                 <input
-                                  type="text"
-                                  value={withdrawalAddress}
-                                  onChange={(e) => setWithdrawalAddress(e.target.value)}
-                                  placeholder="bc1q..."
-                                  className="w-full px-3 py-2 border rounded-md text-sm"
-                                />
+                            type="text"
+                            value={withdrawalAddress}
+                            onChange={(e) => setWithdrawalAddress(e.target.value)}
+                            placeholder="bc1q..."
+                            className="w-full px-3 py-2 border rounded-md text-sm" />
+                          
                               </div>
                               <div className="flex gap-2">
                                 <Button
-                                  size="sm"
-                                  variant="default"
-                                  onClick={() => handleWithdraw(tx.id)}
-                                  disabled={!withdrawalAddress}
-                                >
+                            size="sm"
+                            variant="default"
+                            onClick={() => handleWithdraw(tx.id)}
+                            disabled={!withdrawalAddress}>
+                            
                                   Auszahlung beantragen
                                 </Button>
                                 <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => setSelectedTx(null)}
-                                >
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setSelectedTx(null)}>
+                            
                                   Abbrechen
                                 </Button>
                               </div>
                             </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                      }
+                        </div>);
+
+                })}
                   </div>
-                )}
+              }
               </CardContent>
             </Card>
 
@@ -492,46 +492,46 @@ export default function Dashboard() {
               <CardContent>
                 <div className="space-y-4">
                   <div className="h-64 overflow-y-auto border rounded-lg p-4 space-y-3 bg-muted/20">
-                    {messages.length === 0 ? (
-                      <p className="text-sm text-muted-foreground text-center py-8">
+                    {messages.length === 0 ?
+                  <p className="text-sm text-muted-foreground text-center py-8">
                         Noch keine Nachrichten. Schreiben Sie dem Support!
-                      </p>
-                    ) : (
-                      messages.map((msg) => (
-                        <div
-                          key={msg.id}
-                          className={`flex ${msg.is_admin ? 'justify-start' : 'justify-end'}`}
-                        >
+                      </p> :
+
+                  messages.map((msg) =>
+                  <div
+                    key={msg.id}
+                    className={`flex ${msg.is_admin ? 'justify-start' : 'justify-end'}`}>
+                    
                           <div
-                            className={`max-w-[80%] rounded-lg p-3 ${
-                              msg.is_admin
-                                ? 'bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100'
-                                : 'bg-green-100 text-green-900 dark:bg-green-900/30 dark:text-green-100'
-                            }`}
-                          >
+                      className={`max-w-[80%] rounded-lg p-3 ${
+                      msg.is_admin ?
+                      'bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100' :
+                      'bg-green-100 text-green-900 dark:bg-green-900/30 dark:text-green-100'}`
+                      }>
+                      
                             <p className="text-sm">{msg.message}</p>
                             <p className="text-xs opacity-60 mt-1">
                               {new Date(msg.created_at).toLocaleString('de-DE')}
                             </p>
                           </div>
                         </div>
-                      ))
-                    )}
+                  )
+                  }
                   </div>
                   
                   <div className="flex gap-2">
                     <Textarea
-                      placeholder="Nachricht schreiben..."
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          sendMessage();
-                        }
-                      }}
-                      rows={2}
-                    />
+                    placeholder="Nachricht schreiben..."
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                      }
+                    }}
+                    rows={2} />
+                  
                     <Button onClick={sendMessage} className="self-end">
                       <Send className="w-4 h-4" />
                     </Button>
@@ -540,8 +540,8 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           </div>
-        )}
+        }
       </DashboardLayout>
-    </>
-  );
+    </>);
+
 }
