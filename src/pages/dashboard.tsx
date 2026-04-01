@@ -372,21 +372,10 @@ export default function Dashboard() {
                             </div>
                           </div>
 
-                          {!isExpired && nextGrowth.total > 0 && (
-                            <div className="mb-3 p-2 bg-green-50 dark:bg-green-900/10 rounded-md border border-green-200 dark:border-green-800">
-                              <div className="flex items-center gap-2 text-xs text-green-700 dark:text-green-400">
-                                <TrendingUp className="w-3 h-3" />
-                                <span className="font-medium">
-                                  Nächstes Wachstum (+0.05%) in {nextGrowth.minutes}min {nextGrowth.seconds}s
-                                </span>
-                              </div>
-                            </div>
-                          )}
-
                           {/* 14-Tage Countdown mit visuell verbessertem Fortschrittsbalken */}
                           <div className="space-y-3">
                             <div className="flex items-center justify-between text-sm">
-                              <span className="font-medium text-muted-foreground">Investment-Laufzeit</span>
+                              <span className="font-medium text-muted-foreground">Restlaufzeit</span>
                               <span className={cn(
                                 "font-bold",
                                 getTimeRemaining(tx.expires_at).expired ? "text-red-500" : "text-primary"
