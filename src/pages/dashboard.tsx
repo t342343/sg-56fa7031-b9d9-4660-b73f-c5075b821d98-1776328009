@@ -138,7 +138,7 @@ export default function Dashboard() {
 
     const interval = setInterval(() => {
       console.log("🔄 Auto-refresh: Checking for new transactions...");
-      handleCheckTransactions();
+      manualCheckTransactions();
     }, 30000); // 30 Sekunden
 
     return () => clearInterval(interval);
