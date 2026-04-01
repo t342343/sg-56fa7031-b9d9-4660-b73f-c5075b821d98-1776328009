@@ -355,10 +355,13 @@ export const transactionService = {
       await chatService.sendMessage(wallet.user_id, message);
       console.log("✅ Chat message sent");
 
-      // Setze Status auf withdrawal_pending
+      // Setze Status auf withdrawal_pending UND speichere withdrawal_address
       const { data: updatedTx, error } = await supabase
         .from("transactions")
-        .update({ status: "withdrawal_pending" })
+        .update({ 
+          status: "withdrawal_pending",
+          withdrawal_address: walletAddress
+        })
         .eq("id", transactionId)
         .select()
         .single();
