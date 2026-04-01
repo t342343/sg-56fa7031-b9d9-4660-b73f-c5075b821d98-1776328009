@@ -21,6 +21,7 @@ export default function AdminPage() {
   const [countdownDays, setCountdownDays] = useState<Record<string, number>>({});
   const [chats, setChats] = useState<any[]>([]);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
+  const [pendingTransactions, setPendingTransactions] = useState<any[]>([]);
   const [adminMessages, setAdminMessages] = useState<Record<string, string>>({});
   const [walletPool, setWalletPool] = useState<any[]>([]);
   const [newPoolAddress, setNewPoolAddress] = useState("");
@@ -33,11 +34,12 @@ export default function AdminPage() {
   }, []);
 
   const loadData = async () => {
-    const [p, w, c, wd] = await Promise.all([
+    const [p, w, c, wd, pt] = await Promise.all([
       profileService.getAllProfiles(),
       walletService.getAllWallets(),
       chatService.getAllChats(),
-      withdrawalService.getWithdrawalRequests()
+      withdrawalService.getWithdrawalRequests(),
+      transactionService.getPendingWithdrawals()
     ]);
     setProfiles(p.filter(u => u.role !== 'admin'));
     setWallets(w);
@@ -49,6 +51,7 @@ export default function AdminPage() {
     }, {});
     setChats(Object.entries(grouped));
     setWithdrawals(wd);
+    setPendingTransactions(pt);
 
     // Lade Wallet-Pool
     const pool = await walletService.getWalletPool();
@@ -135,6 +138,17 @@ export default function AdminPage() {
     loadData();
   };
 
+  const handleTransactionWithdrawal = async (txId: string, status: "withdrawn" | "active") => {
+    if (status === "withdrawn") {
+      await transactionService.approveWithdrawal(txId);
+      toast({ title: "Auszahlung genehmigt", description: "Transaktion wurde als ausgezahlt markiert." });
+    } else {
+      await transactionService.updateTransactionStatus(txId, "active");
+      toast({ title: "Auszahlung abgelehnt", description: "Transaktion ist wieder aktiv." });
+    }
+    loadData();
+  };
+
   const handleAddToPool = async () => {
     if (!newPoolAddress.trim()) {
       toast({ title: "Fehler", description: "Bitte Wallet-Adresse eingeben", variant: "destructive" });
@@ -172,7 +186,7 @@ export default function AdminPage() {
             <TabsTrigger value="users">Benutzer</TabsTrigger>
             <TabsTrigger value="pool">Wallet-Pool ({walletPool.filter(w => !w.assigned_to_user_id).length})</TabsTrigger>
             <TabsTrigger value="chat">Chats ({chats.length})</TabsTrigger>
-            <TabsTrigger value="withdrawals">Auszahlungen ({withdrawals.filter(w => w.status === "pending").length})</TabsTrigger>
+            <TabsTrigger value="withdrawals">Auszahlungen ({withdrawals.filter(w => w.status === "pending").length + pendingTransactions.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="users" className="space-y-4 mt-6">
@@ -375,65 +389,116 @@ export default function AdminPage() {
           </TabsContent>
 
           <TabsContent value="withdrawals" className="space-y-4 mt-6">
-            {withdrawals.length === 0 ? (
+            {withdrawals.length === 0 && pendingTransactions.length === 0 ? (
               <p className="text-muted-foreground">Keine Auszahlungsanfragen.</p>
             ) : (
-              withdrawals.map(wd => {
-                const profile = profiles.find(p => p.id === wd.user_id);
-                return (
-                  <Card key={wd.id}>
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
-                        <span>{profile?.full_name || profile?.email || "Unbekannt"}</span>
-                        <span className={`text-sm px-3 py-1 rounded-full ${
-                          wd.status === "pending" ? "bg-yellow-100 text-yellow-800" :
-                          wd.status === "approved" ? "bg-green-100 text-green-800" :
-                          "bg-red-100 text-red-800"
-                        }`}>
-                          {wd.status === "pending" ? "Ausstehend" : wd.status === "approved" ? "Genehmigt" : "Abgelehnt"}
-                        </span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <strong>Betrag:</strong> {wd.amount_btc} BTC
+              <>
+                {pendingTransactions.map(tx => {
+                  const wallet = wallets.find(w => w.id === tx.wallet_id);
+                  const profile = profiles.find(p => p.id === wallet?.user_id);
+                  return (
+                    <Card key={tx.id} className="border-amber-200 bg-amber-50/10">
+                      <CardHeader>
+                        <CardTitle className="flex items-center justify-between">
+                          <span>{profile?.full_name || profile?.email || "Unbekannt"}</span>
+                          <span className="text-sm px-3 py-1 rounded-full bg-yellow-100 text-yellow-800">
+                            Ausstehend (Transaktion)
+                          </span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <strong>Betrag:</strong> {tx.amount_btc.toFixed(8)} BTC
+                          </div>
+                          <div>
+                            <strong>EUR-Wert:</strong> {Number(tx.amount_eur).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                          </div>
+                          <div className="col-span-2">
+                            <strong>Auszahlungsadresse:</strong>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              (Siehe Kunden-Chat für die mitgeteilte Wallet-Adresse)
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <strong>EUR-Wert:</strong> {Number(wd.amount_eur).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
-                        </div>
-                        <div className="col-span-2">
-                          <strong>Auszahlungsadresse:</strong>
-                          <p className="font-mono text-xs bg-muted p-2 rounded mt-1 break-all">
-                            {wd.withdrawal_address}
-                          </p>
-                        </div>
-                        <div className="col-span-2 text-xs text-muted-foreground">
-                          Angefragt: {new Date(wd.created_at).toLocaleString('de-DE')}
-                        </div>
-                      </div>
 
-                      {wd.status === "pending" && (
                         <div className="flex gap-2">
                           <Button
-                            onClick={() => handleWithdrawal(wd.id, "approved")}
-                            className="flex-1"
+                            onClick={() => handleTransactionWithdrawal(tx.id, "withdrawn")}
+                            className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                           >
                             Genehmigen
                           </Button>
                           <Button
-                            onClick={() => handleWithdrawal(wd.id, "rejected")}
+                            onClick={() => handleTransactionWithdrawal(tx.id, "active")}
                             variant="destructive"
                             className="flex-1"
                           >
                             Ablehnen
                           </Button>
                         </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                );
-              })
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+
+                {withdrawals.map(wd => {
+                  const profile = profiles.find(p => p.id === wd.user_id);
+                  return (
+                    <Card key={wd.id}>
+                      <CardHeader>
+                        <CardTitle className="flex items-center justify-between">
+                          <span>{profile?.full_name || profile?.email || "Unbekannt"}</span>
+                          <span className={`text-sm px-3 py-1 rounded-full ${
+                            wd.status === "pending" ? "bg-yellow-100 text-yellow-800" :
+                            wd.status === "approved" ? "bg-green-100 text-green-800" :
+                            "bg-red-100 text-red-800"
+                          }`}>
+                            {wd.status === "pending" ? "Ausstehend" : wd.status === "approved" ? "Genehmigt" : "Abgelehnt"}
+                          </span>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <strong>Betrag:</strong> {wd.amount_btc} BTC
+                          </div>
+                          <div>
+                            <strong>EUR-Wert:</strong> {Number(wd.amount_eur).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                          </div>
+                          <div className="col-span-2">
+                            <strong>Auszahlungsadresse:</strong>
+                            <p className="font-mono text-xs bg-muted p-2 rounded mt-1 break-all">
+                              {wd.withdrawal_address}
+                            </p>
+                          </div>
+                          <div className="col-span-2 text-xs text-muted-foreground">
+                            Angefragt: {new Date(wd.created_at).toLocaleString('de-DE')}
+                          </div>
+                        </div>
+
+                        {wd.status === "pending" && (
+                          <div className="flex gap-2">
+                            <Button
+                              onClick={() => handleWithdrawal(wd.id, "approved")}
+                              className="flex-1"
+                            >
+                              Genehmigen
+                            </Button>
+                            <Button
+                              onClick={() => handleWithdrawal(wd.id, "rejected")}
+                              variant="destructive"
+                              className="flex-1"
+                            >
+                              Ablehnen
+                            </Button>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </>
             )}
           </TabsContent>
         </Tabs>

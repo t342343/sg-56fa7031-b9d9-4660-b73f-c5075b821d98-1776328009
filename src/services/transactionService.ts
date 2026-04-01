@@ -352,5 +352,20 @@ export const transactionService = {
     }
 
     return true;
+  },
+
+  async getPendingWithdrawals(): Promise<Transaction[]> {
+    const { data, error } = await supabase
+      .from("transactions")
+      .select("*")
+      .eq("status", "withdrawal_pending")
+      .order("timestamp", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching pending withdrawals:", error);
+      return [];
+    }
+
+    return data || [];
   }
 };
