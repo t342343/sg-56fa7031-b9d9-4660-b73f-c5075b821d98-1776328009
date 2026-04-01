@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
-import { ArrowDownLeft, Copy, Check, Clock, MessageCircle, Send, TrendingUp, Wallet, Bitcoin, ArrowDownRight } from "lucide-react";
+import { ArrowDownLeft, Copy, Check, Clock, MessageCircle, Send, TrendingUp, Wallet } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -22,7 +22,7 @@ export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [wallet, setWallet] = useState<any>(null);
-  const [transactions, setTransactions] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [withdrawalAddress, setWithdrawalAddress] = useState("");
@@ -31,11 +31,10 @@ export default function Dashboard() {
   const [copied, setCopied] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [serverTime, setServerTime] = useState<Date | null>(null);
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [transactionCountdowns, setTransactionCountdowns] = useState<Record<string, string>>({});
   const { toast } = useToast();
   const router = useRouter();
-  const [withdrawAmount, setWithdrawAmount] = useState("");
-  const [countdown, setCountdown] = useState<string>("01:00:00");
-  const [transactionCountdowns, setTransactionCountdowns] = useState<Record<string, string>>({});
 
   // Hole Server-Zeit beim Laden
   useEffect(() => {
@@ -61,10 +60,9 @@ export default function Dashboard() {
   useEffect(() => {
     loadDashboard();
 
-    // Auto-refresh alle 30 Sekunden
     const interval = setInterval(loadDashboard, 30000);
 
-    // Countdown Update jede Sekunde für ALLE Transaktionen
+    // Countdown Update jede Sekunde
     const countdownInterval = setInterval(() => {
       if (transactions.length > 0) {
         const newCountdowns: Record<string, string> = {};
@@ -299,36 +297,57 @@ export default function Dashboard() {
             </p>
           </div>
 
-          {/* Stats */}
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Gesamtgewinn</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card className="relative overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Gesamt-Guthaben
+                  </CardTitle>
+                  <Wallet className="h-4 w-4 text-primary" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{calculateTotalProfit().toFixed(2)} €</div>
+                <div className="text-3xl font-bold text-primary">
+                  {calculateTotalBalance().toLocaleString("de-DE", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  })} €
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Aus {transactions.length} {transactions.length === 1 ? "Position" : "Positionen"}
+                </p>
               </CardContent>
+              <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-primary/5 blur-2xl" />
             </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Gesamtguthaben</CardTitle>
-                <Wallet className="h-4 w-4 text-muted-foreground" />
+            <Card className="relative overflow-hidden border-green-500/20 bg-gradient-to-br from-green-500/5 to-background">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Gesamt-Gewinn
+                  </CardTitle>
+                  <TrendingUp className="h-4 w-4 text-green-500" />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{calculateTotalBalance().toFixed(2)} €</div>
+                <div className={cn(
+                  "text-3xl font-bold",
+                  calculateTotalProfit() >= 0 ? "text-green-500" : "text-red-500"
+                )}>
+                  {calculateTotalProfit() >= 0 ? "+" : ""}
+                  {calculateTotalProfit().toLocaleString("de-DE", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  })} €
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {transactions.length > 0 
+                    ? ((calculateTotalProfit() / transactions.reduce((sum, tx) => sum + tx.amount_eur, 0)) * 100).toFixed(2) 
+                    : "0.00"}% Rendite
+                </p>
               </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Verfügbar für Auszahlung</CardTitle>
-                <ArrowDownRight className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{calculateTotalProfit().toFixed(2)} €</div>
-              </CardContent>
+              <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-green-500/5 blur-2xl" />
             </Card>
           </div>
 
@@ -430,9 +449,14 @@ export default function Dashboard() {
                                   {currentBalance.toFixed(2)} €
                                 </div>
                                 {profit > 0 && !isExpired && (
-                                  <div className="text-xs text-green-600 font-medium">
-                                    +{profit.toFixed(2)} € Gewinn
-                                  </div>
+                                  <>
+                                    <div className="text-xs text-green-600 font-medium">
+                                      +{profit.toFixed(2)} € Gewinn
+                                    </div>
+                                    <div className="text-[10px] text-muted-foreground mt-0.5">
+                                      Nächster in {transactionCountdowns[tx.id] || "01:00:00"}
+                                    </div>
+                                  </>
                                 )}
                               </div>
                             </div>
@@ -467,17 +491,6 @@ export default function Dashboard() {
                                 >
                                   <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent" />
                                 </div>
-                              </div>
-                              
-                              {/* Countdown für nächsten Gewinn */}
-                              <div className="flex items-center justify-between text-sm pt-2 border-t">
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                  <Clock className="w-4 h-4" />
-                                  <span>Nächster Gewinn in</span>
-                                </div>
-                                <span className="font-mono font-bold text-primary">
-                                  {transactionCountdowns[tx.id] || "01:00:00"}
-                                </span>
                               </div>
                             </div>
 
