@@ -179,7 +179,9 @@ export function AuthForm() {
 
         // Logout nach Registrierung und Umleitung zum Login
         await supabase.auth.signOut();
-        router.push("/login");
+        
+        // Verwende window.location für zuverlässige Umleitung
+        window.location.href = "/login";
 
       } catch (profileError: any) {
         console.error("Profile creation error:", profileError);
