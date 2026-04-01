@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { authService } from "@/services/authService";
+import { Progress } from "@/components/ui/progress";
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
@@ -556,37 +557,25 @@ export default function Dashboard() {
                               </div>
                             </div>
 
-                            <div className="space-y-3">
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="font-medium text-muted-foreground">Restlaufzeit</span>
-                                <span className={cn(
-                              "font-bold",
-                              getTimeRemaining(tx.expires_at).expired ? "text-red-500" : "text-primary"
-                            )}>
-                                  {getTimeRemaining(tx.expires_at).text}
+                            <div className="space-y-2">
+                              <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Laufzeit</span>
+                                <span className="font-medium">
+                                  {daysUntilMaturity !== null 
+                                    ? daysUntilMaturity > 0 
+                                      ? `${daysUntilMaturity} Tage verbleibend`
+                                      : "Abgelaufen"
+                                    : "N/A"}
                                 </span>
                               </div>
-                              
-                              <div className="relative h-8 bg-muted/30 rounded-lg overflow-hidden border border-border/50 shadow-inner">
-                                <div
-                              className={cn(
-                                "absolute inset-y-0 left-0 transition-all duration-500 rounded-lg",
-                                "shadow-md"
-                              )}
-                              style={{
-                                width: `${getCountdownProgress(tx.timestamp, tx.expires_at)}%`,
-                                background: getCountdownProgress(tx.timestamp, tx.expires_at) < 25 ?
-                                "linear-gradient(90deg, #10b981 0%, #34d399 100%)" :
-                                getCountdownProgress(tx.timestamp, tx.expires_at) < 50 ?
-                                "linear-gradient(90deg, #34d399 0%, #fbbf24 100%)" :
-                                getCountdownProgress(tx.timestamp, tx.expires_at) < 75 ?
-                                "linear-gradient(90deg, #fbbf24 0%, #fb923c 100%)" :
-                                "linear-gradient(90deg, #fb923c 0%, #ef4444 100%)"
-                              }}>
-                              
-                                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent" />
-                                </div>
-                              </div>
+                              <Progress 
+                                value={
+                                  daysUntilMaturity !== null && tx.maturity_days
+                                    ? Math.max(0, Math.min(100, (daysUntilMaturity / tx.maturity_days) * 100))
+                                    : 0
+                                }
+                                className="h-2 [&>div]:bg-blue-600"
+                              />
                             </div>
 
                             <div className="flex items-center justify-between pt-3 border-t">
