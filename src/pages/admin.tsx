@@ -271,15 +271,20 @@ export default function AdminPage() {
     }
   };
 
+  const handleWithdraw = async (txId: string) => {
+    await transactionService.updateTransactionStatus(txId, "withdrawal_pending");
+    toast({ title: "Auszahlung angefordert", description: "Die Transaktion wurde zur Auszahlung markiert." });
+    loadData();
+  };
+
   // Berechne Gesamtrendite aller aktiven Transaktionen
   const calculateTotalYield = () => {
+    const activeTransactions = transactions.filter(t => t.status === "active");
     return activeTransactions.reduce((sum, tx) => {
       const daysActive = Math.floor((Date.now() - new Date(tx.timestamp).getTime()) / (1000 * 60 * 60 * 24));
       const dailyYield = tx.amount_eur * 0.01; // 1% pro Tag Standard
       
-      // Prüfe ob verlängert (maturity_days === 14 und status === "extended")
-      const isExtended = tx.status === "extended";
-      const multiplier = isExtended ? 2 : 1; // 2x Rendite bei Verlängerung
+      const multiplier = tx.is_extended ? 2 : 1; // 2x Rendite bei Verlängerung
       
       return sum + (daysActive * dailyYield * multiplier);
     }, 0);

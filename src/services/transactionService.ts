@@ -350,7 +350,6 @@ export const transactionService = {
       maturity_date: maturityDate,
     };
 
-    // Speichere maturity_days explizit, auch wenn 0
     if (maturityDays !== undefined) {
       updateData.maturity_days = maturityDays;
     }
@@ -362,6 +361,30 @@ export const transactionService = {
 
     if (error) {
       console.error("Error updating maturity date:", error);
+      return false;
+    }
+    return true;
+  },
+
+  async extendMaturity(transactionId: string, maturityDate: string, maturityDays: number, instantBonusEur: number) {
+    // Hole aktuelle Transaktion für den Amount
+    const { data: tx } = await supabase.from("transactions").select("amount_eur").eq("id", transactionId).single();
+    if (!tx) return false;
+
+    const newAmount = tx.amount_eur + instantBonusEur;
+
+    const { error } = await supabase
+      .from("transactions")
+      .update({
+        maturity_date: maturityDate,
+        maturity_days: maturityDays,
+        is_extended: true,
+        amount_eur: newAmount
+      })
+      .eq("id", transactionId);
+
+    if (error) {
+      console.error("Error extending maturity:", error);
       return false;
     }
     return true;
