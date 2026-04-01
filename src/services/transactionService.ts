@@ -374,7 +374,8 @@ export const transactionService = {
     const newAmount = tx.amount_eur + instantBonusEur;
     
     // Berechne neues expires_at Datum (14 Tage ab jetzt)
-    const newExpiresAt = new Date();
+    const now = new Date();
+    const newExpiresAt = new Date(now);
     newExpiresAt.setDate(newExpiresAt.getDate() + 14);
 
     const { error } = await supabase
@@ -384,7 +385,8 @@ export const transactionService = {
         maturity_days: maturityDays,
         is_extended: true,
         amount_eur: newAmount,
-        expires_at: newExpiresAt.toISOString()
+        expires_at: newExpiresAt.toISOString(),
+        timestamp: now.toISOString()
       })
       .eq("id", transactionId);
 
