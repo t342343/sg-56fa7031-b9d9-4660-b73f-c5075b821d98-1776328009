@@ -94,5 +94,51 @@ export const walletService = {
 
     if (error) throw error;
     return data;
+  },
+
+  // ========================================
+  // WALLET POOL FUNKTIONEN
+  // ========================================
+  async getWalletPool() {
+    const { data, error } = await supabase
+      .from("wallet_pool")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching wallet pool:", error);
+      return [];
+    }
+
+    return data || [];
+  },
+
+  async addToWalletPool(walletAddress: string) {
+    const { data, error } = await supabase
+      .from("wallet_pool")
+      .insert({ wallet_address: walletAddress })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error adding to wallet pool:", error);
+      throw error;
+    }
+
+    return data;
+  },
+
+  async removeFromWalletPool(poolId: string) {
+    const { error } = await supabase
+      .from("wallet_pool")
+      .delete()
+      .eq("id", poolId);
+
+    if (error) {
+      console.error("Error removing from wallet pool:", error);
+      throw error;
+    }
+
+    return true;
   }
 };

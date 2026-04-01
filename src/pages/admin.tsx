@@ -22,6 +22,8 @@ export default function AdminPage() {
   const [chats, setChats] = useState<any[]>([]);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [adminMessages, setAdminMessages] = useState<Record<string, string>>({});
+  const [walletPool, setWalletPool] = useState<any[]>([]);
+  const [newPoolAddress, setNewPoolAddress] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -47,6 +49,10 @@ export default function AdminPage() {
     }, {});
     setChats(Object.entries(grouped));
     setWithdrawals(wd);
+
+    // Lade Wallet-Pool
+    const pool = await walletService.getWalletPool();
+    setWalletPool(pool);
   };
 
   const handleAssignWallet = async (userId: string) => {
@@ -129,6 +135,32 @@ export default function AdminPage() {
     loadData();
   };
 
+  const handleAddToPool = async () => {
+    if (!newPoolAddress.trim()) {
+      toast({ title: "Fehler", description: "Bitte Wallet-Adresse eingeben", variant: "destructive" });
+      return;
+    }
+
+    try {
+      await walletService.addToWalletPool(newPoolAddress.trim());
+      toast({ title: "Wallet zum Pool hinzugefügt" });
+      setNewPoolAddress("");
+      loadData();
+    } catch (error) {
+      toast({ title: "Fehler", description: "Wallet-Adresse existiert bereits oder ist ungültig", variant: "destructive" });
+    }
+  };
+
+  const handleRemoveFromPool = async (poolId: string) => {
+    try {
+      await walletService.removeFromWalletPool(poolId);
+      toast({ title: "Wallet aus Pool entfernt" });
+      loadData();
+    } catch (error) {
+      toast({ title: "Fehler", description: "Wallet konnte nicht entfernt werden", variant: "destructive" });
+    }
+  };
+
   return (
     <>
       <SEO title="Admin-Panel - Finanzportal" />
@@ -136,8 +168,9 @@ export default function AdminPage() {
         <h2 className="text-2xl font-bold mb-6 text-navy">Admin-Panel</h2>
         
         <Tabs defaultValue="users" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="users">Benutzer</TabsTrigger>
+            <TabsTrigger value="pool">Wallet-Pool ({walletPool.filter(w => !w.assigned_to_user_id).length})</TabsTrigger>
             <TabsTrigger value="chat">Chats ({chats.length})</TabsTrigger>
             <TabsTrigger value="withdrawals">Auszahlungen ({withdrawals.filter(w => w.status === "pending").length})</TabsTrigger>
           </TabsList>
@@ -206,6 +239,84 @@ export default function AdminPage() {
                 );
               })
             )}
+          </TabsContent>
+
+          <TabsContent value="pool" className="space-y-4 mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Neue Wallet-Adresse zum Pool hinzufügen</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-2">
+                  <Input 
+                    placeholder="Bitcoin Wallet-Adresse (bc1...)" 
+                    value={newPoolAddress}
+                    onChange={e => setNewPoolAddress(e.target.value)}
+                    className="flex-1 font-mono text-sm"
+                  />
+                  <Button onClick={handleAddToPool}>
+                    Hinzufügen
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Maximale Pool-Größe: 20 Adressen. Bei neuer Registrierung wird automatisch eine freie Adresse zugewiesen.
+                </p>
+              </CardContent>
+            </Card>
+
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold">
+                Vorrätige Wallets ({walletPool.filter(w => !w.assigned_to_user_id).length} verfügbar / {walletPool.length} gesamt)
+              </h3>
+              
+              {walletPool.length === 0 ? (
+                <p className="text-muted-foreground">Noch keine Wallets im Pool.</p>
+              ) : (
+                walletPool.map(wallet => {
+                  const isAssigned = !!wallet.assigned_to_user_id;
+                  const assignedUser = isAssigned ? profiles.find(p => p.id === wallet.assigned_to_user_id) : null;
+                  
+                  return (
+                    <Card key={wallet.id} className={isAssigned ? "bg-muted/30" : ""}>
+                      <CardContent className="py-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="font-mono text-sm break-all">
+                              {wallet.wallet_address}
+                            </div>
+                            <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+                              {isAssigned ? (
+                                <>
+                                  <span className="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200 rounded">
+                                    Zugewiesen
+                                  </span>
+                                  <span>→ {assignedUser?.full_name || assignedUser?.email || "Unbekannt"}</span>
+                                  <span>am {new Date(wallet.assigned_at).toLocaleDateString('de-DE')}</span>
+                                </>
+                              ) : (
+                                <span className="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200 rounded">
+                                  Verfügbar
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {!isAssigned && (
+                            <Button 
+                              variant="destructive" 
+                              size="sm"
+                              onClick={() => handleRemoveFromPool(wallet.id)}
+                            >
+                              Entfernen
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              )}
+            </div>
           </TabsContent>
 
           <TabsContent value="chat" className="space-y-4 mt-6">
