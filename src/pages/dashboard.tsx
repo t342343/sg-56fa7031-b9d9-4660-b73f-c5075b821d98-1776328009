@@ -179,38 +179,35 @@ export default function Dashboard() {
     loadChat();
   };
 
+  const handleCopyAddress = () => {
+    if (wallet?.wallet_address) {
+      navigator.clipboard.writeText(wallet.wallet_address);
+      toast({ title: "Kopiert!", description: "Wallet-Adresse in Zwischenablage kopiert" });
+    }
+  };
+
   const handleExtend = async (txId: string) => {
-    try {
-      await transactionService.extendTransaction(txId, wallet.countdown_days ?? 14);
-      toast({ title: "Verlängert", description: "Die Transaktion wurde erfolgreich verlängert." });
-      loadDashboard();
-    } catch (error) {
-      toast({ title: "Fehler", description: "Verlängerung fehlgeschlagen.", variant: "destructive" });
+    const tx = transactions.find(t => t.id === txId);
+    if (!tx) return;
+
+    const newMaturityDate = new Date();
+    newMaturityDate.setDate(newMaturityDate.getDate() + 14);
+
+    const instantBonus = tx.amount_eur * 0.02;
+
+    const result = await transactionService.extendMaturity(txId, newMaturityDate.toISOString(), 14, instantBonus);
+    if (result) {
+      toast({ title: "Verlängert!", description: `Laufzeit um 14 Tage verlängert. Bonus: ${instantBonus.toFixed(2)} € sofort gutgeschrieben` });
+      loadTransactions();
+    } else {
+      toast({ title: "Fehler", description: "Konnte nicht verlängert werden", variant: "destructive" });
     }
   };
 
   const handleWithdraw = async (txId: string) => {
-    if (!wallet?.wallet_address) {
-      toast({ title: "Fehler", description: "Keine Wallet-Adresse gefunden.", variant: "destructive" });
-      return;
-    }
-
-    const tx = transactions.find(t => t.id === txId);
-    if (!tx) return;
-
-    try {
-      const success = await transactionService.requestWithdrawal(txId, wallet.wallet_address, tx.amount_btc);
-      if (success) {
-        setSelectedTx(null); // Schließe das Formular
-        setWithdrawalAddress(""); // Leere das Adressfeld
-        toast({ title: "Auszahlungsanfrage gesendet", description: "Die Auszahlung erfolgt in Kürze." });
-        loadDashboard();
-      } else {
-        toast({ title: "Fehler", description: "Auszahlungsanfrage fehlgeschlagen.", variant: "destructive" });
-      }
-    } catch (error) {
-      toast({ title: "Fehler", description: "Auszahlungsanfrage fehlgeschlagen.", variant: "destructive" });
-    }
+    await transactionService.updateTransactionStatus(txId, "withdrawal_pending");
+    toast({ title: "Auszahlung angefordert", description: "Ihre Auszahlung wird bearbeitet." });
+    loadTransactions();
   };
 
   const copyWalletAddress = async () => {
