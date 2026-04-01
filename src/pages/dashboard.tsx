@@ -723,7 +723,7 @@ export default function Dashboard() {
                                 <span className="font-semibold text-green-800">Auszahlung veranlasst</span>
                               </div>
                               <p className="text-sm text-gray-600">
-                                {new Date(tx.updated_at || tx.created_at).toLocaleDateString("de-DE", {
+                                {new Date(tx.created_at).toLocaleDateString("de-DE", {
                                   day: "2-digit",
                                   month: "long",
                                   year: "numeric",
@@ -737,7 +737,10 @@ export default function Dashboard() {
                                 {tx.withdrawn_amount_eur?.toFixed(2) || calculateCurrentBalance(tx).toFixed(2)} €
                               </div>
                               <div className="text-sm text-green-600 font-medium">
-                                {tx.withdrawn_amount_btc?.toFixed(8) || "0.00000000"} BTC
+                                {tx.withdrawn_amount_btc ? 
+                                  `${tx.withdrawn_amount_btc.toFixed(8)} BTC` : 
+                                  `${((tx.withdrawn_amount_eur || calculateCurrentBalance(tx)) / (bitcoinPrice || 85000)).toFixed(8)} BTC`
+                                }
                               </div>
                               <div className="text-sm text-gray-600 mt-1">
                                 Gewinn: +{((tx.withdrawn_amount_eur || calculateCurrentBalance(tx)) - tx.amount_eur).toFixed(2)} €
@@ -759,7 +762,10 @@ export default function Dashboard() {
                             <div className="flex justify-between">
                               <span className="text-gray-600">In Bitcoin:</span>
                               <span className="font-mono text-sm font-medium">
-                                {tx.withdrawn_amount_btc?.toFixed(8) || "0.00000000"} BTC
+                                {tx.withdrawn_amount_btc ? 
+                                  `${tx.withdrawn_amount_btc.toFixed(8)} BTC` : 
+                                  `${((tx.withdrawn_amount_eur || calculateCurrentBalance(tx)) / (bitcoinPrice || 85000)).toFixed(8)} BTC`
+                                }
                               </span>
                             </div>
                             <div className="flex justify-between border-t pt-2">
