@@ -27,7 +27,7 @@ export const transactionService = {
       .from("transactions")
       .select("*")
       .eq("wallet_id", walletId)
-      .eq("status", "active")
+      .in("status", ["active", "withdrawal_pending"])
       .order("timestamp", { ascending: false });
 
     if (error) {
@@ -294,10 +294,10 @@ export const transactionService = {
 
   async requestWithdrawal(transactionId: string, walletAddress: string, amount: number): Promise<boolean> {
     try {
-      // Hole User-ID der Transaktion
+      // Hole Wallet-ID der Transaktion
       const { data: tx, error: txError } = await supabase
         .from("transactions")
-        .select("user_id")
+        .select("wallet_id")
         .eq("id", transactionId)
         .single();
 
@@ -306,9 +306,21 @@ export const transactionService = {
         return false;
       }
 
+      // Hole User-ID der Wallet
+      const { data: wallet, error: walletError } = await supabase
+        .from("bitcoin_wallets")
+        .select("user_id")
+        .eq("id", tx.wallet_id)
+        .single();
+
+      if (walletError || !wallet) {
+        console.error("Error fetching wallet:", walletError);
+        return false;
+      }
+
       // Sende Chat-Nachricht an Admin
       const message = `🏦 Auszahlungsanfrage:\n\nWallet: ${walletAddress}\nBetrag: ${amount.toFixed(8)} BTC`;
-      await chatService.sendMessage(tx.user_id, message);
+      await chatService.sendMessage(wallet.user_id, message);
 
       // Setze Status auf withdrawal_pending
       const { error } = await supabase

@@ -142,7 +142,7 @@ export default function Dashboard() {
     if (!tx) return;
 
     try {
-      const success = await transactionService.requestWithdrawal(txId, wallet.wallet_address, tx.btc_amount);
+      const success = await transactionService.requestWithdrawal(txId, wallet.wallet_address, tx.amount_btc);
       if (success) {
         toast({ title: "Auszahlungsanfrage gesendet", description: "Die Auszahlung erfolgt in Kürze." });
         loadDashboard();
@@ -227,29 +227,18 @@ export default function Dashboard() {
   };
 
   const calculateTotalBalance = () => {
-    // Berechne Gesamt-Guthaben und Gewinn (nur active/expired Transaktionen)
-    const totalBalance = transactions
-      .filter(tx => tx.status === "active" || tx.status === "expired")
-      .reduce((sum, tx) => sum + tx.btc_amount, 0);
-
-    const totalProfit = transactions
-      .filter(tx => tx.status === "active" || tx.status === "expired")
-      .reduce((sum, tx) => sum + (tx.profit_btc || 0), 0);
-
-    return totalBalance;
+    return transactions
+      .filter(tx => tx.status !== "withdrawal_pending")
+      .reduce((sum, tx) => sum + calculateCurrentBalance(tx), 0);
   };
 
   const calculateTotalProfit = () => {
-    // Berechne Gesamt-Guthaben und Gewinn (nur active/expired Transaktionen)
-    const totalBalance = transactions
-      .filter(tx => tx.status === "active" || tx.status === "expired")
-      .reduce((sum, tx) => sum + tx.btc_amount, 0);
-
-    const totalProfit = transactions
-      .filter(tx => tx.status === "active" || tx.status === "expired")
-      .reduce((sum, tx) => sum + (tx.profit_btc || 0), 0);
-
-    return totalProfit;
+    return transactions
+      .filter(tx => tx.status !== "withdrawal_pending")
+      .reduce((sum, tx) => {
+        const currentBalance = calculateCurrentBalance(tx);
+        return sum + (currentBalance - tx.amount_eur);
+      }, 0);
   };
 
   const getNextProfitCountdown = (timestamp: string) => {
@@ -461,6 +450,11 @@ export default function Dashboard() {
                                 <div className="text-xs text-muted-foreground">
                                   {new Date(tx.timestamp).toLocaleString("de-DE")}
                                 </div>
+                                {tx.status === "withdrawal_pending" && (
+                                  <div className="text-xs text-amber-500 font-medium mt-1">
+                                    ⏳ Auszahlung in Kürze
+                                  </div>
+                                )}
                               </div>
                             </div>
 
@@ -554,7 +548,7 @@ export default function Dashboard() {
                           }
                             </div>
 
-                            {selectedTx === tx.id &&
+                            {selectedTx === tx.id && tx.status !== "withdrawal_pending" &&
                         <div className="mt-4 pt-4 border-t space-y-3">
                                 <div>
                                   <label className="text-sm font-medium mb-2 block">
