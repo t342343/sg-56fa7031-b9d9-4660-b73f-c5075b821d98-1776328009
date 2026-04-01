@@ -26,6 +26,7 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
   const { toast } = useToast();
 
   useEffect(() => {
@@ -33,6 +34,15 @@ export default function UserDashboard() {
     loadChat();
     const interval = setInterval(loadDashboard, 30000); // Refresh every 30s
     return () => clearInterval(interval);
+  }, []);
+
+  // Realtime Countdown Update (jede Sekunde)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    
+    return () => clearInterval(timer);
   }, []);
 
   // Chat subscription
@@ -150,7 +160,7 @@ export default function UserDashboard() {
   };
 
   const calculateCurrentBalance = (transaction: any) => {
-    const now = new Date();
+    const now = currentTime;
     const startDate = new Date(transaction.timestamp);
     const expiresDate = new Date(transaction.expires_at);
     
@@ -174,9 +184,8 @@ export default function UserDashboard() {
     return currentBalance;
   };
 
-  const getNextGrowthTime = (timestamp: string) => {
-    const now = new Date();
-    const startDate = new Date(timestamp);
+  const getNextGrowthTime = () => {
+    const now = currentTime;
     
     // Berechne wann die nächste Stunde beginnt
     const nextGrowth = new Date(now);
@@ -191,7 +200,7 @@ export default function UserDashboard() {
   };
 
   const getCountdownProgress = (timestamp: string, expiresAt: string) => {
-    const now = new Date();
+    const now = currentTime;
     const startDate = new Date(timestamp);
     const expiresDate = new Date(expiresAt);
     
@@ -203,7 +212,7 @@ export default function UserDashboard() {
   };
 
   const getTimeRemaining = (expiresAt: string) => {
-    const now = new Date().getTime();
+    const now = currentTime;
     const expiry = new Date(expiresAt).getTime();
     const diff = expiry - now;
 
@@ -285,7 +294,7 @@ export default function UserDashboard() {
                       const isExpired = timeRemaining.expired;
                       const currentBalance = calculateCurrentBalance(tx);
                       const profit = currentBalance - tx.amount_eur;
-                      const nextGrowth = getNextGrowthTime(tx.timestamp);
+                      const nextGrowth = getNextGrowthTime();
                       const progress = getCountdownProgress(tx.timestamp, tx.expires_at);
 
                       return (
