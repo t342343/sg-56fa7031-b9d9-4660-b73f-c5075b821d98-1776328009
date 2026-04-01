@@ -335,7 +335,9 @@ export default function Dashboard() {
                   })} €
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {((calculateTotalProfit() / transactions.reduce((sum, tx) => sum + tx.amount_eur, 0)) * 100).toFixed(2)}% Rendite
+                  {transactions.length > 0 
+                    ? ((calculateTotalProfit() / transactions.reduce((sum, tx) => sum + tx.amount_eur, 0)) * 100).toFixed(2) 
+                    : "0.00"}% Rendite
                 </p>
               </CardContent>
               {/* Hintergrund-Dekoration */}
@@ -344,19 +346,18 @@ export default function Dashboard() {
           </div>
 
           {/* Bitcoin Wallet */}
-
-          {loading ?
-          <div className="animate-pulse text-muted-foreground">Lade Daten...</div> :
-          !wallet ?
-          <Card>
+          {loading ? (
+            <div className="animate-pulse text-muted-foreground">Lade Daten...</div>
+          ) : !wallet ? (
+            <Card>
               <CardContent className="pt-6">
                 <p className="text-muted-foreground text-center py-8">
                   Ihnen wurde noch keine Bitcoin Wallet zugewiesen. Bitte warten Sie, bis der Administrator Ihr Konto eingerichtet hat.
                 </p>
               </CardContent>
-            </Card> :
-
-          <div className="space-y-6">
+            </Card>
+          ) : (
+            <div className="space-y-6">
               <Card className="border-blue-accent/20 bg-blue-accent/5">
                 <CardHeader>
                   <CardTitle className="text-lg">Ihre Wallet</CardTitle>
@@ -620,8 +621,9 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           </div>
-        }
+        )}
       </DashboardLayout>
-    </>);
+    </>
+  );
 
 }
