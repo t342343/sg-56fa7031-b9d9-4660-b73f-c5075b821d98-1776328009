@@ -82,9 +82,7 @@ export default function ProfilePage() {
       if (success) {
         toast({ 
           title: "Profil aktualisiert", 
-          description: emailChanged 
-            ? "Ihre Änderungen wurden gespeichert. Bitte bestätigen Sie Ihre neue E-Mail-Adresse." 
-            : "Ihre Änderungen wurden gespeichert." 
+          description: "Ihre Änderungen wurden gespeichert." 
         });
         loadProfile();
       } else {
