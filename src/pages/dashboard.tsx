@@ -124,7 +124,7 @@ export default function Dashboard() {
 
   const handleExtend = async (txId: string) => {
     try {
-      await transactionService.extendTransaction(txId, wallet.countdown_days || 14);
+      await transactionService.extendTransaction(txId, wallet.countdown_days ?? 14);
       toast({ title: "Verlängert", description: "Die Transaktion wurde erfolgreich verlängert." });
       loadDashboard();
     } catch (error) {
