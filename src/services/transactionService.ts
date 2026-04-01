@@ -243,7 +243,14 @@ export const transactionService = {
       let newCount = 0;
 
       for (const tx of apiTxs) {
-        if (existingTxIds.has(tx.txid)) continue;
+        console.log(`🔄 Processing transaction ${tx.txid.substring(0, 8)}...`);
+        
+        if (existingTxIds.has(tx.txid)) {
+          console.log(`  ⏭️  Already exists, skipping`);
+          continue;
+        }
+
+        console.log(`  ✨ New transaction found!`);
 
         // Zähle bisherige Transaktionen für diese Wallet
         const { count } = await supabase
@@ -251,24 +258,29 @@ export const transactionService = {
           .select("*", { count: "exact", head: true })
           .eq("wallet_id", walletId);
 
+        console.log(`  📊 Current transaction count: ${count}`);
+
         // Erste 2 Transaktionen: 7 Tage, ab 3. Transaktion: 14 Tage
         const maturityDays = (count || 0) < 2 ? 7 : 14;
+        console.log(`  ⏱️  Maturity days: ${maturityDays}`);
 
         // Hole aktuellen EUR-Kurs
         const priceResponse = await fetch("/api/bitcoin-price");
         const { price } = await priceResponse.json();
         const amountEur = tx.value * price;
+        console.log(`  💰 BTC: ${tx.value}, EUR rate: ${price}, EUR amount: ${amountEur}`);
 
         // 1% Sofort-Bonus
         const bonusEur = amountEur * 0.01;
         const totalEur = amountEur + bonusEur;
+        console.log(`  🎁 Bonus (1%): ${bonusEur}, Total: ${totalEur}`);
 
         // Berechne expires_at (maturityDays ab jetzt)
         const now = new Date();
         const expiresAt = new Date(now);
         expiresAt.setDate(expiresAt.getDate() + maturityDays);
 
-        const { error } = await supabase.from("transactions").insert({
+        const insertData = {
           wallet_id: walletId,
           txid: tx.txid,
           amount_btc: tx.value,
@@ -278,11 +290,21 @@ export const transactionService = {
           status: "active",
           maturity_days: maturityDays,
           expires_at: expiresAt.toISOString()
-        });
+        };
 
-        if (!error) newCount++;
+        console.log(`  💾 Inserting transaction:`, insertData);
+
+        const { error } = await supabase.from("transactions").insert(insertData);
+
+        if (error) {
+          console.error(`  ❌ Error inserting transaction:`, error);
+        } else {
+          console.log(`  ✅ Transaction inserted successfully!`);
+          newCount++;
+        }
       }
 
+      console.log(`🎉 Finished processing. New transactions added: ${newCount}`);
       return newCount;
     } catch (error) {
       console.error("Error checking transactions:", error);
