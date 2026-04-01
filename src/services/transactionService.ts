@@ -101,45 +101,28 @@ export const transactionService = {
     // Prüfe ob Transaktion bereits existiert
     const { data: existing } = await supabase
       .from("transactions")
-      .select("id, status")
+      .select("id")
       .eq("txid", transaction.txid)
       .single();
 
-    // Wenn Transaktion existiert UND Status ist withdrawal_pending oder withdrawn
-    // -> Update nur block_height, NICHT den Status
-    if (existing && (existing.status === "withdrawal_pending" || existing.status === "withdrawn")) {
-      const { data, error } = await supabase
-        .from("transactions")
-        .update({
-          block_height: transaction.block_height
-        })
-        .eq("txid", transaction.txid)
-        .select()
-        .single();
-
-      if (error) {
-        console.error("Error updating transaction block_height:", error);
-        throw error;
-      }
-
-      return data;
+    // Wenn Transaktion bereits existiert -> SKIP, nichts tun
+    if (existing) {
+      console.log(`  ⏭️  Transaction already exists, skipping`);
+      return existing;
     }
 
-    // Ansonsten: Normale upsert Operation (neue Transaktion oder Update auf active)
+    // Nur neue Transaktionen einfügen
     const { data, error } = await supabase
       .from("transactions")
-      .upsert({
+      .insert({
         ...transaction,
         status: transaction.status || "active"
-      }, {
-        onConflict: "txid",
-        ignoreDuplicates: false
       })
       .select()
       .single();
 
     if (error) {
-      console.error("Error adding/updating transaction:", error);
+      console.error("Error inserting transaction:", error);
       throw error;
     }
 
