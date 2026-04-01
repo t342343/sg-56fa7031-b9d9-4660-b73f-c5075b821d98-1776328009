@@ -20,6 +20,23 @@ export const transactionService = {
     return data || [];
   },
 
+  // Hole nur AKTIVE Transaktionen für eine Wallet ID
+  async getActiveTransactionsByWallet(walletId: string): Promise<Transaction[]> {
+    const { data, error } = await supabase
+      .from("transactions")
+      .select("*")
+      .eq("wallet_id", walletId)
+      .eq("status", "active")
+      .order("timestamp", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching active transactions:", error);
+      return [];
+    }
+
+    return data || [];
+  },
+
   // Hole Transaktionen nach Wallet-Adresse (nicht nach wallet_id!)
   async getTransactionsByWalletAddress(walletAddress: string) {
     // Erst hole die Wallet ID für die Adresse
