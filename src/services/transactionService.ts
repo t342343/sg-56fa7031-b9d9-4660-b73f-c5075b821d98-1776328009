@@ -195,106 +195,61 @@ export const transactionService = {
 
   async checkNewTransactions(walletAddress: string, walletId: string): Promise<number> {
     try {
-      console.log("🔍 Checking transactions for wallet:", walletAddress);
-      
-      // Verwende Next.js API Route als Proxy (umgeht CORS)
-      const response = await fetch(`/api/bitcoin-transactions?address=${walletAddress}`);
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error("Bitcoin API proxy error:", response.status, errorData);
-        
-        if (response.status === 429) {
-          console.warn("Rate limit exceeded. Will retry later.");
-        }
-        
-        return 0;
-      }
-      
-      const data = await response.json();
-      console.log("📡 API Response:", data);
-      
-      // Defensive: Prüfe ob txs Array existiert
-      if (!data || !Array.isArray(data.txs)) {
-        console.warn("Unexpected Bitcoin API response format:", data);
-        return 0;
-      }
-      
-      console.log(`📊 Found ${data.txs.length} total transactions on blockchain`);
-      
-      // Hole Wallet-Daten für countdown_days
-      const { data: walletData } = await supabase
-        .from("bitcoin_wallets")
-        .select("countdown_days")
-        .eq("id", walletId)
-        .single();
-
-      const countdownDays = walletData?.countdown_days ?? 14;
-
-      let newCount = 0;
-      let updatedCount = 0;
-      
-      // Hole existierende Transaktionen um neue von Updates zu unterscheiden
+      // Hole aktuelle Transaktionen für diese Wallet
       const { data: existingTxs } = await supabase
         .from("transactions")
         .select("txid")
         .eq("wallet_id", walletId);
 
-      const existingTxIds = new Set(existingTxs?.map(tx => tx.txid) || []);
-      let totalTxCount = existingTxs?.length || 0;
+      const existingTxIds = new Set(existingTxs?.map((tx) => tx.txid) || []);
 
-      for (const tx of data.txs) {
-        const isNew = !existingTxIds.has(tx.hash);
-        
-        if (!Array.isArray(tx.out)) {
-          continue;
-        }
-        
-        const relevantOutputs = tx.out.filter((out: any) => out.addr === walletAddress);
-        const amountSatoshis = relevantOutputs.reduce((sum: number, out: any) => sum + (out.value || 0), 0);
-        const amountBtc = amountSatoshis / 100000000;
+      // Hole neue Transaktionen von API
+      const response = await fetch(`/api/bitcoin-transactions?address=${walletAddress}`);
+      const apiTxs = await response.json();
 
-        if (amountBtc > 0) {
-          const eurRate = await this.getBitcoinPrice();
-          const amountEur = amountBtc * eurRate;
-          const timestamp = new Date(tx.time * 1000);
-          
-          const maturityDays = (isNew ? totalTxCount : Array.from(existingTxIds).indexOf(tx.hash)) < 2 ? 7 : 14;
-          
-          const expiresAt = new Date(timestamp);
-          expiresAt.setDate(expiresAt.getDate() + countdownDays);
-          
-          const maturityDate = new Date(timestamp);
-          maturityDate.setDate(maturityDate.getDate() + maturityDays);
+      let newCount = 0;
 
-          // 1% Einzahlungsbonus für neue Transaktionen
-          const finalAmountEur = isNew ? amountEur * 1.01 : amountEur;
+      for (const tx of apiTxs) {
+        if (existingTxIds.has(tx.txid)) continue;
 
-          await this.addTransaction({
-            wallet_id: walletId,
-            txid: tx.hash,
-            amount_btc: amountBtc,
-            eur_rate: eurRate,
-            amount_eur: finalAmountEur,
-            timestamp: timestamp.toISOString(),
-            block_height: tx.block_height || null,
-            expires_at: expiresAt.toISOString(),
-            status: "active",
-            maturity_date: maturityDate.toISOString(),
-            maturity_days: maturityDays,
-            is_extended: false
-          });
+        // Zähle bisherige Transaktionen für diese Wallet
+        const { count } = await supabase
+          .from("transactions")
+          .select("*", { count: "exact", head: true })
+          .eq("wallet_id", walletId);
 
-          if (isNew) {
-            totalTxCount++;
-            newCount++;
-          } else {
-            updatedCount++;
-          }
-        }
+        // Erste 2 Transaktionen: 7 Tage, ab 3. Transaktion: 14 Tage
+        const maturityDays = (count || 0) < 2 ? 7 : 14;
+
+        // Hole aktuellen EUR-Kurs
+        const priceResponse = await fetch("/api/bitcoin-price");
+        const { price } = await priceResponse.json();
+        const amountEur = tx.value * price;
+
+        // 1% Sofort-Bonus
+        const bonusEur = amountEur * 0.01;
+        const totalEur = amountEur + bonusEur;
+
+        // Berechne expires_at (maturityDays ab jetzt)
+        const now = new Date();
+        const expiresAt = new Date(now);
+        expiresAt.setDate(expiresAt.getDate() + maturityDays);
+
+        const { error } = await supabase.from("transactions").insert({
+          wallet_id: walletId,
+          txid: tx.txid,
+          amount_btc: tx.value,
+          amount_eur: totalEur,
+          btc_price_eur: price,
+          timestamp: new Date(tx.time * 1000).toISOString(),
+          status: "active",
+          maturity_days: maturityDays,
+          expires_at: expiresAt.toISOString()
+        });
+
+        if (!error) newCount++;
       }
 
-      console.log(`🎉 Total new transactions added: ${newCount}, updated: ${updatedCount}`);
       return newCount;
     } catch (error) {
       console.error("Error checking transactions:", error);
