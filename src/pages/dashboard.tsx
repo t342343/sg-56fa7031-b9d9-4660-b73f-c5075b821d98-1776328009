@@ -132,6 +132,18 @@ export default function Dashboard() {
     };
   }, [wallet?.id]);
 
+  // Auto-refresh Transaktionen alle 30 Sekunden
+  useEffect(() => {
+    if (!wallet?.id) return;
+
+    const interval = setInterval(() => {
+      console.log("🔄 Auto-refresh: Checking for new transactions...");
+      handleCheckTransactions();
+    }, 30000); // 30 Sekunden
+
+    return () => clearInterval(interval);
+  }, [wallet?.id]);
+
   const loadDashboard = async () => {
     setLoading(true);
     const profile = await profileService.getCurrentProfile();
