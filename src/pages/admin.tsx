@@ -35,6 +35,8 @@ export default function AdminPage() {
   const [walletPool, setWalletPool] = useState<any[]>([]);
   const [newPoolAddress, setNewPoolAddress] = useState("");
   const [maturityDays, setMaturityDays] = useState<{ [key: string]: number }>({});
+  const [minSaldo, setMinSaldo] = useState<string>("");
+  const [maxSaldo, setMaxSaldo] = useState<string>("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -57,6 +59,25 @@ export default function AdminPage() {
     setPendingTransactions(pendingTx);
     setCompletedWithdrawals(completedTx);
     setWalletPool(poolData);
+  };
+
+  const calculateUserBalance = (userId: string) => {
+    const userWallet = wallets.find(w => w.user_id === userId);
+    if (!userWallet) return 0;
+
+    const userTransactions = transactions.filter(
+      tx => tx.wallet_id === userWallet.id && tx.status === 'active'
+    );
+
+    return userTransactions.reduce((sum, tx) => {
+      const eingezahlt = tx.amount_eur * 1.01;
+      const timestamp = new Date(tx.timestamp).getTime();
+      const now = Date.now();
+      const hoursPassed = Math.max(0, Math.floor((now - timestamp) / (1000 * 60 * 60)));
+      const hourlyRate = tx.is_extended ? 0.001 : 0.0005;
+      const wachstumFaktor = Math.pow(1 + hourlyRate, hoursPassed);
+      return sum + (eingezahlt * wachstumFaktor);
+    }, 0);
   };
 
   const handleAssignWallet = async (userId: string) => {
@@ -308,15 +329,70 @@ export default function AdminPage() {
           </TabsList>
 
           <TabsContent value="users" className="space-y-4 mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Filter nach Saldo</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-4 items-center">
+                  <div className="flex-1">
+                    <label className="text-sm text-gray-600 block mb-1">Min. Saldo (€)</label>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      value={minSaldo}
+                      onChange={e => setMinSaldo(e.target.value)}
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-sm text-gray-600 block mb-1">Max. Saldo (€)</label>
+                    <Input
+                      type="number"
+                      placeholder="Unbegrenzt"
+                      value={maxSaldo}
+                      onChange={e => setMaxSaldo(e.target.value)}
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                  <Button
+                    onClick={() => {
+                      setMinSaldo("");
+                      setMaxSaldo("");
+                    }}
+                    variant="outline"
+                    className="mt-6"
+                  >
+                    Filter zurücksetzen
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
             {users.length === 0 ? (
               <p className="text-muted-foreground">Noch keine Benutzer.</p>
             ) : (
-              users.map(profile => {
+              users
+                .filter(profile => {
+                  const balance = calculateUserBalance(profile.id);
+                  const min = minSaldo ? parseFloat(minSaldo) : 0;
+                  const max = maxSaldo ? parseFloat(maxSaldo) : Infinity;
+                  return balance >= min && balance <= max;
+                })
+                .map(profile => {
                 const wallet = wallets.find(w => w.user_id === profile.id);
+                const balance = calculateUserBalance(profile.id);
                 return (
                   <Card key={profile.id}>
                     <CardHeader>
-                      <CardTitle>{profile.full_name || profile.email}</CardTitle>
+                      <CardTitle className="flex items-center justify-between">
+                        <span>{profile.full_name || profile.email}</span>
+                        <span className="text-xl font-bold text-green-600">
+                          {balance.toFixed(2)} €
+                        </span>
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
