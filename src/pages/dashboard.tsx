@@ -561,19 +561,11 @@ export default function Dashboard() {
                               <div className="flex justify-between text-sm">
                                 <span className="text-muted-foreground">Laufzeit</span>
                                 <span className="font-medium">
-                                  {daysUntilMaturity !== null 
-                                    ? daysUntilMaturity > 0 
-                                      ? `${daysUntilMaturity} Tage verbleibend`
-                                      : "Abgelaufen"
-                                    : "N/A"}
+                                  {!isExpired ? `${timeRemaining.text} verbleibend` : "Abgelaufen"}
                                 </span>
                               </div>
                               <Progress 
-                                value={
-                                  daysUntilMaturity !== null && tx.maturity_days
-                                    ? Math.max(0, Math.min(100, (daysUntilMaturity / tx.maturity_days) * 100))
-                                    : 0
-                                }
+                                value={getCountdownProgress(tx.timestamp, tx.expires_at)}
                                 className="h-2 [&>div]:bg-blue-600"
                               />
                             </div>
