@@ -124,22 +124,34 @@ export function AuthForm() {
         return;
       }
 
-      console.log("Attempting registration with:", registerData.email);
-      
-      const { user, error } = await authService.signUp(registerData.email, registerData.password);
-      
-      if (error) {
-        console.error("Registration error details:", error);
+      const combinedAddress = [street, houseNumber, postalCode, city]
+        .filter(Boolean)
+        .join(", ");
+
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            phone,
+            address: combinedAddress,
+          }
+        }
+      });
+
+      if (authError) {
+        console.error("Registration error details:", authError);
         toast({ 
           title: "Registrierung fehlgeschlagen", 
-          description: error.message || "Bitte versuchen Sie es erneut",
+          description: authError.message || "Bitte versuchen Sie es erneut",
           variant: "destructive" 
         });
         setLoading(false);
         return;
       }
 
-      if (!user) {
+      if (!authData?.user) {
         toast({ 
           title: "Registrierung fehlgeschlagen", 
           description: "Benutzer konnte nicht erstellt werden",
@@ -159,7 +171,7 @@ export function AuthForm() {
       
       try {
         await profileService.createProfile({
-          id: user.id,
+          id: authData.user.id,
           email: registerData.email,
           full_name: registerData.name,
           address: registerData.address,
@@ -340,8 +352,8 @@ export function AuthForm() {
                     id="register-password"
                     type="password"
                     placeholder="••••••••"
-                    value={registerData.password}
-                    onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={loading}
                     minLength={6}
