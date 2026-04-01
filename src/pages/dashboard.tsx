@@ -263,19 +263,12 @@ export default function Dashboard() {
     // Verhindere negative Stunden (falls Transaktion in der Zukunft liegt)
     const safeHoursPassed = Math.max(0, hoursPassed);
     
-    const startBonus = eingezahlt * 1.01;
-    const wachstumFaktor = Math.pow(1.0005, safeHoursPassed); // 0.05% pro Stunde
-    const finalBalance = startBonus * wachstumFaktor;
-
-    console.log("💰 Balance Calculation:", {
-      txid: tx.txid?.substring(0, 8),
-      eingezahlt,
-      hoursPassed: safeHoursPassed,
-      startBonus,
-      wachstumFaktor,
-      finalBalance,
-      gewinn: finalBalance - eingezahlt
-    });
+    // Eingezahlter Betrag enthält bereits 1% Bonus
+    // Stündliche Rendite: 0.05% normal, 0.1% verlängert
+    const hourlyRate = tx.is_extended ? 0.001 : 0.0005;
+    const hourlyGrowth = 1 + hourlyRate;
+    const wachstumFaktor = Math.pow(hourlyGrowth, safeHoursPassed);
+    const finalBalance = eingezahlt * wachstumFaktor;
 
     return finalBalance;
   };
@@ -628,7 +621,7 @@ export default function Dashboard() {
                               )}
                               {isExpired && tx.status !== "withdrawal_pending" && (
                                 <p className="text-xs text-green-600 mt-2 text-center">
-                                  (Bonus 2 % sofort Rendite und täglich 2fache Rendite)
+                                  (Bonus 2 % sofort Rendite und stündlich 2fache Rendite)
                                 </p>
                               )}
                             </div>
