@@ -86,6 +86,7 @@ export default function Dashboard() {
     setUserId(profile.id);
 
     const w = await walletService.getWalletForUser(profile.id);
+    console.log("📱 Dashboard loaded wallet:", w);
     setWallet(w);
 
     if (w) {
@@ -96,7 +97,9 @@ export default function Dashboard() {
       }
 
       // WICHTIG: Nur aktive Transaktionen zur AKTUELLEN Wallet-Adresse laden
+      console.log("🔍 Loading transactions for wallet_id:", w.id, "address:", w.wallet_address);
       const txs = await transactionService.getActiveTransactionsByWallet(w.id);
+      console.log("📋 Loaded transactions:", txs.length, "transactions:", txs);
       setTransactions(txs);
     }
     setLoading(false);

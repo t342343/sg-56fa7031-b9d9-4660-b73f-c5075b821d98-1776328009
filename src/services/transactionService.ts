@@ -69,17 +69,30 @@ export const transactionService = {
 
   // Archiviere alle Transaktionen einer Wallet (beim Wallet-Wechsel)
   async archiveWalletTransactions(walletId: string) {
+    console.log("🗄️ Archiving all transactions for wallet:", walletId);
+    
+    // Erst mal schauen welche Transaktionen es gibt
+    const { data: existing, error: fetchError } = await supabase
+      .from("transactions")
+      .select("*")
+      .eq("wallet_id", walletId)
+      .eq("status", "active");
+    
+    console.log("📋 Found active transactions to archive:", existing?.length || 0, existing);
+    
     const { data, error } = await supabase
       .from("transactions")
       .update({ status: "archived" })
       .eq("wallet_id", walletId)
-      .eq("status", "active");
+      .eq("status", "active")
+      .select();
 
     if (error) {
-      console.error("Error archiving transactions:", error);
+      console.error("❌ Error archiving transactions:", error);
       throw error;
     }
 
+    console.log("✅ Archived transactions:", data?.length || 0, data);
     return data;
   },
 
