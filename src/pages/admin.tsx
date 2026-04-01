@@ -64,9 +64,9 @@ export default function AdminPage() {
         console.log("📍 Old address:", existingWallet.wallet_address);
         console.log("📍 New address:", address);
         
-        // Archiviere ALLE alten Transaktionen BEVOR die Wallet-Adresse geändert wird
-        console.log("🗄️ Archiving old transactions for wallet_id:", existingWallet.id);
-        await transactionService.archiveWalletTransactions(existingWallet.id);
+        // LÖSCHE alle alten Transaktionen BEVOR die Wallet-Adresse geändert wird
+        console.log("🗑️ Deleting old transactions for wallet_id:", existingWallet.id);
+        await transactionService.deleteWalletTransactions(existingWallet.id);
         
         // Aktualisiere die Wallet-Adresse
         console.log("💾 Updating wallet address...");
@@ -75,7 +75,7 @@ export default function AdminPage() {
         
         toast({ 
           title: "Wallet aktualisiert", 
-          description: "Alte Transaktionen wurden archiviert. Neue werden zur neuen Adresse erkannt."
+          description: "Alte Transaktionen wurden gelöscht. Neue werden zur neuen Adresse erkannt."
         });
       } else {
         // Erstelle neue Wallet
