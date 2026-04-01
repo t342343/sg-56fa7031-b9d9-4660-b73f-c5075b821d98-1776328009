@@ -605,6 +605,9 @@ export default function Dashboard() {
                               <div>
                                 <div className="text-xs text-muted-foreground mb-1">Eingezahlter Betrag</div>
                                 <div className="text-lg font-semibold">{tx.amount_eur.toFixed(2)} €</div>
+                                <div className="text-xs text-green-600 font-medium mt-0.5">
+                                  (inkl. +1% Sofort-Bonus)
+                                </div>
                               </div>
                               
                               <div>
@@ -612,16 +615,16 @@ export default function Dashboard() {
                                 <div className="text-lg font-semibold text-green-600">
                                   {currentBalance.toFixed(2)} €
                                 </div>
-                                {profit > 0 && !isExpired && (
-                                  <>
-                                    <div className="text-xs text-green-600 font-medium">
-                                      +{profit.toFixed(2)} € Gewinn
-                                    </div>
-                                    <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                                      <Clock className="w-3 h-3" />
-                                      Nächster Gewinn in: {getNextProfitCountdown(tx.timestamp)}
-                                    </div>
-                                  </>
+                                {profit > 0 && (
+                                  <div className="text-xs text-green-600 font-medium">
+                                    +{profit.toFixed(2)} € Gewinn
+                                  </div>
+                                )}
+                                {!isExpired && (
+                                  <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    Nächster Gewinn in: {getNextProfitCountdown(tx.timestamp)}
+                                  </div>
                                 )}
                               </div>
                             </div>
