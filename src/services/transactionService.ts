@@ -134,7 +134,7 @@ export const transactionService = {
     amount_eur: number;
     timestamp: string;
     block_height: number | null;
-    expires_at: string;
+    expires_at?: string;
     status?: string;
     maturity_date?: string;
     maturity_days?: number;
@@ -153,12 +153,34 @@ export const transactionService = {
       return existing;
     }
 
+    // Wenn maturity_days nicht übergeben wurde, berechne es basierend auf bisherigen Transaktionen
+    let finalMaturityDays = transaction.maturity_days;
+    let finalExpiresAt = transaction.expires_at;
+
+    if (!finalMaturityDays) {
+      const { count } = await supabase
+        .from("transactions")
+        .select("*", { count: "exact", head: true })
+        .eq("wallet_id", transaction.wallet_id);
+
+      finalMaturityDays = (count || 0) < 2 ? 7 : 14;
+    }
+
+    if (!finalExpiresAt) {
+      const now = new Date();
+      const expires = new Date(now);
+      expires.setDate(expires.getDate() + (finalMaturityDays || 14));
+      finalExpiresAt = expires.toISOString();
+    }
+
     // Nur neue Transaktionen einfügen
     const { data, error } = await supabase
       .from("transactions")
       .insert({
         ...transaction,
-        status: transaction.status || "active"
+        status: transaction.status || "active",
+        maturity_days: finalMaturityDays,
+        expires_at: finalExpiresAt
       })
       .select()
       .single();
