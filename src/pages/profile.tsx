@@ -54,16 +54,23 @@ export default function ProfilePage() {
       // Prüfe ob E-Mail geändert wurde
       const emailChanged = email.trim() !== profile.email;
       
-      // Update auth.users email wenn geändert
+      // Update auth.users email NUR wenn geändert
       if (emailChanged) {
         const { error: authError } = await supabase.auth.updateUser({
           email: email.trim()
         });
         
         if (authError) {
+          let errorMessage = authError.message;
+          
+          // Bessere Fehlermeldung für Rate-Limit
+          if (authError.message.includes("rate limit") || authError.status === 429) {
+            errorMessage = "Zu viele E-Mail-Änderungen. Bitte warten Sie einige Minuten und versuchen Sie es erneut.";
+          }
+          
           toast({ 
             title: "Fehler", 
-            description: "E-Mail-Adresse konnte nicht aktualisiert werden: " + authError.message, 
+            description: errorMessage, 
             variant: "destructive" 
           });
           setSaving(false);
