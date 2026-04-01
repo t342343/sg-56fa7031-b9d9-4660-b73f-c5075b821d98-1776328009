@@ -440,7 +440,7 @@ export default function Dashboard() {
                     console.log("🎨 Rendering transaction:", { id: tx.id, status: tx.status, isExpired });
 
                     return (
-                      <Card key={tx.id} className={tx.status === "withdrawal_pending" ? "opacity-50" : ""}>
+                      <Card key={tx.id} className={tx.status === "withdrawal_pending" ? "opacity-50 border-amber-200" : ""}>
                         <CardContent className="p-6">
                             {tx.status === "withdrawal_pending" && (
                               <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
@@ -534,39 +534,39 @@ export default function Dashboard() {
                             </div>
 
                             <div className="flex items-center justify-between pt-3 border-t">
-                              {!isExpired ?
-                          <div className="flex items-center gap-2 text-sm">
+                              {!isExpired ? (
+                                <div className="flex items-center gap-2 text-sm">
                                   <Clock className="w-4 h-4 text-muted-foreground" />
                                   <span className="font-mono">
                                     {timeRemaining.text}
                                   </span>
-                                </div> :
+                                </div>
+                              ) : (
+                                <div className="text-sm text-red-600 font-medium">Abgelaufen</div>
+                              )}
 
-                          <div className="text-sm text-red-600 font-medium">Abgelaufen</div>
-                          }
-
-                              {isExpired && tx.status !== "withdrawal_pending" &&
-                          <div className="flex gap-2">
+                              {isExpired && tx.status !== "withdrawal_pending" && (
+                                <div className="flex gap-2">
                                   <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleExtend(tx.id)}>
-                              
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleExtend(tx.id)}
+                                  >
                                     Verlängern
                                   </Button>
                                   <Button
-                              size="sm"
-                              variant="default"
-                              onClick={() => setSelectedTx(tx.id)}>
-                              
+                                    size="sm"
+                                    variant="default"
+                                    onClick={() => setSelectedTx(tx.id)}
+                                  >
                                     Auszahlen
                                   </Button>
                                 </div>
-                          }
+                              )}
                             </div>
 
-                            {selectedTx === tx.id && tx.status !== "withdrawal_pending" &&
-                        <div className="mt-4 pt-4 border-t space-y-3">
+                            {selectedTx === tx.id && tx.status !== "withdrawal_pending" && (
+                              <div className="mt-4 pt-4 border-t space-y-3">
                                 <div>
                                   <label className="text-sm font-medium mb-2 block">
                                     Bitcoin Auszahlungsadresse
@@ -597,7 +597,7 @@ export default function Dashboard() {
                                   </Button>
                                 </div>
                               </div>
-                        }
+                            )}
                           </CardContent>
                           </Card>);
 
