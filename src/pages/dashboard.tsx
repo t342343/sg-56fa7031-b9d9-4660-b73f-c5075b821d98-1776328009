@@ -198,7 +198,7 @@ export default function Dashboard() {
     const result = await transactionService.extendMaturity(txId, newMaturityDate.toISOString(), 14, instantBonus);
     if (result) {
       toast({ title: "Verlängert!", description: `Laufzeit um 14 Tage verlängert. Bonus: ${instantBonus.toFixed(2)} € sofort gutgeschrieben` });
-      loadTransactions();
+      loadDashboard();
     } else {
       toast({ title: "Fehler", description: "Konnte nicht verlängert werden", variant: "destructive" });
     }
@@ -207,7 +207,7 @@ export default function Dashboard() {
   const handleWithdraw = async (txId: string) => {
     await transactionService.updateTransactionStatus(txId, "withdrawal_pending");
     toast({ title: "Auszahlung angefordert", description: "Ihre Auszahlung wird bearbeitet." });
-    loadTransactions();
+    loadDashboard();
   };
 
   const copyWalletAddress = async () => {
