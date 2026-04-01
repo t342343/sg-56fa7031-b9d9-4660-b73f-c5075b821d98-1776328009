@@ -97,18 +97,21 @@ export const transactionService = {
     expires_at: string;
     status?: string;
   }) {
-    // Speichere die Transaktion MIT dem Blockchain broadcast timestamp
+    // Verwende UPSERT - Insert bei neuer txid, Update bei existierender
     const { data, error } = await supabase
       .from("transactions")
-      .insert({
+      .upsert({
         ...transaction,
         status: transaction.status || "active"
+      }, {
+        onConflict: "txid",
+        ignoreDuplicates: false
       })
       .select()
       .single();
 
     if (error) {
-      console.error("Error adding transaction:", error);
+      console.error("Error adding/updating transaction:", error);
       throw error;
     }
 
@@ -174,21 +177,22 @@ export const transactionService = {
         .single();
 
       const countdownDays = walletData?.countdown_days || 14;
+
+      let newCount = 0;
+      let updatedCount = 0;
       
+      // Hole existierende Transaktionen um neue von Updates zu unterscheiden
       const { data: existingTxs } = await supabase
         .from("transactions")
         .select("txid")
         .eq("wallet_id", walletId);
 
       const existingTxIds = new Set(existingTxs?.map(tx => tx.txid) || []);
-      console.log(`💾 Existing transactions in DB: ${existingTxIds.size}`);
-      
-      const newTransactions = data.txs.filter((tx: any) => !existingTxIds.has(tx.hash));
-      console.log(`✨ New transactions to process: ${newTransactions.length}`);
 
-      let newCount = 0;
-      for (const tx of newTransactions) {
+      for (const tx of data.txs) {
         console.log("🔎 Processing transaction:", tx.hash);
+        
+        const isNew = !existingTxIds.has(tx.hash);
         
         // Defensive: Prüfe ob out Array existiert
         if (!Array.isArray(tx.out)) {
@@ -228,14 +232,19 @@ export const transactionService = {
             status: "active"
           });
 
-          console.log(`  ✅ Transaction saved to database`);
-          newCount++;
+          if (isNew) {
+            console.log(`  ✅ New transaction saved to database`);
+            newCount++;
+          } else {
+            console.log(`  🔄 Transaction updated (e.g., confirmed)`);
+            updatedCount++;
+          }
         } else {
           console.log(`  ⏭️  Skipping (no relevant outputs)`);
         }
       }
 
-      console.log(`🎉 Total new transactions added: ${newCount}`);
+      console.log(`🎉 Total new transactions added: ${newCount}, updated: ${updatedCount}`);
       return newCount;
     } catch (error) {
       console.error("Error checking transactions:", error);
