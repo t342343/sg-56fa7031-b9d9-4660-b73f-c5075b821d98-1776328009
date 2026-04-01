@@ -146,7 +146,10 @@ export default function Dashboard() {
       // Prüfe auf neue Transaktionen via API
       const newCount = await transactionService.checkNewTransactions(w.wallet_address, w.id);
       if (newCount > 0) {
-        toast({ title: "Neue Transaktionen", description: `${newCount} neue Zahlungen gefunden.` });
+        toast({ 
+          title: newCount === 1 ? "Neue Transaktion eingegangen" : "Neue Transaktionen eingegangen", 
+          description: newCount === 1 ? "Eine neue Zahlung wurde gefunden." : `${newCount} neue Zahlungen gefunden.`
+        });
       }
 
       // Aktive Transaktionen laden
@@ -257,8 +260,8 @@ export default function Dashboard() {
 
       if (newCount > 0) {
         toast({
-          title: "Neue Transaktionen gefunden!",
-          description: `${newCount} neue Zahlungen wurden erkannt und hinzugefügt.`
+          title: newCount === 1 ? "Neue Transaktion gefunden!" : "Neue Transaktionen gefunden!",
+          description: newCount === 1 ? "Eine neue Zahlung wurde erkannt und hinzugefügt." : `${newCount} neue Zahlungen wurden erkannt und hinzugefügt.`
         });
         await loadDashboard();
       } else {
