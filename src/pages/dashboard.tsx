@@ -409,14 +409,6 @@ export default function Dashboard() {
                             </div>
                           </div>
 
-                          <div className="space-y-2 mb-3">
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="text-muted-foreground">Countdown-Fortschritt</span>
-                              <span className="font-mono text-muted-foreground">{progress.toFixed(1)}%</span>
-                            </div>
-                            <Progress value={progress} className="h-2" />
-                          </div>
-
                           <div className="flex items-center justify-between pt-3 border-t">
                             {!isExpired ? (
                               <div className="flex items-center gap-2 text-sm">
