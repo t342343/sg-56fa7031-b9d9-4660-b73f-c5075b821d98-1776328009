@@ -70,10 +70,11 @@ export function DashboardLayout({ children, requireAdmin = false }: DashboardLay
           </h1>
           <Button
             variant="ghost"
-            size="sm"
+            size="lg"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-3"
           >
-            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {mobileMenuOpen ? <X className="h-7 w-7" /> : <Menu className="h-7 w-7" />}
           </Button>
         </div>
 

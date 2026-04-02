@@ -4,6 +4,9 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { SEO } from "@/components/SEO";
 
 export default function Gewinnberechnung() {
   const router = useRouter();
@@ -37,9 +40,22 @@ export default function Gewinnberechnung() {
 
   return (
     <>
+      <SEO 
+        title="Gewinnberechnung - Finanzportal"
+        description="Erfahren Sie, wie Ihre Rendite berechnet wird und welche Boni Sie erhalten"
+      />
       <DashboardLayout>
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-6">Gewinnberechnung</h1>
+          {/* Zurück-Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push("/dashboard")}
+            className="mb-6 -ml-2"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Zurück zum Dashboard
+          </Button>
 
           <Card>
             <CardHeader>
