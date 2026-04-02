@@ -23,7 +23,7 @@ export function AuthForm() {
       toast({
         title: "Registrierung abgeschlossen!",
         description: "Sie können sich jetzt anmelden.",
-        duration: 5000,
+        duration: 5000
       });
       // Entferne Parameter aus URL
       router.replace("/login", undefined, { shallow: true });
@@ -208,7 +208,7 @@ export function AuthForm() {
 
         // Logout nach Registrierung und Umleitung zum Login
         await supabase.auth.signOut();
-        
+
         // Verwende window.location für zuverlässige Umleitung mit Erfolgs-Parameter
         window.location.href = "/login?registered=true";
 
@@ -411,8 +411,8 @@ export function AuthForm() {
                     id="agb"
                     checked={agbAccepted}
                     onChange={(e) => setAgbAccepted(e.target.checked)}
-                    className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
+                    className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                  
                   <Label htmlFor="agb" className="text-sm leading-tight cursor-pointer">
                     Ich verstehe, dass obwohl meine Vermögenswerte und die Rendite vollversichert sind 
                     dieser Schutz kein grob fahrlässiges Verhalten einschließt. 
@@ -430,9 +430,9 @@ export function AuthForm() {
           </Tabs>
         </CardContent>
         <div className="px-6 pb-6 mt-4">
-          <p className="text-[10px] text-gray-400 text-center leading-tight">
-            Als Partner der Versicherungen und Banken sind wir verpflichtet beim Verdacht der Geldwäsche 
-            Auskünfte an Behörden zu erteilen.
+          <p className="text-[10px] text-gray-400 text-center leading-tight">Als offizieler Anlageanbieter und Partner von Versicherungen und Banken sind wir verpflichtet bei Verdacht auf Verstoß gegen das Geldwäschegesetz (§ 261 StGB) auf Behördliche Anfragen Auskünfte zuerteilen.
+
+
           </p>
         </div>
       </Card>
