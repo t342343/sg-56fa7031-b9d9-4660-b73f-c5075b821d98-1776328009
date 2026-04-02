@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageCircle, Send, Clock, CheckCircle2, Wallet, ArrowUpDown, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
+export default function Admin() {
 // Benutzer-Daten
 const [users, setUsers] = useState<any[]>([]);
 const [wallets, setWallets] = useState<any[]>([]);
@@ -27,6 +28,20 @@ const [selectedCountdown, setSelectedCountdown] = useState<number>(14);
 const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 const [selectedUserDetails, setSelectedUserDetails] = useState<any>(null);
 const [userSearchQuery, setUserSearchQuery] = useState("");
+const [pendingTransactions, setPendingTransactions] = useState<any[]>([]);
+const [completedWithdrawals, setCompletedWithdrawals] = useState<any[]>([]);
+const [walletPool, setWalletPool] = useState<any[]>([]);
+const [walletAddresses, setWalletAddresses] = useState<{ [key: string]: string }>({});
+const [countdownDays, setCountdownDays] = useState<{ [key: string]: number }>({});
+const [adminMessages, setAdminMessages] = useState<{ [key: string]: string }>({});
+const [maturityDays, setMaturityDays] = useState<{ [key: string]: number }>({});
+const [newPoolAddress, setNewPoolAddress] = useState("");
+const [minSaldo, setMinSaldo] = useState("");
+const [maxSaldo, setMaxSaldo] = useState("");
+const [saldoSort, setSaldoSort] = useState<"high" | "low" | "none">("none");
+const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
+const [chats, setChats] = useState<any[]>([]);
+const [withdrawals, setWithdrawals] = useState<any[]>([]);
 
 // Link-Einstellungen
 const [homeButtonUrl, setHomeButtonUrl] = useState("/");
@@ -67,15 +82,22 @@ const loadData = async () => {
   setCompletedWithdrawals(completedTx);
   setWalletPool(poolData);
 
-  // Transaktionen laden
-  const { data: transactionsData } = await supabase.from("transactions").select("*").order("created_at", { ascending: false });
-  setTransactions(transactionsData || []);
-
   // Chat-Nachrichten laden
   const { data: chatData } = await supabase.from("chat_messages").select("*").order("created_at", { ascending: false });
   setChatMessages(chatData || []);
+  
+  if (chatData) {
+    const groupedChats = chatData.reduce((acc: any, msg: any) => {
+      if (!acc[msg.user_id]) acc[msg.user_id] = [];
+      acc[msg.user_id].push(msg);
+      return acc;
+    }, {});
+    setChats(Object.entries(groupedChats));
+  }
 
   // Auszahlungsanträge laden
+  const { data: withdrawalsData } = await supabase.from("withdrawals").select("*").order("created_at", { ascending: false });
+  setWithdrawals(withdrawalsData || []);
 };
 
 const calculateUserBalance = (userId: string) => {
@@ -371,136 +393,95 @@ return (
 
         {/* Benutzer-Verwaltung Tab */}
         <TabsContent value="users">
-          <Card>
-            <CardHeader>
-              <CardTitle>Filter & Sortierung</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-4 items-end">
-                <div className="flex-1">
-                  <label className="text-sm text-gray-600 block mb-1">Min. Saldo (€)</label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    value={minSaldo}
-                    onChange={e => setMinSaldo(e.target.value)}
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-                <div className="flex-1">
-                  <label className="text-sm text-gray-600 block mb-1">Max. Saldo (€)</label>
-                  <Input
-                    type="number"
-                    placeholder="Unbegrenzt"
-                    value={maxSaldo}
-                    onChange={e => setMaxSaldo(e.target.value)}
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-                <div className="flex-1">
-                  <label className="text-sm text-gray-600 block mb-1">Sortieren nach Saldo</label>
-                  <select
-                    value={saldoSort}
-                    onChange={e => setSaldoSort(e.target.value as "high" | "low" | "none")}
-                    className="w-full h-10 px-3 rounded-md border border-input bg-background"
-                  >
-                    <option value="none">Keine Sortierung</option>
-                    <option value="high">Hoch → Niedrig</option>
-                    <option value="low">Niedrig → Hoch</option>
-                  </select>
-                </div>
-                <Button
-                  onClick={() => {
-                    setMinSaldo("");
-                    setMaxSaldo("");
-                    setSaldoSort("none");
-                  }}
-                  variant="outline"
-                >
-                  Zurücksetzen
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {users.length === 0 ? (
-            <p className="text-muted-foreground">Noch keine Benutzer.</p>
-          ) : (
-            users
-              .filter(profile => {
-                const balance = calculateUserBalance(profile.id);
-                const min = minSaldo ? parseFloat(minSaldo) : 0;
-                const max = maxSaldo ? parseFloat(maxSaldo) : Infinity;
-                return balance >= min && balance <= max;
+          {/* Benutzer-Liste */}
+          <div className="space-y-3">
+            {users
+              .filter(user => {
+                if (!userSearchQuery) return true;
+                const query = userSearchQuery.toLowerCase();
+                return (
+                  user.full_name?.toLowerCase().includes(query) ||
+                  user.email?.toLowerCase().includes(query)
+                );
               })
               .sort((a, b) => {
-                if (saldoSort === "none") return 0;
                 const balanceA = calculateUserBalance(a.id);
                 const balanceB = calculateUserBalance(b.id);
-                return saldoSort === "high" ? balanceB - balanceA : balanceA - balanceB;
+                return sortOrder === "asc" ? balanceA - balanceB : balanceB - balanceA;
               })
-              .map(profile => {
-              const wallet = wallets.find(w => w.user_id === profile.id);
-              const balance = calculateUserBalance(profile.id);
-              return (
-                <Card key={profile.id}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <span>{profile.full_name || profile.email}</span>
-                      <span className="text-xl font-bold text-green-600">
-                        {balance.toFixed(2)} €
-                      </span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                      <div><strong>Email:</strong> {profile.email}</div>
-                      <div><strong>Telefon:</strong> {profile.phone || "-"}</div>
-                      <div><strong>Adresse:</strong> {profile.address || "-"}</div>
+              .map((user) => {
+                const wallet = wallets.find(w => w.user_id === user.id);
+                const balance = calculateUserBalance(user.id);
+
+                return (
+                  <Card key={user.id} className="hover:bg-slate-50 transition-colors">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <button
+                            onClick={() => setSelectedUserDetails(user)}
+                            className="text-left hover:text-blue-600 transition-colors"
+                          >
+                            <p className="font-semibold text-lg">{user.full_name || "Kein Name"}</p>
+                            <p className="text-sm text-muted-foreground">{user.email}</p>
+                          </button>
+                          {wallet?.wallet_address && (
+                            <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+                              <Wallet className="h-3 w-3" />
+                              <span className="font-mono">{wallet.wallet_address}</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <p className="text-2xl font-bold text-blue-600">
+                            {balance.toFixed(2)} €
+                          </p>
+                          <p className="text-xs text-muted-foreground">Aktueller Saldo</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+          </div>
+
+          {/* Detail-Ansicht Modal */}
+          {selectedUserDetails && (() => {
+            const user = selectedUserDetails;
+            const wallet = wallets.find(w => w.user_id === user.id);
+            const userTransactions = transactions.filter(tx => tx.wallet_id === wallet?.id);
+            const userMessages = chatMessages.filter(msg => msg.user_id === user.id);
+            const balance = calculateUserBalance(user.id);
+
+            return (
+              <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+                <Card className="w-full max-w-4xl my-8">
+                  <CardHeader className="border-b">
+                    <div className="flex items-center justify-between">
                       <div>
-                        <strong>Aktuelle Wallet:</strong>{" "}
-                        {wallet ? (
-                          <span className="font-mono text-xs bg-muted p-1 rounded break-all">
-                            {wallet.wallet_address}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground">Keine zugewiesen</span>
-                        )}
+                        <CardTitle className="text-2xl">{user.full_name || "Kein Name"}</CardTitle>
+                        <CardDescription>{user.email}</CardDescription>
                       </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setSelectedUserDetails(null)}
+                      >
+                        <X className="h-5 w-5" />
+                      </Button>
                     </div>
-
-                    <div className="space-y-3">
-                      <div className="flex gap-2 items-center">
-                        <Input 
-                          placeholder="BTC Wallet Adresse..." 
-                          value={walletAddresses[profile.id] || ""}
-                          onChange={e => setWalletAddresses({ ...walletAddresses, [profile.id]: e.target.value })}
-                          className="flex-1"
-                        />
-                        <Button onClick={() => handleAssignWallet(profile.id)}>
-                          {wallet ? "Aktualisieren" : "Zuweisen"}
-                        </Button>
-                      </div>
-
-                      <div className="flex gap-2 items-center">
-                        <Clock className="w-4 h-4 text-muted-foreground" />
-                        <Input 
-                          type="number"
-                          placeholder="Countdown Tage (Standard: 14)" 
-                          value={countdownDays[profile.id] !== undefined ? countdownDays[profile.id] : (wallet?.countdown_days ?? "")}
-                          onChange={e => setCountdownDays({ ...countdownDays, [profile.id]: parseInt(e.target.value) || 0 })}
-                          className="flex-1"
-                          min="0"
-                        />
-                        <Button onClick={() => handleUpdateCountdown(profile.id)} variant="outline">
-                          Countdown setzen
-                        </Button>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Aktuell: {wallet?.countdown_days ?? 14} Tage bis Ablauf neuer Transaktionen
-                      </p>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-6">
+                    {/* Saldo-Anzeige */}
+                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border border-blue-200">
+                      <p className="text-sm text-muted-foreground mb-1">Aktueller Saldo</p>
+                      <p className="text-4xl font-bold text-blue-600">{balance.toFixed(2)} €</p>
+                      {wallet?.wallet_address && (
+                        <div className="flex items-center gap-2 mt-3 text-sm text-muted-foreground">
+                          <Wallet className="h-4 w-4" />
+                          <span className="font-mono">{wallet.wallet_address}</span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Transaktionen-Anzeige */}
@@ -575,9 +556,9 @@ return (
                     })()}
                   </CardContent>
                 </Card>
-              );
-            })
-          )}
+              </div>
+            );
+          })()}
         </TabsContent>
 
         <TabsContent value="pool" className="space-y-4 mt-6">
@@ -1202,4 +1183,4 @@ return (
       </Tabs>
     </DashboardLayout>
   </>
-);
+);}
