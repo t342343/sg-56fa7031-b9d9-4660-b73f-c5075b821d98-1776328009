@@ -1,25 +1,22 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, ShieldCheck, TrendingUp, Wallet, BarChart3, User } from "lucide-react";
+import { Wallet, TrendingUp, ShieldCheck, ArrowRight, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import Link from "next/link";
 
 export default function Home() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsLoggedIn(!!session);
+    };
     checkAuth();
   }, []);
-
-  const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    setIsLoggedIn(!!session);
-    setLoading(false);
-  };
 
   const handleGetStarted = () => {
     if (isLoggedIn) {
@@ -29,16 +26,12 @@ export default function Home() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-lg">Laden...</div>
-      </div>);
-
-  }
+  const handleLogin = () => {
+    router.push("/login");
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Header */}
       <header className="container max-w-7xl mx-auto px-4 py-6 md:py-8">
         <div className="flex justify-between items-start">
@@ -58,9 +51,9 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-12 text-center">
+      <section className="container mx-auto px-4 py-20 text-center">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
             Professionelle Bitcoin-Investmentplattform mit Versicherungsschutz gegen Verlust und Kursschwankungen
           </h1>
           <Button 
@@ -138,53 +131,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="container mx-auto px-4 py-20">
-        <Card className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0">
-          <CardContent className="py-12">
-            <div className="grid md:grid-cols-3 gap-8 text-center">
-              <div>
-                <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-90" />
-                <div className="text-4xl font-bold mb-2">Echtzeit</div>
-                <div className="text-blue-100">Renditeausschütung</div>
-              </div>
-              <div>
-                <ShieldCheck className="h-12 w-12 mx-auto mb-4 opacity-90" />
-                <div className="text-4xl font-bold mb-2">Schutz</div>
-                <div className="text-blue-100">Vollversichert</div>
-              </div>
-              <div>
-                <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-90" />
-                <div className="text-4xl font-bold mb-2">Hohe Renditen</div>
-                <div className="text-blue-100">bis zu 1 Prozent täglich.</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </section>
-
-      {/* CTA Section */}
-      <section className="container mx-auto px-4 py-20 text-center">
-        <div className="max-w-3xl mx-auto space-y-6">
-          <h2 className="text-4xl font-bold">
-            Bereit zum Investieren?
-          </h2>
-          <p className="text-xl text-gray-600">
-            Erstellen Sie jetzt Ihr Konto und starten Sie mit Bitcoin-Investitionen.
-          </p>
-          <Button size="lg" className="text-lg px-8 py-6" onClick={handleGetStarted}>
-            {isLoggedIn ? "Zum Dashboard" : "Kostenlos registrieren"}
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
-        </div>
-      </section>
-
       {/* Footer */}
-      <footer className="border-t bg-white/80 backdrop-blur-sm mt-20">
+      <footer className="border-t mt-20">
         <div className="container mx-auto px-4 py-8 text-center text-gray-600">
           <p>&copy; {new Date().getFullYear()} Finanzportal. Alle Rechte vorbehalten.</p>
         </div>
       </footer>
-    </div>);
-
+    </div>
+  );
 }
