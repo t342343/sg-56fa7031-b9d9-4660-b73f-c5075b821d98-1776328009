@@ -48,6 +48,7 @@ export function AuthForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [agbAccepted, setAgbAccepted] = useState(false);
+  const [bitsuranceAccepted, setBitsuranceAccepted] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,7 +119,17 @@ export function AuthForm() {
       if (!agbAccepted) {
         toast({
           title: "AGB akzeptieren",
-          description: "Bitte bestätigen Sie die AGB, um fortzufahren.",
+          description: "Bitte akzeptieren Sie die AGB, um fortzufahren.",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (!bitsuranceAccepted) {
+        toast({
+          title: "Versicherung bestätigen",
+          description: "Bitte bestätigen Sie die Erstellung der Bitsurance Versicherung.",
           variant: "destructive"
         });
         setLoading(false);
@@ -404,6 +415,20 @@ export function AuthForm() {
                   
                 </div>
 
+                {/* Bitsurance Checkbox */}
+                <div className="flex items-start space-x-2">
+                  <input
+                    type="checkbox"
+                    id="bitsurance"
+                    checked={bitsuranceAccepted}
+                    onChange={(e) => setBitsuranceAccepted(e.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <Label htmlFor="bitsurance" className="text-sm leading-tight cursor-pointer">
+                    Ich bestätige dass eine für mich kostenfreie Versicherung bei Bitsurance erstellt wird.
+                  </Label>
+                </div>
+
                 {/* AGB Checkbox */}
                 <div className="flex items-start space-x-2">
                   <input
@@ -411,18 +436,22 @@ export function AuthForm() {
                     id="agb"
                     checked={agbAccepted}
                     onChange={(e) => setAgbAccepted(e.target.checked)}
-                    className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                  
+                    className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
                   <Label htmlFor="agb" className="text-sm leading-tight cursor-pointer">
-                    Ich verstehe, dass obwohl meine Vermögenswerte und die Rendite vollversichert sind 
-                    dieser Schutz kein grob fahrlässiges Verhalten einschließt. 
-                    <a href="/agb" target="_blank" className="text-blue-600 hover:underline ml-1">
-                      AGB lesen
+                    Ich akzeptiere die{" "}
+                    <a href="/agb" target="_blank" className="text-blue-600 hover:underline">
+                      AGB
                     </a>
+                    .
                   </Label>
                 </div>
 
-                <Button type="submit" className="w-full" disabled={loading}>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isLoading || !agbAccepted || !bitsuranceAccepted}
+                >
                   {loading ? "Registrieren..." : "Registrieren"}
                 </Button>
               </form>
