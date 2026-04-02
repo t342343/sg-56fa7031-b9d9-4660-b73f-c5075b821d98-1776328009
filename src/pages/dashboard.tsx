@@ -249,9 +249,16 @@ export default function Dashboard() {
     if (result) {
       toast({ 
         title: "Verlängert!", 
-        description: `Laufzeit um 14 Tage verlängert. 3% Bonus wird in Kürze gutgeschrieben.` 
+        description: `Laufzeit um 14 Tage verlängert. 3% Bonus wird in 2 Sekunden gutgeschrieben.` 
       });
+      
+      // Lade Dashboard sofort neu (zeigt neuen Verlängerten Betrag)
       loadDashboard();
+      
+      // Lade Dashboard nach 2.5 Sekunden nochmal (zeigt 3% Bonus)
+      setTimeout(() => {
+        loadDashboard();
+      }, 2500);
     } else {
       toast({ 
         title: "Fehler", 
