@@ -452,8 +452,8 @@ export default function Dashboard() {
             </p>
           </div>
 
-          {/* Statistik-Karten */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6 mb-6 lg:mb-8">
+          {/* Statistik-Karten - Obere Reihe */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mb-6">
             <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white relative overflow-hidden">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
@@ -505,7 +505,73 @@ export default function Dashboard() {
               </CardContent>
               <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-green-500/5 blur-2xl" />
             </Card>
+          </div>
 
+          {/* Ihre Wallet - Dazwischen */}
+          {loading ? (
+            <div className="animate-pulse text-muted-foreground mb-6">Lade Daten...</div>
+          ) : !wallet ? (
+            <Card className="mb-6">
+              <CardContent className="pt-6">
+                <p className="text-muted-foreground text-center py-8">
+                  Ihnen wurde noch keine Bitcoin Wallet zugewiesen. Bitte warten Sie, bis der Administrator Ihr Konto eingerichtet hat.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="border-blue-accent/20 bg-blue-accent/5 mb-6">
+              <CardHeader>
+                <CardTitle className="text-lg">Ihre Wallet</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-col sm:flex-row gap-4 items-start">
+                  <div className="flex-1 w-full">
+                    <div className="relative">
+                      <p className="font-mono bg-background border p-4 rounded-md break-all select-all text-sm pr-12">
+                        {wallet.wallet_address}
+                      </p>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={copyWalletAddress}
+                        className="absolute right-2 top-1/2 -translate-y-1/2"
+                        title="Adresse kopieren"
+                      >
+                        {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Dies ist Ihre persönliche Einzahlungsadresse. Es kann einige Minuten dauern, bis neue Einzahlungen sichtbar werden.
+                    </p>
+                  </div>
+                  
+                  <div className="bg-white p-4 rounded-lg border shadow-sm">
+                    <QRCodeSVG
+                      value={wallet.wallet_address}
+                      size={160}
+                      level="H"
+                      includeMargin={true} 
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2 pt-3 border-t">
+                  <Button
+                    onClick={manualCheckTransactions}
+                    disabled={checkingTransactions}
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                  >
+                    Transaktionen aktualisieren
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Statistik-Karten - Untere Reihe */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8">
             <Card 
               className="bg-gradient-to-br from-slate-500 to-slate-600 text-white relative overflow-hidden cursor-pointer hover:from-slate-600 hover:to-slate-700 transition-all"
               onClick={() => router.push("/gewinnberechnung")}
@@ -535,68 +601,9 @@ export default function Dashboard() {
             </Card>
           </div>
 
-          {loading ?
-          <div className="animate-pulse text-muted-foreground">Lade Daten...</div> :
-          !wallet ?
-          <Card>
-              <CardContent className="pt-6">
-                <p className="text-muted-foreground text-center py-8">
-                  Ihnen wurde noch keine Bitcoin Wallet zugewiesen. Bitte warten Sie, bis der Administrator Ihr Konto eingerichtet hat.
-                </p>
-              </CardContent>
-            </Card> :
-
-          <div className="space-y-6">
-              <Card className="border-blue-accent/20 bg-blue-accent/5">
-                <CardHeader>
-                  <CardTitle className="text-lg">Ihre Wallet</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex flex-col sm:flex-row gap-4 items-start">
-                    <div className="flex-1 w-full">
-                      <div className="relative">
-                        <p className="font-mono bg-background border p-4 rounded-md break-all select-all text-sm pr-12">
-                          {wallet.wallet_address}
-                        </p>
-                        <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={copyWalletAddress}
-                        className="absolute right-2 top-1/2 -translate-y-1/2"
-                        title="Adresse kopieren">
-                        
-                          {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
-                        </Button>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-2">Dies ist Ihre persönliche Einzahlungsadresse. Es kann einige Minuten dauern, bis neue Einzahlungen sichtbar werden.
-
-                    </p>
-                    </div>
-                    
-                    <div className="bg-white p-4 rounded-lg border shadow-sm">
-                      <QRCodeSVG
-                      value={wallet.wallet_address}
-                      size={160}
-                      level="H"
-                      includeMargin={true} />
-                    
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 pt-3 border-t">
-                    <Button
-                    onClick={manualCheckTransactions}
-                    disabled={checkingTransactions}
-                    variant="outline"
-                    size="sm"
-                    className="flex-1">Transaktionen aktualisieren
-
-
-                  </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
+          {/* Restlicher Content */}
+          {!loading && wallet && (
+            <div className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Positionen</CardTitle>
@@ -825,7 +832,7 @@ export default function Dashboard() {
 
               {/* Abgeschlossene Auszahlungen */}
               {withdrawnTransactions.length > 0 &&
-            <Card className="mt-8">
+                <Card className="mt-8">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <CheckCircle2 className="h-5 w-5 text-green-600" />
@@ -835,7 +842,7 @@ export default function Dashboard() {
                   <CardContent>
                     <div className="space-y-4">
                       {withdrawnTransactions.map((tx) =>
-                  <div key={tx.id} className="border border-green-200 bg-green-50 rounded-lg p-4">
+                        <div key={tx.id} className="border border-green-200 bg-green-50 rounded-lg p-4">
                           <div className="flex items-start justify-between mb-3">
                             <div>
                               <div className="flex items-center gap-2 mb-1">
@@ -844,12 +851,12 @@ export default function Dashboard() {
                               </div>
                               <p className="text-sm text-gray-600">
                                 {new Date(tx.created_at).toLocaleDateString("de-DE", {
-                            day: "2-digit",
-                            month: "long",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit"
-                          })}
+                                  day: "2-digit",
+                                  month: "long",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit"
+                                })}
                               </p>
                             </div>
                             <div className="text-right">
@@ -858,9 +865,9 @@ export default function Dashboard() {
                               </div>
                               <div className="text-sm text-green-600 font-medium">
                                 {tx.withdrawn_amount_btc ?
-                          `${tx.withdrawn_amount_btc.toFixed(8)} BTC` :
-                          `${((tx.withdrawn_amount_eur || calculateCurrentBalance(tx)) / (bitcoinPrice || 85000)).toFixed(8)} BTC`
-                          }
+                                  `${tx.withdrawn_amount_btc.toFixed(8)} BTC` :
+                                  `${((tx.withdrawn_amount_eur || calculateCurrentBalance(tx)) / (bitcoinPrice || 85000)).toFixed(8)} BTC`
+                                }
                               </div>
                               <div className="text-sm text-gray-600 mt-1">
                                 Gewinn: +{((tx.withdrawn_amount_eur || calculateCurrentBalance(tx)) - tx.amount_eur).toFixed(2)} €
@@ -883,19 +890,19 @@ export default function Dashboard() {
                               <span className="text-gray-600">In Bitcoin:</span>
                               <span className="font-mono text-sm font-medium">
                                 {tx.withdrawn_amount_btc ?
-                          `${tx.withdrawn_amount_btc.toFixed(8)} BTC` :
-                          `${((tx.withdrawn_amount_eur || calculateCurrentBalance(tx)) / (bitcoinPrice || 85000)).toFixed(8)} BTC`
-                          }
+                                  `${tx.withdrawn_amount_btc.toFixed(8)} BTC` :
+                                  `${((tx.withdrawn_amount_eur || calculateCurrentBalance(tx)) / (bitcoinPrice || 85000)).toFixed(8)} BTC`
+                                }
                               </span>
                             </div>
                             <div className="flex justify-between border-t pt-2">
                               <span className="text-gray-600">Eingezahlt am:</span>
                               <span className="font-medium">
                                 {new Date(tx.timestamp).toLocaleDateString("de-DE", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric"
-                          })}
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric"
+                                })}
                               </span>
                             </div>
                             <div className="border-t pt-2 mt-2">
@@ -906,12 +913,13 @@ export default function Dashboard() {
                             </div>
                           </div>
                         </div>
-                  )}
+                      )}
                     </div>
                   </CardContent>
                 </Card>
-            }
-          </div>
+              }
+            </div>
+          )}
         </div>
       </DashboardLayout>
 
