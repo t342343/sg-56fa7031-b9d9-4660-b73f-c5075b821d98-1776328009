@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Wallet, TrendingUp, ShieldCheck, ArrowRight, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import Link from "next/link";
+import { SEO } from "@/components/SEO";
 
 export default function Home() {
   const router = useRouter();
@@ -26,12 +27,13 @@ export default function Home() {
     }
   };
 
-  const handleLogin = () => {
-    router.push("/login");
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <SEO 
+        title="Finanzportal - Bitcoin Investment mit Versicherungsschutz"
+        description="Professionelle Bitcoin-Investmentplattform mit vollständigem Versicherungsschutz gegen Verlust und Kursschwankungen"
+      />
+
       {/* Header */}
       <header className="container max-w-7xl mx-auto px-4 py-6 md:py-8">
         <div className="flex justify-between items-start">
@@ -51,19 +53,11 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20 text-center">
+      <section className="container mx-auto px-4 py-12 text-center">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
             Professionelle Bitcoin-Investmentplattform mit Versicherungsschutz gegen Verlust und Kursschwankungen
           </h1>
-          <Button 
-            size="lg" 
-            className="text-lg px-10 py-6 bg-green-600 hover:bg-green-700 mb-6"
-            onClick={() => router.push("/login")}
-          >
-            Jetzt Registrieren
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
           <p className="text-xl text-gray-600 mb-12">
             Investieren Sie sicher in Bitcoin mit vollständigem Versicherungsschutz und professioneller Verwaltung
           </p>
@@ -132,9 +126,9 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t mt-20">
-        <div className="container mx-auto px-4 py-8 text-center text-gray-600">
-          <p>&copy; {new Date().getFullYear()} Finanzportal. Alle Rechte vorbehalten.</p>
+      <footer className="bg-slate-900 text-white py-12 mt-20">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-slate-400">&copy; {new Date().getFullYear()} Finanzportal. Alle Rechte vorbehalten.</p>
         </div>
       </footer>
     </div>
