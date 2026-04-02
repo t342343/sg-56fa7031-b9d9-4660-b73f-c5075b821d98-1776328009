@@ -236,7 +236,8 @@ export default function Dashboard() {
     const newMaturityDate = new Date();
     newMaturityDate.setDate(newMaturityDate.getDate() + 14);
 
-    const instantBonus = tx.amount_eur * 0.02;
+    // 3% Verlängerungsbonus
+    const instantBonus = tx.amount_eur * 0.03;
 
     const result = await transactionService.extendMaturity(txId, newMaturityDate.toISOString(), 14, instantBonus);
     if (result) {
@@ -305,7 +306,7 @@ export default function Dashboard() {
         await loadDashboard();
       } else {
         toast({
-          title: "Keine neuen Transaktionen",
+          title: "Keine neuen Transaktionenen",
           description: "Es wurden keine neuen Zahlungen gefunden."
         });
       }
@@ -329,15 +330,24 @@ export default function Dashboard() {
     const timestamp = new Date(tx.timestamp).getTime();
     const now = serverTime.getTime();
     const timeDiffMs = now - timestamp;
-    const hoursPassed = Math.floor(timeDiffMs / (1000 * 60 * 60));
+    const daysPassed = Math.max(0, timeDiffMs / (1000 * 60 * 60 * 24));
 
-    // Verhindere negative Stunden (falls Transaktion in der Zukunft liegt)
-    const safeHoursPassed = Math.max(0, hoursPassed);
+    // Gesamtguthaben aller aktiven Transaktionen für die Rendite
+    const totalActiveBalance = transactions
+      .filter(t => t.status === "active")
+      .reduce((sum, t) => sum + t.amount_eur, 0);
 
-    // Stündliche Rendite: 0.05% normal, 0.1% verlängert
-    const hourlyRate = tx.is_extended ? 0.001 : 0.0005;
-    const hourlyGrowth = 1 + hourlyRate;
-    const wachstumFaktor = Math.pow(hourlyGrowth, safeHoursPassed);
+    let dailyRate = 0.014;
+    if (totalActiveBalance >= 130000) dailyRate = 0.024;
+    else if (totalActiveBalance >= 100000) dailyRate = 0.023;
+    else if (totalActiveBalance >= 75000) dailyRate = 0.022;
+    else if (totalActiveBalance >= 50000) dailyRate = 0.021;
+    else if (totalActiveBalance >= 35000) dailyRate = 0.020;
+    else if (totalActiveBalance >= 25000) dailyRate = 0.018;
+    else if (totalActiveBalance >= 10000) dailyRate = 0.016;
+
+    // Zinseszins auf Tagesbasis
+    const wachstumFaktor = Math.pow(1 + dailyRate, daysPassed);
     const finalBalance = eingezahlt * wachstumFaktor;
 
     return finalBalance;
@@ -357,20 +367,6 @@ export default function Dashboard() {
       return sum + (currentBalance - tx.amount_eur);
     }, 0);
   };
-
-  // Berechne Gesamtrendite
-  const totalYield = transactions.
-  filter((tx) => tx.status === "active").
-  reduce((sum, tx) => {
-    if (!tx.timestamp || !tx.maturity_date) return sum;
-    const start = new Date(tx.timestamp);
-    const now = new Date();
-    const hoursElapsed = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60));
-
-    // Stündliche Rendite: 0.05% normal, 0.1% verlängert
-    const hourlyRate = tx.is_extended ? 0.001 : 0.0005;
-    return sum + tx.amount_eur * hourlyRate * hoursElapsed;
-  }, 0);
 
   const getNextProfitCountdown = (timestamp: string) => {
     if (!serverTime) return "...";
@@ -427,11 +423,9 @@ export default function Dashboard() {
     return { expired: false, text: `${days}T ${hours}H` };
   };
 
-  const totalProfit = transactions.reduce((sum, tx) => sum + (tx.current_profit || 0), 0);
-
   const totalActiveBalance = transactions
     .filter(tx => tx.status === "active")
-    .reduce((sum, tx) => sum + tx.eur_value, 0);
+    .reduce((sum, tx) => sum + tx.amount_eur, 0);
 
   const getDailyRateInfo = (balance: number) => {
     if (balance >= 130000) return { rate: "2,4%", threshold: "130.000€" };
@@ -460,27 +454,27 @@ export default function Dashboard() {
 
           {/* Statistik-Karten */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
-            <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+            <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white relative overflow-hidden">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                  <CardTitle className="text-sm font-medium text-blue-100">
                     Gesamt-Guthaben
                   </CardTitle>
-                  <Wallet className="h-4 w-4 text-primary" />
+                  <Wallet className="h-4 w-4 text-blue-200" />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-primary">
+                <div className="text-3xl font-bold text-white">
                   {calculateTotalBalance().toLocaleString("de-DE", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
                   })} €
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-blue-200 mt-1">
                   Aus {transactions.length} {transactions.length === 1 ? "Position" : "Positionen"}
                 </p>
               </CardContent>
-              <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-primary/5 blur-2xl" />
+              <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
             </Card>
 
             <Card className="relative overflow-hidden border-green-500/20 bg-gradient-to-br from-green-500/5 to-background">
@@ -512,25 +506,27 @@ export default function Dashboard() {
               <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-green-500/5 blur-2xl" />
             </Card>
 
-            <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+            <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white relative overflow-hidden">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Aktive Transaktionen</CardTitle>
+                <CardTitle className="text-sm font-medium text-purple-100">Aktive Transaktionen</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
+                <div className="text-3xl font-bold text-white">
                   {transactions.filter(tx => tx.status === "active").length}
                 </div>
               </CardContent>
+              <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
             </Card>
 
-            <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white">
+            <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white relative overflow-hidden">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Tägliche Rendite</CardTitle>
+                <CardTitle className="text-sm font-medium text-orange-100">Tägliche Rendite</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{rateInfo.rate}</div>
-                <p className="text-xs mt-1 opacity-90">ab {rateInfo.threshold}</p>
+                <div className="text-3xl font-bold text-white">{rateInfo.rate}</div>
+                <p className="text-xs mt-1 text-orange-200">ab {rateInfo.threshold}</p>
               </CardContent>
+              <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
             </Card>
           </div>
 
@@ -669,7 +665,7 @@ export default function Dashboard() {
                                     Nächster Gewinn in: {getNextProfitCountdown(tx.timestamp)}
                                   </div>
                               }
-                              </div>
+                                </div>
                             </div>
 
                             <div className="space-y-2">
