@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, ShieldCheck, TrendingUp, Wallet, BarChart3 } from "lucide-react";
+import { ArrowRight, ShieldCheck, TrendingUp, Wallet, BarChart3, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Home() {
@@ -40,41 +40,25 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Wallet className="h-8 w-8 text-blue-600" />
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent" style={{ fontSize: "12px", textAlign: "center" }}>Finanzportal
-
+      <header className="container mx-auto px-4 py-6">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 p-2">
+              <Wallet className="h-6 w-6 text-white" />
+            </div>
+            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              Finanzportal
             </span>
           </div>
-          <div className="flex gap-3">
-            {isLoggedIn ?
-            <Button onClick={() => router.push("/dashboard")} size="lg">
-                Zum Dashboard
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button> :
-
-            <>
-                <Link href="/login">
-                  <Button variant="outline" size="lg">
-                    Anmelden
-                  </Button>
-                </Link>
-                <Link href="/login">
-                  <Button size="lg">
-                    Registrieren
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-              </>
-            }
-          </div>
+          <Button variant="outline" onClick={handleLogin}>
+            <User className="mr-2 h-4 w-4" />
+            Anmelden
+          </Button>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20 text-center">
+      <section className="container mx-auto px-4 py-12 text-center">
         <div className="max-w-4xl mx-auto space-y-8">
           <h1 className="text-5xl md:text-6xl font-bold leading-tight">
             Investieren Sie in Ihre
