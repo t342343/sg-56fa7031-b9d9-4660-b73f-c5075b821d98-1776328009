@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { profileService } from "@/services/profileService";
 import { walletService } from "@/services/walletService";
@@ -46,6 +47,9 @@ const [chats, setChats] = useState<any[]>([]);
 const [homeButtonUrl, setHomeButtonUrl] = useState("/");
 const [websiteButtonUrl, setWebsiteButtonUrl] = useState("/");
 const [homeMenuUrl, setHomeMenuUrl] = useState("/");
+
+// Tab-State
+const [activeTab, setActiveTab] = useState("users");
 
 const { toast } = useToast();
 
@@ -374,636 +378,489 @@ return (
   <>
     <SEO title="Admin-Panel - Finanzportal" />
     <DashboardLayout>
-      <h2 className="text-2xl font-bold mb-6 text-navy">Admin-Panel</h2>
-      
-      <Tabs defaultValue="users" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="users">Benutzer</TabsTrigger>
-          <TabsTrigger value="pool">Wallet-Pool ({walletPool.filter(w => !w.assigned_to_user_id).length})</TabsTrigger>
-          <TabsTrigger value="chat">Chats ({chats.length})</TabsTrigger>
-          <TabsTrigger value="transactions">Transaktionen ({transactions.length})</TabsTrigger>
-          <TabsTrigger value="links">Links</TabsTrigger>
-        </TabsList>
+      <div className="container mx-auto py-8">
+        <h1 className="text-3xl font-bold mb-8">Admin-Panel</h1>
+        
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="users">Benutzer</TabsTrigger>
+            <TabsTrigger value="wallets">Wallets</TabsTrigger>
+            <TabsTrigger value="transactions">Transaktionen</TabsTrigger>
+            <TabsTrigger value="chat">Chat</TabsTrigger>
+            <TabsTrigger value="settings">Einstellungen</TabsTrigger>
+          </TabsList>
 
-        {/* Benutzer-Verwaltung Tab */}
-        <TabsContent value="users">
-          {/* Benutzer-Liste */}
-          <div className="space-y-3">
-            {users
-              .filter(user => {
-                if (!userSearchQuery) return true;
-                const query = userSearchQuery.toLowerCase();
-                return (
-                  user.full_name?.toLowerCase().includes(query) ||
-                  user.email?.toLowerCase().includes(query)
-                );
-              })
-              .sort((a, b) => {
-                const balanceA = calculateUserBalance(a.id);
-                const balanceB = calculateUserBalance(b.id);
-                return sortOrder === "asc" ? balanceA - balanceB : balanceB - balanceA;
-              })
-              .map((user) => {
-                const wallet = wallets.find(w => w.user_id === user.id);
-                const balance = calculateUserBalance(user.id);
+          {/* Benutzer-Verwaltung Tab */}
+          <TabsContent value="users">
+            {/* Benutzer-Liste */}
+            <div className="space-y-3">
+              {users
+                .filter(user => {
+                  if (!userSearchQuery) return true;
+                  const query = userSearchQuery.toLowerCase();
+                  return (
+                    user.full_name?.toLowerCase().includes(query) ||
+                    user.email?.toLowerCase().includes(query)
+                  );
+                })
+                .sort((a, b) => {
+                  const balanceA = calculateUserBalance(a.id);
+                  const balanceB = calculateUserBalance(b.id);
+                  return sortOrder === "asc" ? balanceA - balanceB : balanceB - balanceA;
+                })
+                .map((user) => {
+                  const wallet = wallets.find(w => w.user_id === user.id);
+                  const balance = calculateUserBalance(user.id);
 
-                return (
-                  <Card key={user.id} className="hover:bg-slate-50 transition-colors">
-                    <CardContent className="p-4">
+                  return (
+                    <Card key={user.id} className="hover:bg-slate-50 transition-colors">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <button
+                              onClick={() => setSelectedUserDetails(user)}
+                              className="text-left hover:text-blue-600 transition-colors"
+                            >
+                              <p className="font-semibold text-lg">{user.full_name || "Kein Name"}</p>
+                              <p className="text-sm text-muted-foreground">{user.email}</p>
+                            </button>
+                            {wallet?.wallet_address && (
+                              <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+                                <Wallet className="h-3 w-3" />
+                                <span className="font-mono">{wallet.wallet_address}</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <p className="text-2xl font-bold text-blue-600">
+                              {balance.toFixed(2)} €
+                            </p>
+                            <p className="text-xs text-muted-foreground">Aktueller Saldo</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+            </div>
+
+            {/* Detail-Ansicht Modal */}
+            {selectedUserDetails && (() => {
+              const user = selectedUserDetails;
+              const wallet = wallets.find(w => w.user_id === user.id);
+              const userTransactions = transactions.filter(tx => tx.wallet_id === wallet?.id);
+              const userMessages = chatMessages.filter(msg => msg.user_id === user.id);
+              const balance = calculateUserBalance(user.id);
+
+              return (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+                  <Card className="w-full max-w-4xl my-8">
+                    <CardHeader className="border-b">
                       <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <button
-                            onClick={() => setSelectedUserDetails(user)}
-                            className="text-left hover:text-blue-600 transition-colors"
-                          >
-                            <p className="font-semibold text-lg">{user.full_name || "Kein Name"}</p>
-                            <p className="text-sm text-muted-foreground">{user.email}</p>
-                          </button>
-                          {wallet?.wallet_address && (
-                            <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-                              <Wallet className="h-3 w-3" />
-                              <span className="font-mono">{wallet.wallet_address}</span>
+                        <div>
+                          <CardTitle className="text-2xl">{user.full_name || "Kein Name"}</CardTitle>
+                          <CardDescription>{user.email}</CardDescription>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setSelectedUserDetails(null)}
+                        >
+                          <X className="h-5 w-5" />
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="p-6 space-y-6">
+                      {/* Saldo-Anzeige */}
+                      <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border border-blue-200">
+                        <p className="text-sm text-muted-foreground mb-1">Aktueller Saldo</p>
+                        <p className="text-4xl font-bold text-blue-600">{balance.toFixed(2)} €</p>
+                        {wallet?.wallet_address && (
+                          <div className="flex items-center gap-2 mt-3 text-sm text-muted-foreground">
+                            <Wallet className="h-4 w-4" />
+                            <span className="font-mono">{wallet.wallet_address}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Transaktionen-Anzeige */}
+                      {(() => {
+                        if (!wallet) return null;
+                        const userTransactions = transactions.filter(tx => tx.wallet_id === wallet.id);
+                        if (userTransactions.length === 0) return null;
+                        
+                        return (
+                          <div className="mt-4 pt-4 border-t border-slate-200">
+                            <p className="text-sm font-semibold text-slate-700 mb-3">
+                              Transaktionen ({userTransactions.length})
+                            </p>
+                            <div className="space-y-2 max-h-64 overflow-y-auto">
+                              {userTransactions.map(tx => {
+                                const maturityDate = tx.maturity_date ? new Date(tx.maturity_date) : null;
+                                const now = new Date();
+                                const daysRemaining = maturityDate 
+                                  ? Math.ceil((maturityDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) 
+                                  : null;
+                                
+                                return (
+                                  <div key={tx.id} className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <span className="font-mono font-bold text-slate-900 text-sm">
+                                        {tx.amount_btc?.toFixed(8) || '0.00000000'} BTC
+                                      </span>
+                                      <span className="text-slate-700 font-semibold text-sm">
+                                        {tx.amount_eur?.toFixed(2) || '0.00'} €
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+                                      <span>{new Date(tx.timestamp || tx.created_at).toLocaleDateString('de-DE', {
+                                        day: '2-digit',
+                                        month: 'short',
+                                        year: 'numeric'
+                                      })}</span>
+                                      {daysRemaining !== null && (
+                                        <span className={`font-medium px-2 py-0.5 rounded ${
+                                          daysRemaining > 7 ? 'bg-green-100 text-green-700' : 
+                                          daysRemaining > 0 ? 'bg-orange-100 text-orange-700' : 
+                                          'bg-red-100 text-red-700'
+                                        }`}>
+                                          {daysRemaining > 0 ? `${daysRemaining} Tage` : 'Fällig'}
+                                        </span>
+                                      )}
+                                    </div>
+                                    {tx.txid && (
+                                      <div className="text-slate-400 font-mono text-xs truncate">
+                                        TxID: {tx.txid.substring(0, 20)}...
+                                      </div>
+                                    )}
+                                    <div className="mt-1">
+                                      <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                                        tx.status === 'active' ? 'bg-blue-100 text-blue-700' :
+                                        tx.status === 'withdrawal_pending' ? 'bg-yellow-100 text-yellow-700' :
+                                        tx.status === 'withdrawn' ? 'bg-green-100 text-green-700' :
+                                        'bg-gray-100 text-gray-700'
+                                      }`}>
+                                        {tx.status === 'active' ? 'Aktiv' :
+                                         tx.status === 'withdrawal_pending' ? 'Auszahlung beantragt' :
+                                         tx.status === 'withdrawn' ? 'Ausgezahlt' :
+                                         tx.status}
+                                      </span>
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
+                          </div>
+                        );
+                      })()}
+
+                      {/* Chat-Nachrichten */}
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="text-lg font-semibold">Chat-Nachrichten ({userMessages.length})</h3>
+                          {userMessages.length > 0 && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedUserDetails(null);
+                                setActiveTab("chat");
+                              }}
+                            >
+                              <MessageCircle className="h-4 w-4 mr-2" />
+                              Zum Chat
+                            </Button>
                           )}
                         </div>
-                        <div className="text-right">
-                          <p className="text-2xl font-bold text-blue-600">
-                            {balance.toFixed(2)} €
-                          </p>
-                          <p className="text-xs text-muted-foreground">Aktueller Saldo</p>
-                        </div>
+                        {userMessages.length > 0 ? (
+                          <div className="space-y-2">
+                            {userMessages.slice(0, 2).map(msg => (
+                              <div key={msg.id} className={`p-3 rounded-lg ${
+                                msg.is_admin ? 'bg-purple-50 border border-purple-200' : 'bg-blue-50 border border-blue-200'
+                              }`}>
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-xs font-semibold text-muted-foreground">
+                                    {msg.is_admin ? 'Admin' : 'Benutzer'}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {new Date(msg.created_at).toLocaleDateString('de-DE', {
+                                      day: '2-digit',
+                                      month: 'short',
+                                      year: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })}
+                                  </span>
+                                </div>
+                                <p className="text-sm">{msg.message}</p>
+                              </div>
+                            ))}
+                            {userMessages.length > 2 && (
+                              <p className="text-xs text-center text-muted-foreground italic pt-2">
+                                + {userMessages.length - 2} weitere Nachrichten
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground italic">Keine Nachrichten vorhanden</p>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
-                );
-              })}
-          </div>
+                </div>
+              );
+            })()}
+          </TabsContent>
 
-          {/* Detail-Ansicht Modal */}
-          {selectedUserDetails && (() => {
-            const user = selectedUserDetails;
-            const wallet = wallets.find(w => w.user_id === user.id);
-            const userTransactions = transactions.filter(tx => tx.wallet_id === wallet?.id);
-            const userMessages = chatMessages.filter(msg => msg.user_id === user.id);
-            const balance = calculateUserBalance(user.id);
+          <TabsContent value="wallets" className="space-y-4 mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Neue Wallet-Adresse zum Pool hinzufügen</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-2">
+                  <Input 
+                    placeholder="Bitcoin Wallet-Adresse (bc1...)" 
+                    value={newPoolAddress}
+                    onChange={e => setNewPoolAddress(e.target.value)}
+                    className="flex-1 font-mono text-sm"
+                  />
+                  <Button onClick={handleAddToPool}>
+                    Hinzufügen
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Maximale Pool-Größe: 20 Adressen. Bei neuer Registrierung wird automatisch eine freie Adresse zugewiesen.
+                </p>
+              </CardContent>
+            </Card>
 
-            return (
-              <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
-                <Card className="w-full max-w-4xl my-8">
-                  <CardHeader className="border-b">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="text-2xl">{user.full_name || "Kein Name"}</CardTitle>
-                        <CardDescription>{user.email}</CardDescription>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setSelectedUserDetails(null)}
-                      >
-                        <X className="h-5 w-5" />
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-6 space-y-6">
-                    {/* Saldo-Anzeige */}
-                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border border-blue-200">
-                      <p className="text-sm text-muted-foreground mb-1">Aktueller Saldo</p>
-                      <p className="text-4xl font-bold text-blue-600">{balance.toFixed(2)} €</p>
-                      {wallet?.wallet_address && (
-                        <div className="flex items-center gap-2 mt-3 text-sm text-muted-foreground">
-                          <Wallet className="h-4 w-4" />
-                          <span className="font-mono">{wallet.wallet_address}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Transaktionen-Anzeige */}
-                    {(() => {
-                      if (!wallet) return null;
-                      const userTransactions = transactions.filter(tx => tx.wallet_id === wallet.id);
-                      if (userTransactions.length === 0) return null;
-                      
-                      return (
-                        <div className="mt-4 pt-4 border-t border-slate-200">
-                          <p className="text-sm font-semibold text-slate-700 mb-3">
-                            Transaktionen ({userTransactions.length})
-                          </p>
-                          <div className="space-y-2 max-h-64 overflow-y-auto">
-                            {userTransactions.map(tx => {
-                              const maturityDate = tx.maturity_date ? new Date(tx.maturity_date) : null;
-                              const now = new Date();
-                              const daysRemaining = maturityDate 
-                                ? Math.ceil((maturityDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) 
-                                : null;
-                              
-                              return (
-                                <div key={tx.id} className="bg-slate-50 p-3 rounded-lg border border-slate-200">
-                                  <div className="flex items-center justify-between mb-2">
-                                    <span className="font-mono font-bold text-slate-900 text-sm">
-                                      {tx.amount_btc?.toFixed(8) || '0.00000000'} BTC
-                                    </span>
-                                    <span className="text-slate-700 font-semibold text-sm">
-                                      {tx.amount_eur?.toFixed(2) || '0.00'} €
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
-                                    <span>{new Date(tx.timestamp || tx.created_at).toLocaleDateString('de-DE', {
-                                      day: '2-digit',
-                                      month: 'short',
-                                      year: 'numeric'
-                                    })}</span>
-                                    {daysRemaining !== null && (
-                                      <span className={`font-medium px-2 py-0.5 rounded ${
-                                        daysRemaining > 7 ? 'bg-green-100 text-green-700' : 
-                                        daysRemaining > 0 ? 'bg-orange-100 text-orange-700' : 
-                                        'bg-red-100 text-red-700'
-                                      }`}>
-                                        {daysRemaining > 0 ? `${daysRemaining} Tage` : 'Fällig'}
-                                      </span>
-                                    )}
-                                  </div>
-                                  {tx.txid && (
-                                    <div className="text-slate-400 font-mono text-xs truncate">
-                                      TxID: {tx.txid.substring(0, 20)}...
-                                    </div>
-                                  )}
-                                  <div className="mt-1">
-                                    <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-                                      tx.status === 'active' ? 'bg-blue-100 text-blue-700' :
-                                      tx.status === 'withdrawal_pending' ? 'bg-yellow-100 text-yellow-700' :
-                                      tx.status === 'withdrawn' ? 'bg-green-100 text-green-700' :
-                                      'bg-gray-100 text-gray-700'
-                                    }`}>
-                                      {tx.status === 'active' ? 'Aktiv' :
-                                       tx.status === 'withdrawal_pending' ? 'Auszahlung beantragt' :
-                                       tx.status === 'withdrawn' ? 'Ausgezahlt' :
-                                       tx.status}
-                                    </span>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      );
-                    })()}
-
-                    {/* Chat-Nachrichten */}
-                    <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-semibold">Chat-Nachrichten ({userMessages.length})</h3>
-                        {userMessages.length > 0 && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedUserDetails(null);
-                              // Warte kurz und scrolle dann zum Chat-Tab
-                              setTimeout(() => {
-                                const chatTab = document.querySelector('[value="chat"]');
-                                if (chatTab) (chatTab as HTMLElement).click();
-                              }, 100);
-                            }}
-                          >
-                            <MessageCircle className="h-4 w-4 mr-2" />
-                            Zum Chat
-                          </Button>
-                        )}
-                      </div>
-                      {userMessages.length > 0 ? (
-                        <div className="space-y-2">
-                          {userMessages.slice(0, 2).map(msg => (
-                            <div key={msg.id} className={`p-3 rounded-lg ${
-                              msg.is_admin ? 'bg-purple-50 border border-purple-200' : 'bg-blue-50 border border-blue-200'
-                            }`}>
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-xs font-semibold text-muted-foreground">
-                                  {msg.is_admin ? 'Admin' : 'Benutzer'}
-                                </span>
-                                <span className="text-xs text-muted-foreground">
-                                  {new Date(msg.created_at).toLocaleDateString('de-DE', {
-                                    day: '2-digit',
-                                    month: 'short',
-                                    year: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                  })}
-                                </span>
-                              </div>
-                              <p className="text-sm">{msg.message}</p>
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold">
+                Vorrätige Wallets ({walletPool.filter(w => !w.assigned_to_user_id).length} verfügbar / {walletPool.length} gesamt)
+              </h3>
+              
+              {walletPool.length === 0 ? (
+                <p className="text-muted-foreground">Noch keine Wallets im Pool.</p>
+              ) : (
+                walletPool.map(wallet => {
+                  const isAssigned = !!wallet.assigned_to_user_id;
+                  const assignedUser = isAssigned ? users.find(p => p.id === wallet.assigned_to_user_id) : null;
+                  
+                  return (
+                    <Card key={wallet.id} className={isAssigned ? "bg-muted/30" : ""}>
+                      <CardContent className="py-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="font-mono text-sm break-all">
+                              {wallet.wallet_address}
                             </div>
-                          ))}
-                          {userMessages.length > 2 && (
-                            <p className="text-xs text-center text-muted-foreground italic pt-2">
-                              + {userMessages.length - 2} weitere Nachrichten
-                            </p>
+                            <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+                              {isAssigned ? (
+                                <>
+                                  <span className="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200 rounded">
+                                    Zugewiesen
+                                  </span>
+                                  <span>→ {assignedUser?.full_name || assignedUser?.email || "Unbekannt"}</span>
+                                  <span>am {new Date(wallet.assigned_at).toLocaleDateString('de-DE')}</span>
+                                </>
+                              ) : (
+                                <span className="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200 rounded">
+                                  Verfügbar
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {!isAssigned && (
+                            <Button 
+                              variant="destructive" 
+                              size="sm"
+                              onClick={() => handleRemoveFromPool(wallet.id)}
+                            >
+                              Entfernen
+                            </Button>
                           )}
                         </div>
-                      ) : (
-                        <p className="text-sm text-muted-foreground italic">Keine Nachrichten vorhanden</p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            );
-          })()}
-        </TabsContent>
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              )}
+            </div>
+          </TabsContent>
 
-        <TabsContent value="pool" className="space-y-4 mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Neue Wallet-Adresse zum Pool hinzufügen</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-2">
-                <Input 
-                  placeholder="Bitcoin Wallet-Adresse (bc1...)" 
-                  value={newPoolAddress}
-                  onChange={e => setNewPoolAddress(e.target.value)}
-                  className="flex-1 font-mono text-sm"
-                />
-                <Button onClick={handleAddToPool}>
-                  Hinzufügen
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Maximale Pool-Größe: 20 Adressen. Bei neuer Registrierung wird automatisch eine freie Adresse zugewiesen.
-              </p>
-            </CardContent>
-          </Card>
-
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold">
-              Vorrätige Wallets ({walletPool.filter(w => !w.assigned_to_user_id).length} verfügbar / {walletPool.length} gesamt)
-            </h3>
-            
-            {walletPool.length === 0 ? (
-              <p className="text-muted-foreground">Noch keine Wallets im Pool.</p>
+          <TabsContent value="chat" className="space-y-4 mt-6">
+            {chats.length === 0 ? (
+              <p className="text-muted-foreground">Keine Chats vorhanden.</p>
             ) : (
-              walletPool.map(wallet => {
-                const isAssigned = !!wallet.assigned_to_user_id;
-                const assignedUser = isAssigned ? users.find(p => p.id === wallet.assigned_to_user_id) : null;
-                
+              chats.map(([userId, messages]: [string, any[]]) => {
+                const profile = users.find(p => p.id === userId);
                 return (
-                  <Card key={wallet.id} className={isAssigned ? "bg-muted/30" : ""}>
-                    <CardContent className="py-4">
+                  <Card key={userId}>
+                    <CardHeader>
                       <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="font-mono text-sm break-all">
-                            {wallet.wallet_address}
-                          </div>
-                          <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-                            {isAssigned ? (
-                              <>
-                                <span className="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200 rounded">
-                                  Zugewiesen
-                                </span>
-                                <span>→ {assignedUser?.full_name || assignedUser?.email || "Unbekannt"}</span>
-                                <span>am {new Date(wallet.assigned_at).toLocaleDateString('de-DE')}</span>
-                              </>
-                            ) : (
-                              <span className="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200 rounded">
-                                Verfügbar
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        
-                        {!isAssigned && (
-                          <Button 
-                            variant="destructive" 
-                            size="sm"
-                            onClick={() => handleRemoveFromPool(wallet.id)}
+                        <CardTitle className="flex items-center gap-2">
+                          <MessageCircle className="w-5 h-5" />
+                          {profile?.full_name || profile?.email || "Unbekannt"}
+                        </CardTitle>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setActiveTab("users");
+                            setSelectedUserDetails(profile);
+                          }}
+                        >
+                          <User className="h-4 w-4 mr-2" />
+                          Details
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="h-48 overflow-y-auto border rounded-lg p-4 space-y-2 bg-muted/20">
+                        {messages.map((msg: any) => (
+                          <div
+                            key={msg.id}
+                            className={`flex ${msg.is_admin ? 'justify-end' : 'justify-start'}`}
                           >
-                            Entfernen
-                          </Button>
-                        )}
+                            <div
+                              className={`max-w-[80%] rounded-lg p-2 text-sm ${
+                                msg.is_admin
+                                  ? 'bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100'
+                                  : 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100'
+                              }`}
+                            >
+                              <p>{msg.message}</p>
+                              <p className="text-xs opacity-60 mt-1">
+                                {new Date(msg.created_at).toLocaleString('de-DE')}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Textarea
+                          placeholder="Antwort schreiben..."
+                          value={adminMessages[userId] || ""}
+                          onChange={e => setAdminMessages({ ...adminMessages, [userId]: e.target.value })}
+                          rows={2}
+                        />
+                        <Button onClick={() => sendAdminMessage(userId)} className="self-end">
+                          <Send className="w-4 h-4" />
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
                 );
               })
             )}
-          </div>
-        </TabsContent>
+          </TabsContent>
 
-        <TabsContent value="chat" className="space-y-4 mt-6">
-          {chats.length === 0 ? (
-            <p className="text-muted-foreground">Keine Chats vorhanden.</p>
-          ) : (
-            chats.map(([userId, messages]: [string, any[]]) => {
-              const profile = users.find(p => p.id === userId);
-              return (
-                <Card key={userId}>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center gap-2">
-                        <MessageCircle className="w-5 h-5" />
-                        {profile?.full_name || profile?.email || "Unbekannt"}
-                      </CardTitle>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedUserDetails(profile);
-                          // Scrolle zurück zum Benutzer-Tab
-                          setTimeout(() => {
-                            const userTab = document.querySelector('[value="users"]');
-                            if (userTab) (userTab as HTMLElement).click();
-                          }, 100);
-                        }}
-                      >
-                        <User className="h-4 w-4 mr-2" />
-                        Details
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="h-48 overflow-y-auto border rounded-lg p-4 space-y-2 bg-muted/20">
-                      {messages.map((msg: any) => (
-                        <div
-                          key={msg.id}
-                          className={`flex ${msg.is_admin ? 'justify-end' : 'justify-start'}`}
-                        >
-                          <div
-                            className={`max-w-[80%] rounded-lg p-2 text-sm ${
-                              msg.is_admin
-                                ? 'bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100'
-                                : 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100'
-                            }`}
-                          >
-                            <p>{msg.message}</p>
-                            <p className="text-xs opacity-60 mt-1">
-                              {new Date(msg.created_at).toLocaleString('de-DE')}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Textarea
-                        placeholder="Antwort schreiben..."
-                        value={adminMessages[userId] || ""}
-                        onChange={e => setAdminMessages({ ...adminMessages, [userId]: e.target.value })}
-                        rows={2}
-                      />
-                      <Button onClick={() => sendAdminMessage(userId)} className="self-end">
-                        <Send className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })
-          )}
-        </TabsContent>
-
-        <TabsContent value="transactions" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Offene Auszahlungsanfragen</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {pendingTransactions.length === 0 ? (
-                <p className="text-gray-500">Keine offenen Auszahlungsanfragen</p>
-              ) : (
-                <div className="space-y-4">
-                  {pendingTransactions.map((tx) => (
-                    <div key={tx.id} className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="space-y-1">
-                          <div className="font-semibold text-lg">
-                            {tx.bitcoin_wallets?.profiles?.full_name || tx.bitcoin_wallets?.profiles?.email}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            Wallet: {tx.bitcoin_wallets?.wallet_address?.substring(0, 20)}...
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            Angefragt: {new Date(tx.created_at).toLocaleString('de-DE')}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-bold text-amber-800">
-                            {(tx.withdrawn_amount_eur || tx.amount_eur).toFixed(2)} €
-                          </div>
-                          <div className="text-sm text-amber-600 font-medium">
-                            {tx.withdrawn_amount_btc ? 
-                              `${tx.withdrawn_amount_btc.toFixed(8)} BTC` : 
-                              `${(tx.amount_btc || 0).toFixed(8)} BTC`
-                            }
-                          </div>
-                          <div className="text-sm text-green-600 mt-1">
-                            Gewinn: +{((tx.withdrawn_amount_eur || tx.amount_eur) - tx.amount_eur).toFixed(2)} €
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="bg-white rounded p-3 space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Eingezahlter Betrag:</span>
-                          <span className="font-medium">{tx.amount_eur.toFixed(2)} €</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Auszahlungsbetrag (EUR):</span>
-                          <span className="font-bold text-amber-800">
-                            {(tx.withdrawn_amount_eur || tx.amount_eur).toFixed(2)} €
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Auszahlungsbetrag (BTC):</span>
-                          <span className="font-mono text-xs font-medium">
-                            {tx.withdrawn_amount_btc ? 
-                              `${tx.withdrawn_amount_btc.toFixed(8)} BTC` : 
-                              `${(tx.amount_btc || 0).toFixed(8)} BTC`
-                            }
-                          </span>
-                        </div>
-                        <div className="flex justify-between border-t pt-2">
-                          <span className="text-gray-600">Eingezahlt am:</span>
-                          <span className="font-medium">
-                            {new Date(tx.timestamp).toLocaleDateString("de-DE", {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric"
-                            })}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Wallet:</span>
-                          <span className="font-mono text-xs">
-                            {tx.bitcoin_wallets?.wallet_address?.substring(0, 30)}...
-                          </span>
-                        </div>
-                        <div className="border-t pt-2 mt-2">
-                          <div className="text-gray-600 mb-1">Auszahlung an:</div>
-                          <div className="font-mono text-xs bg-gray-100 p-2 rounded break-all border">
-                            {tx.withdrawal_address || "Nicht verfügbar"}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 flex gap-2">
-                        <Button
-                          onClick={() => handleTransactionWithdrawal(tx.id, "withdrawn")}
-                          className="flex-1 bg-green-600 hover:bg-green-700"
-                        >
-                          ✓ Auszahlung bestätigen
-                        </Button>
-                        <Button
-                          onClick={() => handleTransactionWithdrawal(tx.id, "active")}
-                          variant="outline"
-                          className="flex-1"
-                        >
-                          ✗ Ablehnen
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Abgeschlossene Auszahlungen</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {completedWithdrawals.length === 0 ? (
-                <p className="text-gray-500">Keine abgeschlossenen Auszahlungen</p>
-              ) : (
-                <div className="space-y-4">
-                  {completedWithdrawals.map((tx) => (
-                    <div key={tx.id} className="border border-green-200 bg-green-50 rounded-lg p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <CheckCircle2 className="h-4 w-4 text-green-600" />
-                            <span className="font-semibold text-green-800">
-                              {tx.bitcoin_wallets?.profiles?.full_name || tx.bitcoin_wallets?.profiles?.email}
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-600">
-                            {new Date(tx.created_at).toLocaleDateString("de-DE", {
-                              day: "2-digit",
-                              month: "long",
-                              year: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit"
-                            })}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-bold text-green-700">
-                            {(tx.withdrawn_amount_eur || tx.amount_eur).toFixed(2)} €
-                          </div>
-                          <div className="text-sm text-green-600 font-medium">
-                            {tx.withdrawn_amount_btc ? 
-                              `${tx.withdrawn_amount_btc.toFixed(8)} BTC` : 
-                              `${(tx.amount_btc || 0).toFixed(8)} BTC`
-                            }
-                          </div>
-                          <div className="text-sm text-gray-600 mt-1">
-                            Gewinn: +{((tx.withdrawn_amount_eur || tx.amount_eur) - tx.amount_eur).toFixed(2)} €
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="bg-white rounded p-3 space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Eingezahlter Betrag:</span>
-                          <span className="font-medium">{tx.amount_eur.toFixed(2)} €</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Ausgezahlter Betrag:</span>
-                          <span className="font-bold text-green-700">
-                            {(tx.withdrawn_amount_eur || tx.amount_eur).toFixed(2)} €
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">In Bitcoin:</span>
-                          <span className="font-mono text-xs font-medium">
-                            {tx.withdrawn_amount_btc ? 
-                              `${tx.withdrawn_amount_btc.toFixed(8)} BTC` : 
-                              `${(tx.amount_btc || 0).toFixed(8)} BTC`
-                            }
-                          </span>
-                        </div>
-                        <div className="flex justify-between border-t pt-2">
-                          <span className="text-gray-600">Eingezahlt am:</span>
-                          <span className="font-medium">
-                            {new Date(tx.timestamp).toLocaleDateString("de-DE", {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric"
-                            })}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Wallet:</span>
-                          <span className="font-mono text-xs">
-                            {tx.bitcoin_wallets?.wallet_address?.substring(0, 30)}...
-                          </span>
-                        </div>
-                        <div className="border-t pt-2 mt-2">
-                          <div className="text-gray-600 mb-1">Auszahlung an:</div>
-                          <div className="font-mono text-xs bg-gray-100 p-2 rounded break-all border">
-                            {tx.withdrawal_address || "Nicht verfügbar"}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="transactions">
-          <div className="grid grid-cols-2 gap-6">
+          <TabsContent value="transactions" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Alle Transaktionen ({transactions.length})</CardTitle>
+                <CardTitle>Offene Auszahlungsanfragen</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2 max-h-[600px] overflow-y-auto">
-                  {transactions.map((tx) => (
-                    <div
-                      key={tx.id}
-                      onClick={() => setSelectedTransactionId(tx.id)}
-                      className={`p-3 border rounded cursor-pointer transition-colors ${
-                        selectedTransactionId === tx.id
-                          ? "bg-blue-50 border-blue-500"
-                          : "hover:bg-gray-50"
-                      }`}
-                    >
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="font-mono text-xs text-gray-600 mb-1">
-                            {tx.txid.substring(0, 20)}...
+                {pendingTransactions.length === 0 ? (
+                  <p className="text-gray-500">Keine offenen Auszahlungsanfragen</p>
+                ) : (
+                  <div className="space-y-4">
+                    {pendingTransactions.map((tx) => (
+                      <div key={tx.id} className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="space-y-1">
+                            <div className="font-semibold text-lg">
+                              {tx.bitcoin_wallets?.profiles?.full_name || tx.bitcoin_wallets?.profiles?.email}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              Wallet: {tx.bitcoin_wallets?.wallet_address?.substring(0, 20)}...
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Angefragt: {new Date(tx.created_at).toLocaleString('de-DE')}
+                            </div>
                           </div>
-                          <div className="font-semibold text-lg">{tx.amount_eur.toFixed(2)} €</div>
-                          <div className="text-sm text-gray-600">
-                            {new Date(tx.timestamp).toLocaleDateString("de-DE")}
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-amber-800">
+                              {(tx.withdrawn_amount_eur || tx.amount_eur).toFixed(2)} €
+                            </div>
+                            <div className="text-sm text-amber-600 font-medium">
+                              {tx.withdrawn_amount_btc ? 
+                                `${tx.withdrawn_amount_btc.toFixed(8)} BTC` : 
+                                `${(tx.amount_btc || 0).toFixed(8)} BTC`
+                              }
+                            </div>
+                            <div className="text-sm text-green-600 mt-1">
+                              Gewinn: +{((tx.withdrawn_amount_eur || tx.amount_eur) - tx.amount_eur).toFixed(2)} €
+                            </div>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${
-                            tx.status === "active" ? "bg-green-100 text-green-800" :
-                            tx.status === "withdrawal_pending" ? "bg-yellow-100 text-yellow-800" :
-                            "bg-gray-100 text-gray-800"
-                          }`}>
-                            {tx.status}
-                          </span>
+
+                        <div className="bg-white rounded p-3 space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Eingezahlter Betrag:</span>
+                            <span className="font-medium">{tx.amount_eur.toFixed(2)} €</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Auszahlungsbetrag (EUR):</span>
+                            <span className="font-bold text-amber-800">
+                              {(tx.withdrawn_amount_eur || tx.amount_eur).toFixed(2)} €
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Auszahlungsbetrag (BTC):</span>
+                            <span className="font-mono text-xs font-medium">
+                              {tx.withdrawn_amount_btc ? 
+                                `${tx.withdrawn_amount_btc.toFixed(8)} BTC` : 
+                                `${(tx.amount_btc || 0).toFixed(8)} BTC`
+                              }
+                            </span>
+                          </div>
+                          <div className="flex justify-between border-t pt-2">
+                            <span className="text-gray-600">Eingezahlt am:</span>
+                            <span className="font-medium">
+                              {new Date(tx.timestamp).toLocaleDateString("de-DE", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric"
+                              })}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Wallet:</span>
+                            <span className="font-mono text-xs">
+                              {tx.bitcoin_wallets?.wallet_address?.substring(0, 30)}...
+                            </span>
+                          </div>
+                          <div className="border-t pt-2 mt-2">
+                            <div className="text-gray-600 mb-1">Auszahlung an:</div>
+                            <div className="font-mono text-xs bg-gray-100 p-2 rounded break-all border">
+                              {tx.withdrawal_address || "Nicht verfügbar"}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 flex gap-2">
+                          <Button
+                            onClick={() => handleTransactionWithdrawal(tx.id, "withdrawn")}
+                            className="flex-1 bg-green-600 hover:bg-green-700"
+                          >
+                            ✓ Auszahlung bestätigen
+                          </Button>
+                          <Button
+                            onClick={() => handleTransactionWithdrawal(tx.id, "active")}
+                            variant="outline"
+                            className="flex-1"
+                          >
+                            ✗ Ablehnen
+                          </Button>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -1090,19 +947,19 @@ return (
                                   min="0"
                                   max="14"
                                   placeholder="Tage"
-                                  value={maturityDays[tx.id] ?? ""}
+                                  value={maturityDays[selectedTransactionId] ?? ""}
                                   onChange={(e) => {
                                     const value = e.target.value;
                                     if (value === "") {
                                       setMaturityDays(prev => {
                                         const newState = { ...prev };
-                                        delete newState[tx.id];
+                                        delete newState[selectedTransactionId];
                                         return newState;
                                       });
                                     } else {
                                       const numValue = parseInt(value);
                                       if (!isNaN(numValue) && numValue >= 0 && numValue <= 14) {
-                                        setMaturityDays(prev => ({ ...prev, [tx.id]: numValue }));
+                                        setMaturityDays(prev => ({ ...prev, [selectedTransactionId]: numValue }));
                                       }
                                     }
                                   }}
@@ -1113,8 +970,8 @@ return (
                                 </p>
                               </div>
                               <Button
-                                onClick={() => handleSetMaturityDate(tx.id)}
-                                disabled={maturityDays[tx.id] === undefined}
+                                onClick={() => handleSetMaturityDate(selectedTransactionId)}
+                                disabled={maturityDays[selectedTransactionId] === undefined}
                                 className="w-full"
                               >
                                 Laufzeit setzen
@@ -1126,14 +983,14 @@ return (
                             <div className="pt-3 border-t">
                               <div className="flex gap-2">
                                 <Button
-                                  onClick={() => handleWithdraw(tx.id)}
+                                  onClick={() => handleWithdraw(selectedTransactionId)}
                                   variant="default"
                                   className="flex-1"
                                 >
                                   Auszahlen
                                 </Button>
                                 <Button
-                                  onClick={() => handleExtend(tx.id)}
+                                  onClick={() => handleExtend(selectedTransactionId)}
                                   variant="outline"
                                   className="flex-1"
                                 >
@@ -1156,98 +1013,98 @@ return (
                 )}
               </CardContent>
             </Card>
-          </div>
-        </TabsContent>
+          </TabsContent>
 
-        {/* Links-Einstellungen Tab */}
-        <TabsContent value="links">
-          <Card>
-            <CardHeader>
-              <CardTitle>Website Link-Einstellungen</CardTitle>
-              <CardDescription>
-                Verwalten Sie die Ziel-URLs für wichtige Buttons (interne oder externe Links möglich)
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Home Button URL */}
-              <div className="space-y-2">
-                <Label htmlFor="home-url" className="text-base font-semibold">Finanzportal Logo - Ziel-Link</Label>
-                <p className="text-sm text-muted-foreground">
-                  Wohin soll das "Finanzportal"-Logo oben links führen?
-                </p>
-                <div className="flex gap-2">
-                  <Input
-                    id="home-url"
-                    type="text"
-                    placeholder="z.B. https://ihre-website.de oder /dashboard"
-                    value={homeButtonUrl}
-                    onChange={(e) => setHomeButtonUrl(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button onClick={() => updateSetting("home_button_url", homeButtonUrl)}>
-                    Speichern
-                  </Button>
+          {/* Links-Einstellungen Tab */}
+          <TabsContent value="settings">
+            <Card>
+              <CardHeader>
+                <CardTitle>Website Link-Einstellungen</CardTitle>
+                <CardDescription>
+                  Verwalten Sie die Ziel-URLs für wichtige Buttons (interne oder externe Links möglich)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Home Button URL */}
+                <div className="space-y-2">
+                  <Label htmlFor="home-url" className="text-base font-semibold">Finanzportal Logo - Ziel-Link</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Wohin soll das "Finanzportal"-Logo oben links führen?
+                  </p>
+                  <div className="flex gap-2">
+                    <Input
+                      id="home-url"
+                      type="text"
+                      placeholder="z.B. https://ihre-website.de oder /dashboard"
+                      value={homeButtonUrl}
+                      onChange={(e) => setHomeButtonUrl(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button onClick={() => updateSetting("home_button_url", homeButtonUrl)}>
+                      Speichern
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Externe Links (https://...) öffnen in neuem Tab | Interne Links (/...) im gleichen Tab
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Externe Links (https://...) öffnen in neuem Tab | Interne Links (/...) im gleichen Tab
-                </p>
-              </div>
 
-              <div className="border-b" />
+                <div className="border-b" />
 
-              {/* Website Button URL */}
-              <div className="space-y-2">
-                <Label htmlFor="website-url" className="text-base font-semibold">"Zur Website"-Button - Ziel-Link</Label>
-                <p className="text-sm text-muted-foreground">
-                  Wohin soll der "Zur Website"-Button auf der Info-Seite führen?
-                </p>
-                <div className="flex gap-2">
-                  <Input
-                    id="website-url"
-                    type="text"
-                    placeholder="z.B. https://ihre-website.de oder /kontakt"
-                    value={websiteButtonUrl}
-                    onChange={(e) => setWebsiteButtonUrl(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button onClick={() => updateSetting("website_button_url", websiteButtonUrl)}>
-                    Speichern
-                  </Button>
+                {/* Website Button URL */}
+                <div className="space-y-2">
+                  <Label htmlFor="website-url" className="text-base font-semibold">"Zur Website"-Button - Ziel-Link</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Wohin soll der "Zur Website"-Button auf der Info-Seite führen?
+                  </p>
+                  <div className="flex gap-2">
+                    <Input
+                      id="website-url"
+                      type="text"
+                      placeholder="z.B. https://ihre-website.de oder /kontakt"
+                      value={websiteButtonUrl}
+                      onChange={(e) => setWebsiteButtonUrl(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button onClick={() => updateSetting("website_button_url", websiteButtonUrl)}>
+                      Speichern
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Externe Links (https://...) öffnen in neuem Tab | Interne Links (/...) im gleichen Tab
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Externe Links (https://...) öffnen in neuem Tab | Interne Links (/...) im gleichen Tab
-                </p>
-              </div>
 
-              <div className="border-b" />
+                <div className="border-b" />
 
-              {/* Home Menu Button URL */}
-              <div className="space-y-2">
-                <Label htmlFor="home-menu-url" className="text-base font-semibold">Home-Button Link (Menü)</Label>
-                <p className="text-sm text-muted-foreground">
-                  Wohin soll der "Home"-Button im Dashboard-Menü führen?
-                </p>
-                <div className="flex gap-2">
-                  <Input
-                    id="home-menu-url"
-                    type="text"
-                    placeholder="z.B. https://ihre-website.de oder /dashboard"
-                    value={homeMenuUrl}
-                    onChange={(e) => setHomeMenuUrl(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button onClick={() => updateSetting("home_menu_url", homeMenuUrl)}>
-                    Speichern
-                  </Button>
+                {/* Home Menu Button URL */}
+                <div className="space-y-2">
+                  <Label htmlFor="home-menu-url" className="text-base font-semibold">Home-Button Link (Menü)</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Wohin soll der "Home"-Button im Dashboard-Menü führen?
+                  </p>
+                  <div className="flex gap-2">
+                    <Input
+                      id="home-menu-url"
+                      type="text"
+                      placeholder="z.B. https://ihre-website.de oder /dashboard"
+                      value={homeMenuUrl}
+                      onChange={(e) => setHomeMenuUrl(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button onClick={() => updateSetting("home_menu_url", homeMenuUrl)}>
+                      Speichern
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Externe Links (https://...) öffnen in neuem Tab | Interne Links (/...) im gleichen Tab
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Externe Links (https://...) öffnen in neuem Tab | Interne Links (/...) im gleichen Tab
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </DashboardLayout>
   </>
 );}
