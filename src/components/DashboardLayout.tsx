@@ -15,19 +15,23 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { toast } = useToast();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [homeUrl, setHomeUrl] = useState("/");
+  const [homeMenuUrl, setHomeMenuUrl] = useState("/");
 
   useEffect(() => {
     loadSettings();
   }, []);
 
   const loadSettings = async () => {
-    const { data } = await supabase
+    const { data: settings } = await supabase
       .from("site_settings")
-      .select("setting_value")
-      .eq("setting_key", "home_button_url")
-      .single();
+      .select("*");
     
-    if (data) setHomeUrl(data.setting_value);
+    if (settings) {
+      const logoUrl = settings.find(s => s.setting_key === "home_button_url");
+      const menuUrl = settings.find(s => s.setting_key === "home_menu_url");
+      if (logoUrl) setHomeUrl(logoUrl.setting_value);
+      if (menuUrl) setHomeMenuUrl(menuUrl.setting_value);
+    }
   };
 
   const handleLogoClick = () => {
@@ -35,6 +39,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       window.open(homeUrl, "_blank");
     } else {
       window.location.href = homeUrl;
+    }
+  };
+
+  const handleHomeMenuClick = () => {
+    if (homeMenuUrl.startsWith("http://") || homeMenuUrl.startsWith("https://")) {
+      window.open(homeMenuUrl, "_blank");
+    } else {
+      window.location.href = homeMenuUrl;
     }
   };
 
@@ -100,10 +112,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
               <div className="space-y-2">
                 <Button
-                  variant={router.pathname === homeUrl ? "default" : "ghost"}
+                  variant={router.pathname === homeMenuUrl ? "default" : "ghost"}
                   className="w-full justify-start"
                   onClick={() => {
-                    router.push(homeUrl);
+                    handleHomeMenuClick();
                     setMobileMenuOpen(false);
                   }}
                 >

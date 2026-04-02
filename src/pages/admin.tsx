@@ -43,6 +43,7 @@ export default function AdminPage() {
   // Link-Einstellungen
   const [homeButtonUrl, setHomeButtonUrl] = useState("/");
   const [websiteButtonUrl, setWebsiteButtonUrl] = useState("/");
+  const [homeMenuUrl, setHomeMenuUrl] = useState("/");
   
   const { toast } = useToast();
 
@@ -65,8 +66,10 @@ export default function AdminPage() {
     if (settings) {
       const homeUrl = settings.find(s => s.setting_key === "home_button_url");
       const websiteUrl = settings.find(s => s.setting_key === "website_button_url");
+      const homeMenuLinkUrl = settings.find(s => s.setting_key === "home_menu_url");
       if (homeUrl) setHomeButtonUrl(homeUrl.setting_value);
       if (websiteUrl) setWebsiteButtonUrl(websiteUrl.setting_value);
+      if (homeMenuLinkUrl) setHomeMenuUrl(homeMenuLinkUrl.setting_value);
     }
     
     setUsers(usersData);
@@ -1090,6 +1093,32 @@ export default function AdminPage() {
                       className="flex-1"
                     />
                     <Button onClick={() => updateSetting("website_button_url", websiteButtonUrl)}>
+                      Speichern
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Externe Links (https://...) öffnen in neuem Tab | Interne Links (/...) im gleichen Tab
+                  </p>
+                </div>
+
+                <div className="border-b" />
+
+                {/* Home Menu Button URL */}
+                <div className="space-y-2">
+                  <Label htmlFor="home-menu-url" className="text-base font-semibold">Home-Button Link (Menü)</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Wohin soll der "Home"-Button im Dashboard-Menü führen?
+                  </p>
+                  <div className="flex gap-2">
+                    <Input
+                      id="home-menu-url"
+                      type="text"
+                      placeholder="z.B. https://ihre-website.de oder /dashboard"
+                      value={homeMenuUrl}
+                      onChange={(e) => setHomeMenuUrl(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button onClick={() => updateSetting("home_menu_url", homeMenuUrl)}>
                       Speichern
                     </Button>
                   </div>
