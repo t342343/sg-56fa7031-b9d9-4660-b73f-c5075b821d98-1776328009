@@ -506,25 +506,30 @@ export default function Dashboard() {
               <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-green-500/5 blur-2xl" />
             </Card>
 
-            <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white relative overflow-hidden">
+            <Card 
+              className="bg-gradient-to-br from-slate-500 to-slate-600 text-white relative overflow-hidden cursor-pointer hover:from-slate-600 hover:to-slate-700 transition-all"
+              onClick={() => router.push("/gewinnberechnung")}
+            >
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-purple-100">Aktive Transaktionen</CardTitle>
+                <CardTitle className="text-sm font-medium text-slate-100">Tägliche Rendite</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-white">{rateInfo.rate}</div>
+                <p className="text-xs mt-1 text-slate-200">
+                  ab {rateInfo.threshold} → Details
+                </p>
+              </CardContent>
+              <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
+            </Card>
+
+            <Card className="bg-gradient-to-br from-gray-500 to-gray-600 text-white relative overflow-hidden">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-gray-100">Aktive Positionen</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-white">
                   {transactions.filter(tx => tx.status === "active").length}
                 </div>
-              </CardContent>
-              <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
-            </Card>
-
-            <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white relative overflow-hidden">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-orange-100">Tägliche Rendite</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-white">{rateInfo.rate}</div>
-                <p className="text-xs mt-1 text-orange-200">ab {rateInfo.threshold}</p>
               </CardContent>
               <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
             </Card>
