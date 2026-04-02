@@ -86,17 +86,6 @@ export default function Home() {
 
 
           </p>
-          <div className="flex gap-4 justify-center">
-            <Button size="lg" className="text-lg px-8 py-6" onClick={handleGetStarted}>
-              {isLoggedIn ? "Zum Dashboard" : "Jetzt starten"}
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Link href="/info">
-              <Button variant="outline" size="lg" className="text-lg px-8 py-6">
-                Erfahren Sie mehr
-              </Button>
-            </Link>
-          </div>
         </div>
       </section>
 
@@ -141,6 +130,16 @@ export default function Home() {
               </p>
             </CardContent>
           </Card>
+        </div>
+        
+        {/* Erfahren Sie mehr Button */}
+        <div className="flex justify-center mt-12">
+          <Link href="/info">
+            <Button size="lg" className="text-lg px-8 py-6 bg-blue-600 hover:bg-blue-700">
+              Erfahren Sie mehr
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </Link>
         </div>
       </section>
 
