@@ -18,7 +18,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [homeUrl, setHomeUrl] = useState("/");
 
   useEffect(() => {
-    checkAdmin();
     loadSettings();
   }, []);
 
@@ -43,9 +42,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     } catch (error) {
       console.error("Error logging out:", error);
     }
-  };
-
-  const checkAdmin = async () => {
   };
 
   return (
