@@ -59,16 +59,25 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-12 text-center">
-        <div className="max-w-4xl mx-auto space-y-8">
-          <h1 className="text-5xl md:text-6xl font-bold leading-tight">
-            Investieren Sie in Ihre
-            <span className="block bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              finanzielle Zukunft
-            </span>
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            Professionelle Bitcoin-Investmentplattform mit Versicherungsschutz gegen Verlust und Kursschwankungen
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">Professionelle Bitcoin-Investmentplattform mit Versicherungsschutz gegen Verlust und Kursschwankungen
+          
+          {/* Registrieren Button */}
+          <div className="mb-8">
+            <Button 
+              size="lg" 
+              className="text-lg px-10 py-6 bg-green-600 hover:bg-green-700"
+              onClick={() => router.push("/login")}
+            >
+              Jetzt Registrieren
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </div>
 
-
+          <p className="text-xl text-gray-600 mb-12">
+            Investieren Sie sicher in Bitcoin mit vollständigem Versicherungsschutz und professioneller Verwaltung
           </p>
         </div>
       </section>
