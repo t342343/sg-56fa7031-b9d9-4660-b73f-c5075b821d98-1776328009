@@ -125,6 +125,13 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Geldwäsche-Hinweis */}
+      <div className="container mx-auto px-4 py-6">
+        <p className="text-[10px] text-gray-400 text-center leading-tight max-w-4xl mx-auto">
+          Als offizieller Anlageanbieter und Partner von Versicherungen und Banken sind wir verpflichtet bei Verdacht auf Verstoß gegen das Geldwäschegesetz (§ 261 StGB) auf Behördliche Anfragen Auskünfte zu erteilen.
+        </p>
+      </div>
+
       {/* Footer */}
       <footer className="bg-slate-900 text-white py-12 mt-20">
         <div className="container mx-auto px-4 text-center">
