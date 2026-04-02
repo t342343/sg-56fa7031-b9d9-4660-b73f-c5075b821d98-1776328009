@@ -572,18 +572,20 @@ export default function Dashboard() {
 
           {/* Statistik-Karten - Untere Reihe */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8">
-            <Card 
-              className="bg-gradient-to-br from-slate-500 to-slate-600 text-white relative overflow-hidden cursor-pointer hover:from-slate-600 hover:to-slate-700 transition-all"
-              onClick={() => router.push("/gewinnberechnung")}
-            >
+            <Card className="bg-gradient-to-br from-slate-500 to-slate-600 text-white relative overflow-hidden">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-slate-100">Tägliche Rendite</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-white">{rateInfo.rate}</div>
-                <p className="text-xs mt-1 text-slate-200">
-                  ab {rateInfo.threshold} → Details
-                </p>
+                <div className="text-3xl font-bold text-white mb-4">{rateInfo.rate}</div>
+                <Button 
+                  variant="secondary"
+                  size="sm"
+                  className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30"
+                  onClick={() => router.push("/gewinnberechnung")}
+                >
+                  Erfahre wie du eine höhere Rendite erzielst
+                </Button>
               </CardContent>
               <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
             </Card>
