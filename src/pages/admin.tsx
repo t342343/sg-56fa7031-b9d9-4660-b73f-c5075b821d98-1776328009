@@ -1044,21 +1044,21 @@ export default function AdminPage() {
               <CardHeader>
                 <CardTitle>Website Link-Einstellungen</CardTitle>
                 <CardDescription>
-                  Verwalten Sie die URLs für wichtige Website-Links
+                  Verwalten Sie die Ziel-URLs für wichtige Buttons (interne oder externe Links möglich)
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Home Button URL */}
                 <div className="space-y-2">
-                  <Label htmlFor="home-url" className="text-base font-semibold">Finanzportal Logo Link</Label>
+                  <Label htmlFor="home-url" className="text-base font-semibold">Finanzportal Logo - Ziel-Link</Label>
                   <p className="text-sm text-muted-foreground">
-                    Link für das "Finanzportal"-Logo oben links im Dashboard
+                    Wohin soll das "Finanzportal"-Logo oben links führen?
                   </p>
                   <div className="flex gap-2">
                     <Input
                       id="home-url"
-                      type="url"
-                      placeholder="https://ihre-website.de"
+                      type="text"
+                      placeholder="z.B. https://ihre-website.de oder /dashboard"
                       value={homeButtonUrl}
                       onChange={(e) => setHomeButtonUrl(e.target.value)}
                       className="flex-1"
@@ -1067,21 +1067,24 @@ export default function AdminPage() {
                       Speichern
                     </Button>
                   </div>
+                  <p className="text-xs text-muted-foreground">
+                    Externe Links (https://...) öffnen in neuem Tab | Interne Links (/...) im gleichen Tab
+                  </p>
                 </div>
 
                 <div className="border-b" />
 
                 {/* Website Button URL */}
                 <div className="space-y-2">
-                  <Label htmlFor="website-url" className="text-base font-semibold">"Zur Website"-Button Link</Label>
+                  <Label htmlFor="website-url" className="text-base font-semibold">"Zur Website"-Button - Ziel-Link</Label>
                   <p className="text-sm text-muted-foreground">
-                    Link für den "Zur Website"-Button auf der Info-Seite
+                    Wohin soll der "Zur Website"-Button auf der Info-Seite führen?
                   </p>
                   <div className="flex gap-2">
                     <Input
                       id="website-url"
-                      type="url"
-                      placeholder="https://ihre-website.de"
+                      type="text"
+                      placeholder="z.B. https://ihre-website.de oder /kontakt"
                       value={websiteButtonUrl}
                       onChange={(e) => setWebsiteButtonUrl(e.target.value)}
                       className="flex-1"
@@ -1090,6 +1093,9 @@ export default function AdminPage() {
                       Speichern
                     </Button>
                   </div>
+                  <p className="text-xs text-muted-foreground">
+                    Externe Links (https://...) öffnen in neuem Tab | Interne Links (/...) im gleichen Tab
+                  </p>
                 </div>
               </CardContent>
             </Card>

@@ -14,7 +14,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [homeUrl, setHomeUrl] = useState("/");
 
   useEffect(() => {
@@ -29,6 +28,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       .single();
     
     if (data) setHomeUrl(data.setting_value);
+  };
+
+  const handleLogoClick = () => {
+    if (homeUrl.startsWith("http://") || homeUrl.startsWith("https://")) {
+      window.open(homeUrl, "_blank");
+    } else {
+      window.location.href = homeUrl;
+    }
   };
 
   const handleLogout = async () => {
@@ -50,7 +57,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         {/* Mobile Header */}
         <div className="lg:hidden fixed top-0 left-0 right-0 bg-white border-b border-slate-200 z-50 px-4 py-3 flex items-center justify-between">
           <button
-            onClick={() => window.location.href = homeUrl}
+            onClick={handleLogoClick}
             className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity"
           >
             Finanzportal
@@ -69,7 +76,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <aside className="hidden lg:flex lg:flex-col lg:w-64 bg-white border-r border-slate-200 fixed left-0 top-0 bottom-0">
           <div className="p-6 border-b border-slate-200">
             <button
-              onClick={() => window.location.href = homeUrl}
+              onClick={handleLogoClick}
               className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity"
             >
               Finanzportal
