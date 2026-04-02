@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageCircle, Send, Clock, CheckCircle2, Wallet, ArrowUpDown, X } from "lucide-react";
+import { MessageCircle, Send, Clock, CheckCircle2, Wallet, ArrowUpDown, X, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Admin() {
@@ -548,6 +548,62 @@ return (
                         </div>
                       );
                     })()}
+
+                    {/* Chat-Nachrichten */}
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-lg font-semibold">Chat-Nachrichten ({userMessages.length})</h3>
+                        {userMessages.length > 0 && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedUserDetails(null);
+                              // Warte kurz und scrolle dann zum Chat-Tab
+                              setTimeout(() => {
+                                const chatTab = document.querySelector('[value="chat"]');
+                                if (chatTab) (chatTab as HTMLElement).click();
+                              }, 100);
+                            }}
+                          >
+                            <MessageCircle className="h-4 w-4 mr-2" />
+                            Zum Chat
+                          </Button>
+                        )}
+                      </div>
+                      {userMessages.length > 0 ? (
+                        <div className="space-y-2">
+                          {userMessages.slice(0, 2).map(msg => (
+                            <div key={msg.id} className={`p-3 rounded-lg ${
+                              msg.is_admin ? 'bg-purple-50 border border-purple-200' : 'bg-blue-50 border border-blue-200'
+                            }`}>
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs font-semibold text-muted-foreground">
+                                  {msg.is_admin ? 'Admin' : 'Benutzer'}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(msg.created_at).toLocaleDateString('de-DE', {
+                                    day: '2-digit',
+                                    month: 'short',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
+                                </span>
+                              </div>
+                              <p className="text-sm">{msg.message}</p>
+                            </div>
+                          ))}
+                          {userMessages.length > 2 && (
+                            <p className="text-xs text-center text-muted-foreground italic pt-2">
+                              + {userMessages.length - 2} weitere Nachrichten
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground italic">Keine Nachrichten vorhanden</p>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -642,10 +698,27 @@ return (
               return (
                 <Card key={userId}>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <MessageCircle className="w-5 h-5" />
-                      {profile?.full_name || profile?.email || "Unbekannt"}
-                    </CardTitle>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <MessageCircle className="w-5 h-5" />
+                        {profile?.full_name || profile?.email || "Unbekannt"}
+                      </CardTitle>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedUserDetails(profile);
+                          // Scrolle zurück zum Benutzer-Tab
+                          setTimeout(() => {
+                            const userTab = document.querySelector('[value="users"]');
+                            if (userTab) (userTab as HTMLElement).click();
+                          }, 100);
+                        }}
+                      >
+                        <User className="h-4 w-4 mr-2" />
+                        Details
+                      </Button>
+                    </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="h-48 overflow-y-auto border rounded-lg p-4 space-y-2 bg-muted/20">
