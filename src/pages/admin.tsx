@@ -382,10 +382,11 @@ return (
         <h1 className="text-3xl font-bold mb-8">Admin-Panel</h1>
         
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="users">Benutzer</TabsTrigger>
             <TabsTrigger value="wallets">Wallets</TabsTrigger>
             <TabsTrigger value="transactions">Transaktionen</TabsTrigger>
+            <TabsTrigger value="withdrawals">Auszahlungen</TabsTrigger>
             <TabsTrigger value="chat">Chat</TabsTrigger>
             <TabsTrigger value="settings">Einstellungen</TabsTrigger>
           </TabsList>
