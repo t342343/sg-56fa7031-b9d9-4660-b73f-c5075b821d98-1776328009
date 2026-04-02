@@ -102,7 +102,14 @@ export function DashboardLayout({ children, requireAdmin = false }: DashboardLay
 
               <Button
                 variant={router.pathname === "/info" ? "default" : "ghost"}
-                variant="outline" size="sm" onClick={handleLogout}>
+                className="w-full justify-start"
+                onClick={() => router.push("/info")}
+              >
+                <Info className="mr-2 h-4 w-4" />
+                Info
+              </Button>
+
+              <Button variant="outline" size="sm" onClick={handleLogout}>
                 <LogOut className="w-4 h-4 mr-2" />
                 Abmelden
               </Button>
