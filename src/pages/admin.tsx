@@ -41,7 +41,6 @@ const [maxSaldo, setMaxSaldo] = useState("");
 const [saldoSort, setSaldoSort] = useState<"high" | "low" | "none">("none");
 const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
 const [chats, setChats] = useState<any[]>([]);
-const [withdrawals, setWithdrawals] = useState<any[]>([]);
 
 // Link-Einstellungen
 const [homeButtonUrl, setHomeButtonUrl] = useState("/");
@@ -94,10 +93,6 @@ const loadData = async () => {
     }, {});
     setChats(Object.entries(groupedChats));
   }
-
-  // Auszahlungsanträge laden
-  const { data: withdrawalsData } = await supabase.from("withdrawals").select("*").order("created_at", { ascending: false });
-  setWithdrawals(withdrawalsData || []);
 };
 
 const calculateUserBalance = (userId: string) => {
@@ -386,7 +381,6 @@ return (
           <TabsTrigger value="users">Benutzer</TabsTrigger>
           <TabsTrigger value="pool">Wallet-Pool ({walletPool.filter(w => !w.assigned_to_user_id).length})</TabsTrigger>
           <TabsTrigger value="chat">Chats ({chats.length})</TabsTrigger>
-          <TabsTrigger value="withdrawals">Auszahlungen ({withdrawals.filter(w => w.status === "pending").length + pendingTransactions.length})</TabsTrigger>
           <TabsTrigger value="transactions">Transaktionen ({transactions.length})</TabsTrigger>
           <TabsTrigger value="links">Links</TabsTrigger>
         </TabsList>
@@ -694,7 +688,7 @@ return (
           )}
         </TabsContent>
 
-        <TabsContent value="withdrawals" className="space-y-4">
+        <TabsContent value="transactions" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Offene Auszahlungsanfragen</CardTitle>
