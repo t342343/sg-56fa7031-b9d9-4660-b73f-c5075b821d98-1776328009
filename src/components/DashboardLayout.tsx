@@ -16,10 +16,25 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [homeUrl, setHomeUrl] = useState("/");
   const [homeMenuUrl, setHomeMenuUrl] = useState("/");
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     loadSettings();
+    checkAdmin();
   }, []);
+
+  const checkAdmin = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", session.user.id)
+        .single();
+      
+      setIsAdmin(profile?.role === "admin");
+    }
+  };
 
   const loadSettings = async () => {
     const { data: settings } = await supabase
@@ -148,29 +163,20 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     Info
                   </Button>
 
-                  <Button
-                    variant={router.pathname === "/agb" ? "default" : "ghost"}
-                    className="w-full justify-start h-12 text-base"
-                    onClick={() => {
-                      router.push("/agb");
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    <FileText className="mr-3 h-5 w-5" />
-                    AGB
-                  </Button>
-
-                  <Button
-                    variant={router.pathname === "/admin" ? "default" : "ghost"}
-                    className="w-full justify-start h-12 text-base"
-                    onClick={() => {
-                      router.push("/admin");
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    <Users className="mr-3 h-5 w-5" />
-                    Admin
-                  </Button>
+                  {/* Admin-Button nur für Admins */}
+                  {isAdmin && (
+                    <Button
+                      variant={router.pathname === "/admin" ? "default" : "ghost"}
+                      className="w-full justify-start h-12 text-base"
+                      onClick={() => {
+                        router.push("/admin");
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      <Users className="mr-3 h-5 w-5" />
+                      Admin
+                    </Button>
+                  )}
 
                   {/* Website-Button ganz unten */}
                   <div className="pt-4 border-t border-slate-200 mt-4">
