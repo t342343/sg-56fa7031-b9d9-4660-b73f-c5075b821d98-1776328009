@@ -33,8 +33,8 @@ export default function Home() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse text-lg">Laden...</div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -44,18 +44,18 @@ export default function Home() {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <Wallet className="h-8 w-8 text-blue-600" />
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Finanzportal
+            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Finanzportal für abgesicherte Bitcoin Anlage
+
             </span>
           </div>
           <div className="flex gap-3">
-            {isLoggedIn ? (
-              <Button onClick={() => router.push("/dashboard")} size="lg">
+            {isLoggedIn ?
+            <Button onClick={() => router.push("/dashboard")} size="lg">
                 Zum Dashboard
                 <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            ) : (
-              <>
+              </Button> :
+
+            <>
                 <Link href="/login">
                   <Button variant="outline" size="lg">
                     Anmelden
@@ -68,7 +68,7 @@ export default function Home() {
                   </Button>
                 </Link>
               </>
-            )}
+            }
           </div>
         </div>
       </header>
@@ -82,22 +82,22 @@ export default function Home() {
               finanzielle Zukunft
             </span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Professionelle Bitcoin-Investmentplattform mit Echtzeit-Tracking, 
-            transparenten Transaktionen und persönlicher Wallet-Verwaltung.
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">Professionelle Bitcoin-Investmentplattform mit Versicherungsschutz gegen Verlust und Kursschwankungen
+
+
           </p>
           <div className="flex gap-4 justify-center">
             <Button size="lg" className="text-lg px-8 py-6" onClick={handleGetStarted}>
               {isLoggedIn ? "Zum Dashboard" : "Jetzt starten"}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-            {!isLoggedIn && (
-              <Link href="/login">
+            {!isLoggedIn &&
+            <Link href="/login">
                 <Button variant="outline" size="lg" className="text-lg px-8 py-6">
                   Mehr erfahren
                 </Button>
               </Link>
-            )}
+            }
           </div>
         </div>
       </section>
@@ -111,9 +111,9 @@ export default function Home() {
                 <Wallet className="h-8 w-8 text-blue-600" />
               </div>
               <h3 className="text-xl font-semibold mb-2">Persönliche Wallet</h3>
-              <p className="text-gray-600">
-                Jeder Benutzer erhält eine individuelle Bitcoin-Wallet, 
-                die vom Administrator zugewiesen und verwaltet wird.
+              <p className="text-gray-600">Jeder Benutzer erhält eine individuelle gesicherte Bitcoin-Wallet auf die nur Sie Zugriff haben
+
+
               </p>
             </CardContent>
           </Card>
@@ -123,10 +123,10 @@ export default function Home() {
               <div className="rounded-full bg-indigo-100 w-16 h-16 flex items-center justify-center mb-4">
                 <TrendingUp className="h-8 w-8 text-indigo-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Echtzeit-Tracking</h3>
-              <p className="text-gray-600">
-                Verfolgen Sie eingehende Transaktionen in Echtzeit mit 
-                automatischer EUR-Umrechnung zum Zeitpunkt des Zahlungseingangs.
+              <h3 className="text-xl font-semibold mb-2">Einzigartiger Versicherungsschutz inklusive </h3>
+              <p className="text-gray-600">Alle Einzahlungen sind zu 100 Prozent abgesichert. Dies gewährleistet ein absolut risikofreies Investment
+
+
               </p>
             </CardContent>
           </Card>
@@ -137,9 +137,9 @@ export default function Home() {
                 <ShieldCheck className="h-8 w-8 text-purple-600" />
               </div>
               <h3 className="text-xl font-semibold mb-2">Sicher & Transparent</h3>
-              <p className="text-gray-600">
-                Alle Transaktionen werden unveränderlich gespeichert mit 
-                historischen Kursen für vollständige Transparenz.
+              <p className="text-gray-600">Alle Transaktionen werden gegen Diebstahl und Verlust sowie Kurschwankungen gesichert 
+
+
               </p>
             </CardContent>
           </Card>
@@ -154,17 +154,17 @@ export default function Home() {
               <div>
                 <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-90" />
                 <div className="text-4xl font-bold mb-2">Echtzeit</div>
-                <div className="text-blue-100">Bitcoin-Transaktionen</div>
+                <div className="text-blue-100">Renditeausschütung</div>
               </div>
               <div>
                 <ShieldCheck className="h-12 w-12 mx-auto mb-4 opacity-90" />
-                <div className="text-4xl font-bold mb-2">100%</div>
-                <div className="text-blue-100">Transparenz</div>
+                <div className="text-4xl font-bold mb-2">Schutz</div>
+                <div className="text-blue-100">Vollversichert</div>
               </div>
               <div>
                 <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-90" />
-                <div className="text-4xl font-bold mb-2">24/7</div>
-                <div className="text-blue-100">Verfügbarkeit</div>
+                <div className="text-4xl font-bold mb-2">Hohe Renditen</div>
+                <div className="text-blue-100">bis zu 1 Prozent täglich.</div>
               </div>
             </div>
           </CardContent>
@@ -193,6 +193,6 @@ export default function Home() {
           <p>&copy; {new Date().getFullYear()} Finanzportal. Alle Rechte vorbehalten.</p>
         </div>
       </footer>
-    </div>
-  );
+    </div>);
+
 }
