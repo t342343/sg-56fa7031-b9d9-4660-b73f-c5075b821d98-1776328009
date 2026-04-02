@@ -706,12 +706,36 @@ export default function Dashboard() {
 
                             <div className="space-y-2">
                               <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Laufzeit</span>
+                                <span className="text-gray-500">
+                                  {tx.is_extended ? "Verlängerter Betrag:" : "Eingezahlter Betrag:"}
+                                </span>
                                 <span className="font-medium">
-                                  {!isExpired ? `${timeRemaining.text} verbleibend` : "Abgelaufen"}
+                                  {tx.is_extended && tx.extended_base_amount 
+                                    ? tx.extended_base_amount.toFixed(2)
+                                    : tx.amount_eur.toFixed(2)}€
                                 </span>
                               </div>
-                              <Progress
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">Aktuelles Guthaben:</span>
+                                <span className="font-bold text-lg">
+                                  {calculateCurrentBalance(tx).toFixed(2)}€
+                                </span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">Gewinn:</span>
+                                <span className={calculateCurrentBalance(tx) >= (tx.is_extended && tx.extended_base_amount ? tx.extended_base_amount : tx.amount_eur) ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}>
+                                  {(calculateCurrentBalance(tx) - (tx.is_extended && tx.extended_base_amount ? tx.extended_base_amount : tx.amount_eur)).toFixed(2)}€ Gewinn
+                                </span>
+                              </div>
+                            </div>
+                            
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-500">Laufzeit:</span>
+                              <span className="font-medium">
+                                {!isExpired ? `${timeRemaining.text} verbleibend` : "Abgelaufen"}
+                              </span>
+                            </div>
+                            <Progress
                               value={getCountdownProgress(tx.timestamp, tx.expires_at)}
                               className="h-2 [&>div]:bg-blue-600" />
                             
