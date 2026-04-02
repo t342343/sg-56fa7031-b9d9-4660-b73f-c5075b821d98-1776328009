@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageCircle, Send, Clock, CheckCircle2 } from "lucide-react";
+import { MessageCircle, Send, Clock, CheckCircle2, Wallet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminPage() {
@@ -504,6 +504,68 @@ export default function AdminPage() {
                         </p>
                       </div>
                     </CardContent>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-muted-foreground">
+                          {profile.email}
+                        </p>
+                        <span className={`px-2 py-1 rounded-full text-xs ${profile.role === "admin" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}>
+                          {profile.role === "admin" ? "Admin" : "Benutzer"}
+                        </span>
+                      </div>
+                      {profile.wallet_address && (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Wallet className="h-3 w-3" />
+                          <span className="font-mono">{profile.wallet_address}</span>
+                        </div>
+                      )}
+                      
+                      {/* Transaktionen des Benutzers */}
+                      {(() => {
+                        const userTransactions = transactions.filter(tx => tx.user_id === profile.id);
+                        if (userTransactions.length > 0) {
+                          return (
+                            <div className="mt-3 pt-3 border-t border-slate-200">
+                              <p className="text-xs font-semibold text-slate-700 mb-2">Transaktionen ({userTransactions.length})</p>
+                              <div className="space-y-2">
+                                {userTransactions.map(tx => {
+                                  const maturityDate = tx.maturity_date ? new Date(tx.maturity_date) : null;
+                                  const now = new Date();
+                                  const daysRemaining = maturityDate ? Math.ceil((maturityDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : null;
+                                  
+                                  return (
+                                    <div key={tx.id} className="bg-slate-50 p-2 rounded text-xs space-y-1">
+                                      <div className="flex items-center justify-between">
+                                        <span className="font-mono font-semibold text-slate-900">
+                                          {tx.btc_amount} BTC
+                                        </span>
+                                        <span className="text-slate-600">
+                                          €{tx.eur_amount?.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center justify-between text-slate-500">
+                                        <span>{new Date(tx.created_at).toLocaleDateString('de-DE')}</span>
+                                        {daysRemaining !== null && (
+                                          <span className={`font-medium ${daysRemaining > 30 ? 'text-green-600' : daysRemaining > 0 ? 'text-orange-600' : 'text-slate-600'}`}>
+                                            {daysRemaining > 0 ? `${daysRemaining} Tage` : 'Fällig'}
+                                          </span>
+                                        )}
+                                      </div>
+                                      {tx.txid && (
+                                        <div className="text-slate-400 font-mono truncate">
+                                          {tx.txid.substring(0, 16)}...
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+                    </div>
                   </Card>
                 );
               })
