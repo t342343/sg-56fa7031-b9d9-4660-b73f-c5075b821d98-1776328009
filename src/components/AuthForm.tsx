@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { authService } from "@/services/authService";
 import { profileService } from "@/services/profileService";
 import { supabase } from "@/integrations/supabase/client";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2 } from "lucide-react";
 
 export function AuthForm() {
   const router = useRouter();
@@ -42,6 +44,10 @@ export function AuthForm() {
   const [city, setCity] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [agbAccepted, setAgbAccepted] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -216,6 +222,22 @@ export function AuthForm() {
     }
   };
 
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    if (!agbAccepted) {
+      setError("Bitte akzeptieren Sie die AGB um fortzufahren.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Die Passwörter stimmen nicht überein.");
+      return;
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-navy-50 p-4">
       <Card className="w-full max-w-md shadow-xl">
@@ -371,6 +393,25 @@ export function AuthForm() {
                     minLength={6} />
                   
                 </div>
+
+                {/* AGB Checkbox */}
+                <div className="flex items-start space-x-2">
+                  <input
+                    type="checkbox"
+                    id="agb"
+                    checked={agbAccepted}
+                    onChange={(e) => setAgbAccepted(e.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <Label htmlFor="agb" className="text-sm leading-tight cursor-pointer">
+                    Ich verstehe, dass obwohl meine Vermögenswerte und die Rendite vollversichert sind 
+                    dieser Schutz kein grob fahrlässiges Verhalten einschließt. 
+                    <a href="/agb" target="_blank" className="text-blue-600 hover:underline ml-1">
+                      AGB lesen
+                    </a>
+                  </Label>
+                </div>
+
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Registrieren..." : "Registrieren"}
                 </Button>
@@ -378,6 +419,23 @@ export function AuthForm() {
             </TabsContent>
           </Tabs>
         </CardContent>
+        <CardFooter className="flex flex-col">
+          <Button
+            variant="link"
+            type="button"
+            onClick={toggleMode}
+            className="w-full"
+          >
+            {isLogin ? "Noch kein Konto? Registrieren" : "Bereits ein Konto? Anmelden"}
+          </Button>
+        </CardFooter>
+        
+        <div className="px-6 pb-6">
+          <p className="text-[10px] text-gray-400 text-center leading-tight">
+            Als Partner der Versicherungen und Banken sind wir verpflichtet beim Verdacht der Geldwäsche 
+            Auskünfte an Behörden zu erteilen.
+          </p>
+        </div>
       </Card>
     </div>);
 
