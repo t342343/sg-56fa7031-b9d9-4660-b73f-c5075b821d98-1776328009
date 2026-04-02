@@ -659,7 +659,9 @@ export default function Dashboard() {
 
                             <div className="grid grid-cols-2 gap-4 mb-3">
                               <div>
-                                <div className="text-xs text-muted-foreground mb-1">Eingezahlter Betrag</div>
+                                <div className="text-xs text-muted-foreground mb-1">
+                                  {tx.is_extended ? "Verlängerter Betrag" : "Eingezahlter Betrag"}
+                                </div>
                                 <div className="text-lg font-semibold">{tx.amount_eur.toFixed(2)} €</div>
                               </div>
                               
@@ -668,11 +670,11 @@ export default function Dashboard() {
                                 <div className="text-lg font-semibold text-green-600">
                                   {currentBalance.toFixed(2)} €
                                 </div>
-                                {profit > 0 &&
-                              <div className="text-xs text-green-600 font-medium">
+                                {profit > 0 && (
+                                  <div className="text-xs text-green-600 font-medium">
                                     +{profit.toFixed(2)} € Gewinn
                                   </div>
-                              }
+                                )}
                                 {!isExpired &&
                               <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                                     <Clock className="w-3 h-3" />
