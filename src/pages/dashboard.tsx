@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
-import { ArrowDownLeft, Copy, Check, Clock, MessageCircle, Send, TrendingUp, Wallet, CheckCircle2 } from "lucide-react";
+import { ArrowDownLeft, Copy, Check, Clock, MessageCircle, Send, TrendingUp, Wallet, CheckCircle2, Loader2 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -439,8 +439,9 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card className="relative overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+          {/* Statistik-Karten */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
+            <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
