@@ -390,34 +390,44 @@ export const transactionService = {
     return true;
   },
 
-  async extendMaturity(transactionId: string, maturityDate: string, maturityDays: number, instantBonusEur: number) {
-    // Hole aktuelle Transaktion für den Amount
-    const { data: tx } = await supabase.from("transactions").select("amount_eur").eq("id", transactionId).single();
-    if (!tx) return false;
-
-    const newAmount = tx.amount_eur + instantBonusEur;
-    
+  async extendMaturity(transactionId: string, maturityDate: string, maturityDays: number, newAmountEur: number) {
     // Berechne neues expires_at Datum (14 Tage ab jetzt)
     const now = new Date();
     const newExpiresAt = new Date(now);
     newExpiresAt.setDate(newExpiresAt.getDate() + 14);
 
-    const { error } = await supabase
+    // Schritt 1: Setze amount_eur auf aktuelles Guthaben (ohne 3%)
+    const { error: updateError } = await supabase
       .from("transactions")
       .update({
         maturity_date: maturityDate,
         maturity_days: maturityDays,
         is_extended: true,
-        amount_eur: newAmount,
+        amount_eur: newAmountEur, // Aktuelles Guthaben
         expires_at: newExpiresAt.toISOString()
-        // ✅ timestamp NICHT ändern - muss Original bleiben für Rendite-Berechnung!
       })
       .eq("id", transactionId);
 
-    if (error) {
-      console.error("Error extending maturity:", error);
+    if (updateError) {
+      console.error("Error extending maturity:", updateError);
       return false;
     }
+
+    // Schritt 2: Warte 2 Sekunden, dann addiere 3% Bonus
+    setTimeout(async () => {
+      const bonusAmount = newAmountEur * 0.03;
+      const finalAmount = newAmountEur + bonusAmount;
+
+      await supabase
+        .from("transactions")
+        .update({
+          amount_eur: finalAmount // Füge 3% Bonus hinzu
+        })
+        .eq("id", transactionId);
+
+      console.log(`✅ 3% Bonus (${bonusAmount.toFixed(4)}€) nach 2 Sekunden hinzugefügt`);
+    }, 2000);
+
     return true;
   },
 
