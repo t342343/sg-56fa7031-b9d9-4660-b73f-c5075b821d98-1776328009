@@ -1,15 +1,11 @@
--- Trigger neu erstellen ohne Email-Bestätigung (nur Profil-Erstellung)
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-DROP FUNCTION IF EXISTS public.handle_new_user();
-
+-- Schritt 6: Original handle_new_user() Trigger von 20:34 Uhr wiederherstellen
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS trigger 
-LANGUAGE plpgsql 
-SECURITY DEFINER 
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  -- Erstelle Profil für neuen Benutzer
   INSERT INTO public.profiles (id, email, full_name, phone, address)
   VALUES (
     NEW.id, 
@@ -17,12 +13,12 @@ BEGIN
     COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
     COALESCE(NEW.raw_user_meta_data->>'phone', ''),
     COALESCE(NEW.raw_user_meta_data->>'address', '')
-  );
+  )
+  ON CONFLICT (id) DO NOTHING;
   RETURN NEW;
 END;
 $$;
 
--- Trigger erstellen
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW
