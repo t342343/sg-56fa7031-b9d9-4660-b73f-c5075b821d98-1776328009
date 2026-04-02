@@ -236,15 +236,28 @@ export default function Dashboard() {
     const newMaturityDate = new Date();
     newMaturityDate.setDate(newMaturityDate.getDate() + 14);
 
-    // 3% Verlängerungsbonus
-    const instantBonus = tx.amount_eur * 0.03;
+    // Aktuelles Guthaben wird der neue "Verlängerte Betrag"
+    const currentBalance = calculateCurrentBalance(tx);
 
-    const result = await transactionService.extendMaturity(txId, newMaturityDate.toISOString(), 14, instantBonus);
+    const result = await transactionService.extendMaturity(
+      txId, 
+      newMaturityDate.toISOString(), 
+      14, 
+      currentBalance  // ✅ Übergebe aktuelles Guthaben
+    );
+    
     if (result) {
-      toast({ title: "Verlängert!", description: `Laufzeit um 14 Tage verlängert. Bonus: ${instantBonus.toFixed(2)} € sofort gutgeschrieben` });
+      toast({ 
+        title: "Verlängert!", 
+        description: `Laufzeit um 14 Tage verlängert. 3% Bonus wird in Kürze gutgeschrieben.` 
+      });
       loadDashboard();
     } else {
-      toast({ title: "Fehler", description: "Konnte nicht verlängert werden", variant: "destructive" });
+      toast({ 
+        title: "Fehler", 
+        description: "Konnte nicht verlängert werden", 
+        variant: "destructive" 
+      });
     }
   };
 
