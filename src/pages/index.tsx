@@ -40,9 +40,9 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Header */}
-      <header className="container mx-auto px-4 py-6">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-3">
+      <header className="container max-w-7xl mx-auto px-4 py-6 md:py-8">
+        <div className="flex justify-between items-start">
+          <div className="flex items-center gap-4 mt-3">
             <div className="rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 p-2">
               <Wallet className="h-6 w-6 text-white" />
             </div>
@@ -50,7 +50,7 @@ export default function Home() {
               Finanzportal
             </span>
           </div>
-          <Button variant="outline" onClick={handleLogin}>
+          <Button variant="outline" onClick={() => router.push("/login")} className="mt-1">
             <User className="mr-2 h-4 w-4" />
             Anmelden
           </Button>
