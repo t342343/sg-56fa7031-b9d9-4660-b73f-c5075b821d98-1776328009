@@ -92,9 +92,9 @@ export default function Home() {
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             {!isLoggedIn &&
-            <Link href="/login">
+            <Link href="/info">
                 <Button variant="outline" size="lg" className="text-lg px-8 py-6">
-                  Mehr erfahren
+                  Erfahren Sie mehr
                 </Button>
               </Link>
             }
