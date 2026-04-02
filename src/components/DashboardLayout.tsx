@@ -163,6 +163,18 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     Info
                   </Button>
 
+                  <Button
+                    variant={router.pathname === "/gewinnberechnung" ? "default" : "ghost"}
+                    className="w-full justify-start h-12 text-base"
+                    onClick={() => {
+                      router.push("/gewinnberechnung");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    <Calculator className="mr-3 h-5 w-5" />
+                    Gewinnberechnung
+                  </Button>
+
                   {/* Admin-Button nur für Admins */}
                   {isAdmin && (
                     <Button
