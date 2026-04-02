@@ -91,13 +91,11 @@ export default function Home() {
               {isLoggedIn ? "Zum Dashboard" : "Jetzt starten"}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-            {!isLoggedIn &&
             <Link href="/info">
-                <Button variant="outline" size="lg" className="text-lg px-8 py-6">
-                  Erfahren Sie mehr
-                </Button>
-              </Link>
-            }
+              <Button variant="outline" size="lg" className="text-lg px-8 py-6">
+                Erfahren Sie mehr
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
