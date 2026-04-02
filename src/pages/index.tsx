@@ -128,7 +128,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-slate-900 text-white py-12 mt-20">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-slate-400">&copy; {new Date().getFullYear()} Finanzportal. Alle Rechte vorbehalten.</p>
+          <p className="text-slate-400">© 2026 Finanzportal. Alle Rechte vorbehalten. Die Versicherung der Vermögenswerte und garantierte Rendite umfässt kein grob Fahrlässiges Verhalten des Anlegers</p>
         </div>
       </footer>
     </div>);
