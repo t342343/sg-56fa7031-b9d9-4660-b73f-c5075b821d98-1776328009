@@ -337,8 +337,8 @@ export default function Dashboard() {
   const calculateCurrentBalance = (tx: any) => {
     if (!serverTime) return tx.amount_eur; // Fallback wenn serverTime noch nicht geladen
 
-    // WICHTIG: Rechne 1% Sofort-Bonus auf den eingezahlten Betrag
-    const eingezahlt = tx.amount_eur * 1.01;
+    // 1% Sofort-Bonus NUR bei NEUEN Einzahlungen, NICHT bei verlängerten
+    const eingezahlt = tx.is_extended ? tx.amount_eur : tx.amount_eur * 1.01;
 
     const timestamp = new Date(tx.timestamp).getTime();
     const now = serverTime.getTime();
