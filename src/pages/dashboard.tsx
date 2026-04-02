@@ -453,7 +453,7 @@ export default function Dashboard() {
           </div>
 
           {/* Statistik-Karten */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6 mb-6 lg:mb-8">
             <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white relative overflow-hidden">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
@@ -911,8 +911,7 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
             }
-            </div>
-          }
+          </div>
         </div>
       </DashboardLayout>
 
