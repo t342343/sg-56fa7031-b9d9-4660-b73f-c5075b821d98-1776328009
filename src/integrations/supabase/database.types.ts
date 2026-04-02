@@ -177,6 +177,7 @@ export type Database = {
           created_at: string | null
           eur_rate: number
           expires_at: string | null
+          extended_base_amount: number | null
           id: string
           is_extended: boolean | null
           maturity_date: string | null
@@ -196,6 +197,7 @@ export type Database = {
           created_at?: string | null
           eur_rate: number
           expires_at?: string | null
+          extended_base_amount?: number | null
           id?: string
           is_extended?: boolean | null
           maturity_date?: string | null
@@ -215,6 +217,7 @@ export type Database = {
           created_at?: string | null
           eur_rate?: number
           expires_at?: string | null
+          extended_base_amount?: number | null
           id?: string
           is_extended?: boolean | null
           maturity_date?: string | null

@@ -153,7 +153,8 @@ export default function Dashboard() {
       if (newCount > 0) {
         toast({
           title: newCount === 1 ? "Neue Transaktion gefunden!" : "Neue Transaktionen gefunden!",
-          description: newCount === 1 ? "Eine neue Zahlung wurde erkannt und hinzugefügt." : `${newCount} neue Zahlungen wurden erkannt und hinzugefügt.`
+          description: newCount === 1 ? "Eine neue Zahlung wurde erkannt und hinzugefügt." : `${newCount} neue Zahlungen wurden erkannt und hinzugefügt.`,
+          duration: 5000
         });
         // Lade Dashboard lautlos neu (ohne setLoading(true))
         await loadDashboard(true);
@@ -383,8 +384,8 @@ export default function Dashboard() {
     filter((tx) => tx.status !== "withdrawal_pending").
     reduce((sum, tx) => {
       const currentBalance = calculateCurrentBalance(tx);
-      const base = tx.is_extended && tx.extended_base_amount ? tx.extended_base_amount : tx.amount_eur;
-      return sum + (currentBalance - base);
+      const baseAmount = tx.is_extended && tx.extended_base_amount ? tx.extended_base_amount : tx.amount_eur;
+      return sum + (currentBalance - baseAmount);
     }, 0);
   };
 
@@ -519,7 +520,10 @@ export default function Dashboard() {
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {transactions.length > 0 ?
-                  (calculateTotalProfit() / transactions.reduce((sum, tx) => sum + (tx.is_extended && tx.extended_base_amount ? tx.extended_base_amount : tx.amount_eur), 0) * 100).toFixed(2) :
+                  (calculateTotalProfit() / transactions.reduce((sum, tx) => {
+                    const baseAmount = tx.is_extended && tx.extended_base_amount ? tx.extended_base_amount : tx.amount_eur;
+                    return sum + baseAmount;
+                  }, 0) * 100).toFixed(2) :
                   "0.00"}% Rendite
                 </p>
               </CardContent>
@@ -639,7 +643,8 @@ export default function Dashboard() {
                     const timeRemaining = getTimeRemaining(tx.expires_at);
                     const isExpired = timeRemaining.expired;
                     const currentBalance = calculateCurrentBalance(tx);
-                    const profit = currentBalance - tx.amount_eur;
+                    const baseAmount = tx.is_extended && tx.extended_base_amount ? tx.extended_base_amount : tx.amount_eur;
+                    const profit = currentBalance - baseAmount;
 
                     return (
                       <Card key={tx.id} className={tx.status === "withdrawal_pending" ? "opacity-50 border-amber-200" : ""}>
@@ -682,7 +687,11 @@ export default function Dashboard() {
                                 <div className="text-xs text-muted-foreground mb-1">
                                   {tx.is_extended ? "Verlängerter Betrag" : "Eingezahlter Betrag"}
                                 </div>
-                                <div className="text-lg font-semibold">{tx.amount_eur.toFixed(2)} €</div>
+                                <div className="text-lg font-semibold">
+                                  {tx.is_extended && tx.extended_base_amount 
+                                    ? tx.extended_base_amount.toFixed(2) 
+                                    : tx.amount_eur.toFixed(2)} €
+                                </div>
                               </div>
                               
                               <div>
@@ -706,36 +715,12 @@ export default function Dashboard() {
 
                             <div className="space-y-2">
                               <div className="flex justify-between text-sm">
-                                <span className="text-gray-500">
-                                  {tx.is_extended ? "Verlängerter Betrag:" : "Eingezahlter Betrag:"}
-                                </span>
+                                <span className="text-muted-foreground">Laufzeit</span>
                                 <span className="font-medium">
-                                  {tx.is_extended && tx.extended_base_amount 
-                                    ? tx.extended_base_amount.toFixed(2)
-                                    : tx.amount_eur.toFixed(2)}€
+                                  {!isExpired ? `${timeRemaining.text} verbleibend` : "Abgelaufen"}
                                 </span>
                               </div>
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-500">Aktuelles Guthaben:</span>
-                                <span className="font-bold text-lg">
-                                  {calculateCurrentBalance(tx).toFixed(2)}€
-                                </span>
-                              </div>
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-500">Gewinn:</span>
-                                <span className={calculateCurrentBalance(tx) >= (tx.is_extended && tx.extended_base_amount ? tx.extended_base_amount : tx.amount_eur) ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}>
-                                  {(calculateCurrentBalance(tx) - (tx.is_extended && tx.extended_base_amount ? tx.extended_base_amount : tx.amount_eur)).toFixed(2)}€ Gewinn
-                                </span>
-                              </div>
-                            </div>
-                            
-                            <div className="flex justify-between text-sm">
-                              <span className="text-gray-500">Laufzeit:</span>
-                              <span className="font-medium">
-                                {!isExpired ? `${timeRemaining.text} verbleibend` : "Abgelaufen"}
-                              </span>
-                            </div>
-                            <Progress
+                              <Progress
                               value={getCountdownProgress(tx.timestamp, tx.expires_at)}
                               className="h-2 [&>div]:bg-blue-600" />
                             

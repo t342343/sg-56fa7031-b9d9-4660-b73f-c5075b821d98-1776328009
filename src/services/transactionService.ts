@@ -396,15 +396,15 @@ export const transactionService = {
     const newExpiresAt = new Date(now);
     newExpiresAt.setDate(newExpiresAt.getDate() + 14);
 
-    // Schritt 1: Setze amount_eur auf aktuelles Guthaben (ohne 3%) und speichere als extended_base_amount
+    // Schritt 1: Speichere aktuelles Guthaben als "Verlängerter Betrag" (bleibt fix)
     const { error: updateError } = await supabase
       .from("transactions")
       .update({
         maturity_date: maturityDate,
         maturity_days: maturityDays,
         is_extended: true,
-        amount_eur: newAmountEur, // Aktuelles Guthaben
-        extended_base_amount: newAmountEur, // Speichere Basis-Betrag (vor 3%)
+        extended_base_amount: newAmountEur, // FIX: "Verlängerter Betrag" - ändert sich nicht mehr
+        amount_eur: newAmountEur, // Wird gleich mit 3% erhöht
         expires_at: newExpiresAt.toISOString()
       })
       .eq("id", transactionId);
@@ -414,7 +414,7 @@ export const transactionService = {
       return false;
     }
 
-    // Schritt 2: Warte 2 Sekunden, dann addiere 3% Bonus auf amount_eur
+    // Schritt 2: Nach 2 Sekunden addiere 3% Bonus auf amount_eur
     setTimeout(async () => {
       const bonusAmount = newAmountEur * 0.03;
       const finalAmount = newAmountEur + bonusAmount;
@@ -422,7 +422,7 @@ export const transactionService = {
       await supabase
         .from("transactions")
         .update({
-          amount_eur: finalAmount // Füge 3% Bonus hinzu (extended_base_amount bleibt unverändert)
+          amount_eur: finalAmount // +3% Bonus (extended_base_amount bleibt bei 6.28€)
         })
         .eq("id", transactionId);
 
