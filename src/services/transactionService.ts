@@ -409,8 +409,8 @@ export const transactionService = {
         maturity_days: maturityDays,
         is_extended: true,
         amount_eur: newAmount,
-        expires_at: newExpiresAt.toISOString(),
-        timestamp: now.toISOString()
+        expires_at: newExpiresAt.toISOString()
+        // ✅ timestamp NICHT ändern - muss Original bleiben für Rendite-Berechnung!
       })
       .eq("id", transactionId);
 
