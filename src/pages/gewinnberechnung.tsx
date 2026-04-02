@@ -44,8 +44,8 @@ export default function Gewinnberechnung() {
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl">Ihre Gewinnberechnung</CardTitle>
-              <CardDescription>
-                Übersicht über Ihre Rendite-Struktur basierend auf Ihrem Gesamtguthaben
+              <CardDescription>Übersicht über die Rendite-Struktur 
+
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -65,15 +65,15 @@ export default function Gewinnberechnung() {
               </div>
 
               <div>
-                <Label htmlFor="balance-tier" className="text-base font-semibold mb-3 block">
-                  Wählen Sie Ihre Guthaben-Stufe:
+                <Label htmlFor="balance-tier" className="text-base font-semibold mb-3 block">Wählen Sie Ihre aktuelles Guthaben aus
+
                 </Label>
                 <select
                   id="balance-tier"
                   value={selectedTier}
                   onChange={(e) => setSelectedTier(e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                  
                   <option value="1">Ab 1€ Guthaben</option>
                   <option value="10000">Ab 10.000€ Guthaben</option>
                   <option value="25000">Ab 25.000€ Guthaben</option>
@@ -87,8 +87,8 @@ export default function Gewinnberechnung() {
 
               <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-lg border border-green-200">
                 <h3 className="font-semibold text-xl mb-4 text-green-900">Tägliche Rendite nach Gesamtguthaben</h3>
-                <p className="text-sm text-green-700 mb-4">
-                  Die tägliche Rendite richtet sich nach der Summe aller aktiven Transaktionen:
+                <p className="text-sm text-green-700 mb-4">Die tägliche Rendite richtet sich nach der Summe aller aktiven Positionen
+
                 </p>
                 
                 <div className="space-y-2">
@@ -129,9 +129,9 @@ export default function Gewinnberechnung() {
 
               <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
                 <h3 className="font-semibold text-base mb-2">Wichtiger Hinweis:</h3>
-                <p className="text-sm text-slate-700">
-                  Das Gesamtguthaben wird aus allen aktiven Transaktionen zusammengerechnet. 
-                  Je höher Ihr Gesamtguthaben, desto höher Ihre tägliche Rendite auf alle aktiven Positionen.
+                <p className="text-sm text-slate-700">Das Gesamtguthaben wird aus allen aktiven Transaktionen zusammengerechnet. Je höher Ihr Gesamtguthaben, desto höher Ihre tägliche Rendite auf alle aktiven Positionen. 
+
+
                 </p>
               </div>
             </CardContent>
@@ -158,6 +158,6 @@ export default function Gewinnberechnung() {
           </p>
         </div>
       </footer>
-    </>
-  );
+    </>);
+
 }
