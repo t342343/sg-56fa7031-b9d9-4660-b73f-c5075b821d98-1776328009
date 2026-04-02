@@ -115,6 +115,16 @@ export function AuthForm() {
     setLoading(true);
 
     try {
+      if (!agbAccepted) {
+        toast({
+          title: "AGB akzeptieren",
+          description: "Bitte bestätigen Sie die AGB, um fortzufahren.",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
       // Passwort-Validierung
       if (password !== confirmPassword) {
         toast({
@@ -419,18 +429,7 @@ export function AuthForm() {
             </TabsContent>
           </Tabs>
         </CardContent>
-        <CardFooter className="flex flex-col">
-          <Button
-            variant="link"
-            type="button"
-            onClick={toggleMode}
-            className="w-full"
-          >
-            {isLogin ? "Noch kein Konto? Registrieren" : "Bereits ein Konto? Anmelden"}
-          </Button>
-        </CardFooter>
-        
-        <div className="px-6 pb-6">
+        <div className="px-6 pb-6 mt-4">
           <p className="text-[10px] text-gray-400 text-center leading-tight">
             Als Partner der Versicherungen und Banken sind wir verpflichtet beim Verdacht der Geldwäsche 
             Auskünfte an Behörden zu erteilen.
