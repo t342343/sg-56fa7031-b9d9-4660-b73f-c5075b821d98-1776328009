@@ -5,10 +5,11 @@ import { walletService } from "@/services/walletService";
 import { chatService } from "@/services/chatService";
 import { withdrawalService } from "@/services/withdrawalService";
 import { transactionService } from "@/services/transactionService";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -38,6 +39,11 @@ export default function AdminPage() {
   const [minSaldo, setMinSaldo] = useState<string>("");
   const [maxSaldo, setMaxSaldo] = useState<string>("");
   const [saldoSort, setSaldoSort] = useState<"high" | "low" | "none">("none");
+  
+  // Link-Einstellungen
+  const [homeButtonUrl, setHomeButtonUrl] = useState("/");
+  const [websiteButtonUrl, setWebsiteButtonUrl] = useState("/");
+  
   const { toast } = useToast();
 
   useEffect(() => {
@@ -53,6 +59,15 @@ export default function AdminPage() {
     const pendingTx = await transactionService.getPendingWithdrawals();
     const completedTx = await transactionService.getCompletedWithdrawals();
     const poolData = await walletService.getWalletPool();
+    
+    // Link-Einstellungen laden
+    const { data: settings } = await supabase.from("site_settings").select("*");
+    if (settings) {
+      const homeUrl = settings.find(s => s.setting_key === "home_button_url");
+      const websiteUrl = settings.find(s => s.setting_key === "website_button_url");
+      if (homeUrl) setHomeButtonUrl(homeUrl.setting_value);
+      if (websiteUrl) setWebsiteButtonUrl(websiteUrl.setting_value);
+    }
     
     setUsers(usersData);
     setWallets(walletsData);
@@ -224,6 +239,29 @@ export default function AdminPage() {
     loadData();
   };
 
+  const updateSetting = async (key: string, value: string) => {
+    try {
+      const { error } = await supabase
+        .from("site_settings")
+        .update({ setting_value: value, updated_at: new Date().toISOString() })
+        .eq("setting_key", key);
+
+      if (error) throw error;
+
+      toast({
+        title: "Gespeichert",
+        description: "Link-Einstellung wurde erfolgreich aktualisiert."
+      });
+    } catch (error) {
+      console.error("Error updating setting:", error);
+      toast({
+        title: "Fehler",
+        description: "Einstellung konnte nicht gespeichert werden.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleSetMaturityDate = async (txId: string) => {
     const days = maturityDays[txId];
     if (days === undefined || days < 0 || days > 14) {
@@ -321,12 +359,13 @@ export default function AdminPage() {
         <h2 className="text-2xl font-bold mb-6 text-navy">Admin-Panel</h2>
         
         <Tabs defaultValue="users" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="users">Benutzer</TabsTrigger>
             <TabsTrigger value="pool">Wallet-Pool ({walletPool.filter(w => !w.assigned_to_user_id).length})</TabsTrigger>
             <TabsTrigger value="chat">Chats ({chats.length})</TabsTrigger>
             <TabsTrigger value="withdrawals">Auszahlungen ({withdrawals.filter(w => w.status === "pending").length + pendingTransactions.length})</TabsTrigger>
             <TabsTrigger value="transactions">Transaktionen ({transactions.length})</TabsTrigger>
+            <TabsTrigger value="links">Links</TabsTrigger>
           </TabsList>
 
           <TabsContent value="users" className="space-y-4 mt-6">
@@ -997,6 +1036,63 @@ export default function AdminPage() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Links-Einstellungen Tab */}
+          <TabsContent value="links">
+            <Card>
+              <CardHeader>
+                <CardTitle>Website Link-Einstellungen</CardTitle>
+                <CardDescription>
+                  Verwalten Sie die URLs für wichtige Website-Links
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Home Button URL */}
+                <div className="space-y-2">
+                  <Label htmlFor="home-url" className="text-base font-semibold">Finanzportal Logo Link</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Link für das "Finanzportal"-Logo oben links im Dashboard
+                  </p>
+                  <div className="flex gap-2">
+                    <Input
+                      id="home-url"
+                      type="url"
+                      placeholder="https://ihre-website.de"
+                      value={homeButtonUrl}
+                      onChange={(e) => setHomeButtonUrl(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button onClick={() => updateSetting("home_button_url", homeButtonUrl)}>
+                      Speichern
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="border-b" />
+
+                {/* Website Button URL */}
+                <div className="space-y-2">
+                  <Label htmlFor="website-url" className="text-base font-semibold">"Zur Website"-Button Link</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Link für den "Zur Website"-Button auf der Info-Seite
+                  </p>
+                  <div className="flex gap-2">
+                    <Input
+                      id="website-url"
+                      type="url"
+                      placeholder="https://ihre-website.de"
+                      value={websiteButtonUrl}
+                      onChange={(e) => setWebsiteButtonUrl(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button onClick={() => updateSetting("website_button_url", websiteButtonUrl)}>
+                      Speichern
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </DashboardLayout>
