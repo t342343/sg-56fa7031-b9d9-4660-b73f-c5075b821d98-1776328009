@@ -374,19 +374,19 @@ export default function Dashboard() {
     const now = serverTime;
     const startDate = new Date(timestamp);
 
-    // Berechne nächste volle Stunde seit Transaktionsstart
+    // Berechne nächsten vollen Tag seit Transaktionsstart (24 Stunden)
     const timeDiff = now.getTime() - startDate.getTime();
-    const hoursPassed = Math.floor(timeDiff / (1000 * 60 * 60));
-    const nextProfitTime = new Date(startDate.getTime() + (hoursPassed + 1) * 60 * 60 * 1000);
+    const daysPassed = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+    const nextProfitTime = new Date(startDate.getTime() + (daysPassed + 1) * 24 * 60 * 60 * 1000);
 
     const remainingMs = nextProfitTime.getTime() - now.getTime();
 
     if (remainingMs <= 0) return "Berechnung läuft...";
 
-    const minutes = Math.floor(remainingMs / (1000 * 60));
-    const seconds = Math.floor(remainingMs % (1000 * 60) / 1000);
+    const hours = Math.floor(remainingMs / (1000 * 60 * 60));
+    const minutes = Math.floor(remainingMs % (1000 * 60 * 60) / (1000 * 60));
 
-    return `${minutes}m ${seconds}s`;
+    return `${hours}h ${minutes}m`;
   };
 
   const getCountdownProgress = (timestamp: string, expiresAt: string) => {
