@@ -32,6 +32,19 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     if (data) setHomeUrl(data.setting_value);
   };
 
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Abgemeldet",
+        description: "Sie wurden erfolgreich abgemeldet."
+      });
+      router.push("/login");
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
+
   const checkAdmin = async () => {
   };
 
