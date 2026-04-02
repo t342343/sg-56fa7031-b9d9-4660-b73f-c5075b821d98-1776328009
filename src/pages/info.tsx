@@ -1,41 +1,28 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  ArrowRight, 
-  Shield, 
-  Building2, 
-  BadgeCheck, 
-  Lock, 
-  TrendingUp,
-  Wallet,
-  Clock,
-  Users,
-  CheckCircle2
-} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ShieldCheck, Clock, TrendingUp, Users, Award, HeadphonesIcon } from "lucide-react";
+import { SEO } from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 
-export default function InfoPage() {
+export default function Info() {
   const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [websiteUrl, setWebsiteUrl] = useState("/");
 
   useEffect(() => {
-    checkAuth();
+    loadSettings();
   }, []);
 
-  const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    setIsLoggedIn(!!session);
-  };
-
-  const handleGetStarted = () => {
-    if (isLoggedIn) {
-      router.push("/dashboard");
-    } else {
-      router.push("/login");
-    }
+  const loadSettings = async () => {
+    const { data } = await supabase
+      .from("site_settings")
+      .select("setting_value")
+      .eq("setting_key", "website_button_url")
+      .single();
+    
+    if (data) setWebsiteUrl(data.setting_value);
   };
 
   return (
@@ -349,6 +336,15 @@ export default function InfoPage() {
 
       {/* Footer */}
       <footer className="bg-slate-900 text-white py-12 mt-20">
+        <div className="container mx-auto px-4 py-3">
+          <Button
+            onClick={() => window.location.href = websiteUrl}
+            size="lg"
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+          >
+            Zur Website
+          </Button>
+        </div>
       </footer>
     </div>
   );

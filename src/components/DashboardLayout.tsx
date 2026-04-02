@@ -1,73 +1,51 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { Button } from "@/components/ui/button";
-import { authService } from "@/services/authService";
-import { profileService } from "@/services/profileService";
-import { LogOut, LayoutDashboard, Wallet, User, Info, Calculator, Menu, X, Home } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { LogOut, Home, User, Info, FileText, Menu, X, Users, Settings, MessageSquare, Calculator } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface DashboardLayoutProps {
   children: ReactNode;
-  requireAdmin?: boolean;
 }
 
-export function DashboardLayout({ children, requireAdmin = false }: DashboardLayoutProps) {
+export function DashboardLayout({ children }: DashboardLayoutProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [userName, setUserName] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [homeUrl, setHomeUrl] = useState("/");
 
   useEffect(() => {
-    checkAuth();
+    checkAdmin();
+    loadSettings();
   }, []);
 
-  const checkAuth = async () => {
-    const session = await authService.getCurrentSession();
-    if (!session) {
-      router.push("/login");
-      return;
-    }
-
-    const profile = await profileService.getCurrentProfile();
-    if (!profile) {
-      router.push("/login");
-      return;
-    }
-
-    if (requireAdmin && profile.role !== "admin") {
-      toast({ title: "Zugriff verweigert", description: "Sie benötigen Admin-Rechte", variant: "destructive" });
-      router.push("/dashboard");
-      return;
-    }
-
-    setUserName(profile.full_name || "User");
-    setLoading(false);
+  const loadSettings = async () => {
+    const { data } = await supabase
+      .from("site_settings")
+      .select("setting_value")
+      .eq("setting_key", "home_button_url")
+      .single();
+    
+    if (data) setHomeUrl(data.setting_value);
   };
 
-  const handleLogout = async () => {
-    await authService.signOut();
-    toast({ title: "Abgemeldet", description: "Sie wurden erfolgreich abgemeldet" });
-    router.push("/login");
+  const checkAdmin = async () => {
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-lg">Laden...</div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="flex">
         {/* Mobile Header */}
         <div className="lg:hidden fixed top-0 left-0 right-0 bg-white border-b border-slate-200 z-50 px-4 py-3 flex items-center justify-between">
-          <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <button
+            onClick={() => window.location.href = homeUrl}
+            className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+          >
             Finanzportal
-          </h1>
+          </button>
           <Button
             variant="ghost"
             size="lg"
@@ -77,6 +55,18 @@ export function DashboardLayout({ children, requireAdmin = false }: DashboardLay
             {mobileMenuOpen ? <X className="h-7 w-7" /> : <Menu className="h-7 w-7" />}
           </Button>
         </div>
+
+        {/* Desktop Sidebar */}
+        <aside className="hidden lg:flex lg:flex-col lg:w-64 bg-white border-r border-slate-200 fixed left-0 top-0 bottom-0">
+          <div className="p-6 border-b border-slate-200">
+            <button
+              onClick={() => window.location.href = homeUrl}
+              className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+            >
+              Finanzportal
+            </button>
+          </div>
+        </aside>
 
         {/* Sidebar - Desktop & Mobile */}
         <div className={`
@@ -94,15 +84,15 @@ export function DashboardLayout({ children, requireAdmin = false }: DashboardLay
 
               <div className="space-y-2">
                 <Button
-                  variant={router.pathname === "/dashboard" ? "default" : "ghost"}
+                  variant={router.pathname === homeUrl ? "default" : "ghost"}
                   className="w-full justify-start"
                   onClick={() => {
-                    router.push("/dashboard");
+                    router.push(homeUrl);
                     setMobileMenuOpen(false);
                   }}
                 >
                   <Home className="mr-2 h-4 w-4" />
-                  Dashboard
+                  Home
                 </Button>
 
                 <Button
