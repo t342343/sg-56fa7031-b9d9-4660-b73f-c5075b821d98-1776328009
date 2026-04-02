@@ -317,7 +317,7 @@ export default function AdminPage() {
   return (
     <>
       <SEO title="Admin-Panel - Finanzportal" />
-      <DashboardLayout requireAdmin={true}>
+      <DashboardLayout>
         <h2 className="text-2xl font-bold mb-6 text-navy">Admin-Panel</h2>
         
         <Tabs defaultValue="users" className="w-full">
