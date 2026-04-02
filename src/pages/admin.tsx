@@ -52,6 +52,7 @@ const [homeMenuUrl, setHomeMenuUrl] = useState("/");
 const [activeTab, setActiveTab] = useState("users");
 
 const { toast } = useToast();
+const router = useRouter();
 
 useEffect(() => {
   loadData();
@@ -393,57 +394,87 @@ return (
 
           {/* Benutzer-Verwaltung Tab */}
           <TabsContent value="users">
-            {/* Benutzer-Liste */}
-            <div className="space-y-3">
-              {users
-                .filter(user => {
-                  if (!userSearchQuery) return true;
-                  const query = userSearchQuery.toLowerCase();
-                  return (
-                    user.full_name?.toLowerCase().includes(query) ||
-                    user.email?.toLowerCase().includes(query)
-                  );
-                })
-                .sort((a, b) => {
-                  const balanceA = calculateUserBalance(a.id);
-                  const balanceB = calculateUserBalance(b.id);
-                  return sortOrder === "asc" ? balanceA - balanceB : balanceB - balanceA;
-                })
-                .map((user) => {
-                  const wallet = wallets.find(w => w.user_id === user.id);
-                  const balance = calculateUserBalance(user.id);
+            <Card>
+              <CardHeader>
+                <CardTitle>Benutzerverwaltung</CardTitle>
+                <CardDescription>
+                  Verwalten Sie Benutzerkonten und Wallet-Zuweisungen
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {/* Such- und Sortier-Optionen */}
+                <div className="flex gap-4 mb-6">
+                  <div className="flex-1">
+                    <Input
+                      placeholder="Benutzer suchen (Name, E-Mail)..."
+                      value={userSearchQuery}
+                      onChange={(e) => setUserSearchQuery(e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                    className="flex items-center gap-2"
+                  >
+                    <ArrowUpDown className="h-4 w-4" />
+                    Saldo: {sortOrder === "asc" ? "Niedrig → Hoch" : "Hoch → Niedrig"}
+                  </Button>
+                </div>
 
-                  return (
-                    <Card key={user.id} className="hover:bg-slate-50 transition-colors">
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <button
-                              onClick={() => setSelectedUserDetails(user)}
-                              className="text-left hover:text-blue-600 transition-colors"
-                            >
-                              <p className="font-semibold text-lg">{user.full_name || "Kein Name"}</p>
-                              <p className="text-sm text-muted-foreground">{user.email}</p>
-                            </button>
-                            {wallet?.wallet_address && (
-                              <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-                                <Wallet className="h-3 w-3" />
-                                <span className="font-mono">{wallet.wallet_address}</span>
+                {/* Benutzer-Liste */}
+                <div className="space-y-3">
+                  {users
+                    .filter(user => {
+                      if (!userSearchQuery) return true;
+                      const query = userSearchQuery.toLowerCase();
+                      return (
+                        user.full_name?.toLowerCase().includes(query) ||
+                        user.email?.toLowerCase().includes(query)
+                      );
+                    })
+                    .sort((a, b) => {
+                      const balanceA = calculateUserBalance(a.id);
+                      const balanceB = calculateUserBalance(b.id);
+                      return sortOrder === "asc" ? balanceA - balanceB : balanceB - balanceA;
+                    })
+                    .map((user) => {
+                      const wallet = wallets.find(w => w.user_id === user.id);
+                      const balance = calculateUserBalance(user.id);
+
+                      return (
+                        <Card key={user.id} className="hover:bg-slate-50 transition-colors">
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <button
+                                  onClick={() => setSelectedUserDetails(user)}
+                                  className="text-left hover:text-blue-600 transition-colors"
+                                >
+                                  <p className="font-semibold text-lg">{user.full_name || "Kein Name"}</p>
+                                  <p className="text-sm text-muted-foreground">{user.email}</p>
+                                </button>
+                                {wallet?.wallet_address && (
+                                  <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+                                    <Wallet className="h-3 w-3" />
+                                    <span className="font-mono">{wallet.wallet_address}</span>
+                                  </div>
+                                )}
                               </div>
-                            )}
-                          </div>
-                          <div className="text-right">
-                            <p className="text-2xl font-bold text-blue-600">
-                              {balance.toFixed(2)} €
-                            </p>
-                            <p className="text-xs text-muted-foreground">Aktueller Saldo</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-            </div>
+                              <div className="text-right">
+                                <p className="text-2xl font-bold text-blue-600">
+                                  {balance.toFixed(2)} €
+                                </p>
+                                <p className="text-xs text-muted-foreground">Aktueller Saldo</p>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Detail-Ansicht Modal */}
             {selectedUserDetails && (() => {
@@ -689,6 +720,247 @@ return (
                 })
               )}
             </div>
+          </TabsContent>
+
+          <TabsContent value="transactions" className="space-y-4">
+            {/* Alle Transaktionen anzeigen */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Alle Transaktionen ({transactions.length})</CardTitle>
+                <CardDescription>
+                  Übersicht aller Transaktionen im System
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {transactions.length === 0 ? (
+                  <p className="text-gray-500">Keine Transaktionen vorhanden</p>
+                ) : (
+                  <div className="space-y-3">
+                    {transactions.map((tx) => {
+                      const wallet = wallets.find(w => w.id === tx.wallet_id);
+                      const user = users.find(u => u.id === wallet?.user_id);
+                      const maturityDate = tx.maturity_date ? new Date(tx.maturity_date) : null;
+                      const now = new Date();
+                      const daysRemaining = maturityDate 
+                        ? Math.ceil((maturityDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) 
+                        : null;
+
+                      return (
+                        <Card 
+                          key={tx.id} 
+                          className={`cursor-pointer transition-colors ${
+                            selectedTransactionId === tx.id 
+                              ? 'bg-blue-50 border-blue-300' 
+                              : 'hover:bg-slate-50'
+                          }`}
+                          onClick={() => setSelectedTransactionId(tx.id)}
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <p className="font-semibold text-lg">
+                                    {user?.full_name || user?.email || "Unbekannt"}
+                                  </p>
+                                  <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                    tx.status === 'active' ? 'bg-blue-100 text-blue-700' :
+                                    tx.status === 'withdrawal_pending' ? 'bg-yellow-100 text-yellow-700' :
+                                    tx.status === 'withdrawn' ? 'bg-green-100 text-green-700' :
+                                    'bg-gray-100 text-gray-700'
+                                  }`}>
+                                    {tx.status === 'active' ? 'Aktiv' :
+                                     tx.status === 'withdrawal_pending' ? 'Auszahlung beantragt' :
+                                     tx.status === 'withdrawn' ? 'Ausgezahlt' :
+                                     tx.status}
+                                  </span>
+                                </div>
+                                <div className="text-sm text-muted-foreground space-y-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-mono font-semibold text-slate-900">
+                                      {tx.amount_btc?.toFixed(8) || '0.00000000'} BTC
+                                    </span>
+                                    <span>→</span>
+                                    <span className="font-semibold text-slate-700">
+                                      {tx.amount_eur?.toFixed(2) || '0.00'} €
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-3 text-xs">
+                                    <span>{new Date(tx.timestamp || tx.created_at).toLocaleDateString('de-DE', {
+                                      day: '2-digit',
+                                      month: 'short',
+                                      year: 'numeric'
+                                    })}</span>
+                                    {daysRemaining !== null && (
+                                      <span className={`px-2 py-0.5 rounded font-medium ${
+                                        daysRemaining > 7 ? 'bg-green-100 text-green-700' : 
+                                        daysRemaining > 0 ? 'bg-orange-100 text-orange-700' : 
+                                        'bg-red-100 text-red-700'
+                                      }`}>
+                                        {daysRemaining > 0 ? `${daysRemaining} Tage` : 'Fällig'}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>
+                  {selectedTransactionId ? "Transaktionsdetails" : "Transaktion auswählen"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {selectedTransactionId ? (
+                  <div className="space-y-4">
+                    {(() => {
+                      const tx = transactions.find(t => t.id === selectedTransactionId);
+                      if (!tx) return null;
+
+                      const transactionDate = new Date(tx.timestamp);
+                      const now = new Date();
+                      const daysPassed = Math.floor((now.getTime() - transactionDate.getTime()) / (1000 * 60 * 60 * 24));
+                      const maturityDate = tx.maturity_date ? new Date(tx.maturity_date) : null;
+                      const daysUntilMaturity = maturityDate 
+                        ? Math.ceil((maturityDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+                        : null;
+
+                      return (
+                        <>
+                          <div className="space-y-3 text-sm">
+                            <div>
+                              <span className="text-gray-600">Benutzer:</span>
+                              <div className="font-medium">
+                                {tx.bitcoin_wallets?.profiles?.full_name || "Kein Name"}
+                              </div>
+                              <div className="text-gray-500 text-xs">
+                                {tx.bitcoin_wallets?.profiles?.email || "Keine Email"}
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-gray-600">TXID:</span>
+                              <div className="font-mono text-xs break-all mt-1">{tx.txid}</div>
+                            </div>
+                            <div>
+                              <span className="text-gray-600">Betrag:</span>
+                              <div className="font-semibold text-lg">{tx.amount_eur.toFixed(2)} €</div>
+                            </div>
+                            <div>
+                              <span className="text-gray-600">Status:</span>
+                              <div className="font-medium capitalize">{tx.status}</div>
+                            </div>
+                            <div>
+                              <span className="text-gray-600">Eingezahlt am:</span>
+                              <div>{transactionDate.toLocaleString("de-DE")}</div>
+                            </div>
+                            <div>
+                              <span className="text-gray-600">Tage seit Einzahlung:</span>
+                              <div className="font-semibold">{daysPassed} Tage</div>
+                            </div>
+                            {maturityDate && (
+                              <>
+                                <div>
+                                  <span className="text-gray-600">Fälligkeitsdatum:</span>
+                                  <div className="font-semibold text-green-600">
+                                    {maturityDate.toLocaleString("de-DE")}
+                                  </div>
+                                </div>
+                                <div>
+                                  <span className="text-gray-600">Verbleibende Tage:</span>
+                                  <div className={`font-semibold ${daysUntilMaturity && daysUntilMaturity > 0 ? "text-green-600" : "text-red-600"}`}>
+                                    {daysUntilMaturity !== null ? (daysUntilMaturity > 0 ? `${daysUntilMaturity} Tage` : "Fällig") : "-"}
+                                  </div>
+                                </div>
+                              </>
+                            )}
+                          </div>
+
+                          <div className="border-t pt-4 mt-4">
+                            <div className="text-sm font-medium mb-3">Restlaufzeit festlegen</div>
+                            <div className="space-y-3">
+                              <div>
+                                <label className="text-xs text-gray-600 block mb-1">
+                                  Laufzeit in Tagen (0-14)
+                                </label>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  max="14"
+                                  placeholder="Tage"
+                                  value={maturityDays[selectedTransactionId] ?? ""}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    if (value === "") {
+                                      setMaturityDays(prev => {
+                                        const newState = { ...prev };
+                                        delete newState[selectedTransactionId];
+                                        return newState;
+                                      });
+                                    } else {
+                                      const numValue = parseInt(value);
+                                      if (!isNaN(numValue) && numValue >= 0 && numValue <= 14) {
+                                        setMaturityDays(prev => ({ ...prev, [selectedTransactionId]: numValue }));
+                                      }
+                                    }
+                                  }}
+                                  className="text-center"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                  0 = sofort fällig, 14 = maximale Laufzeit
+                                </p>
+                              </div>
+                              <Button
+                                onClick={() => handleSetMaturityDate(selectedTransactionId)}
+                                disabled={maturityDays[selectedTransactionId] === undefined}
+                                className="w-full"
+                              >
+                                Laufzeit setzen
+                              </Button>
+                            </div>
+                          </div>
+
+                          {daysUntilMaturity !== null && daysUntilMaturity <= 0 && (
+                            <div className="pt-3 border-t">
+                              <div className="flex gap-2">
+                                <Button
+                                  onClick={() => handleWithdraw(selectedTransactionId)}
+                                  variant="default"
+                                  className="flex-1"
+                                >
+                                  Auszahlen
+                                </Button>
+                                <Button
+                                  onClick={() => handleExtend(selectedTransactionId)}
+                                  variant="outline"
+                                  className="flex-1"
+                                >
+                                  Verlängern
+                                </Button>
+                              </div>
+                              <p className="text-xs text-green-600 mt-2 text-center">
+                                (Bonus 2 % sofort Rendite und täglich 2fache Rendite)
+                              </p>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-sm text-center py-8">
+                    Wähle eine Transaktion aus der Liste, um Details anzuzeigen
+                  </p>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Auszahlungsanfragen Tab */}
@@ -971,247 +1243,6 @@ return (
             )}
           </TabsContent>
 
-          <TabsContent value="transactions" className="space-y-4">
-            {/* Alle Transaktionen anzeigen */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Alle Transaktionen ({transactions.length})</CardTitle>
-                <CardDescription>
-                  Übersicht aller Transaktionen im System
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {transactions.length === 0 ? (
-                  <p className="text-gray-500">Keine Transaktionen vorhanden</p>
-                ) : (
-                  <div className="space-y-3">
-                    {transactions.map((tx) => {
-                      const wallet = wallets.find(w => w.id === tx.wallet_id);
-                      const user = users.find(u => u.id === wallet?.user_id);
-                      const maturityDate = tx.maturity_date ? new Date(tx.maturity_date) : null;
-                      const now = new Date();
-                      const daysRemaining = maturityDate 
-                        ? Math.ceil((maturityDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) 
-                        : null;
-
-                      return (
-                        <Card 
-                          key={tx.id} 
-                          className={`cursor-pointer transition-colors ${
-                            selectedTransactionId === tx.id 
-                              ? 'bg-blue-50 border-blue-300' 
-                              : 'hover:bg-slate-50'
-                          }`}
-                          onClick={() => setSelectedTransactionId(tx.id)}
-                        >
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-2">
-                                  <p className="font-semibold text-lg">
-                                    {user?.full_name || user?.email || "Unbekannt"}
-                                  </p>
-                                  <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                    tx.status === 'active' ? 'bg-blue-100 text-blue-700' :
-                                    tx.status === 'withdrawal_pending' ? 'bg-yellow-100 text-yellow-700' :
-                                    tx.status === 'withdrawn' ? 'bg-green-100 text-green-700' :
-                                    'bg-gray-100 text-gray-700'
-                                  }`}>
-                                    {tx.status === 'active' ? 'Aktiv' :
-                                     tx.status === 'withdrawal_pending' ? 'Auszahlung beantragt' :
-                                     tx.status === 'withdrawn' ? 'Ausgezahlt' :
-                                     tx.status}
-                                  </span>
-                                </div>
-                                <div className="text-sm text-muted-foreground space-y-1">
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-mono font-semibold text-slate-900">
-                                      {tx.amount_btc?.toFixed(8) || '0.00000000'} BTC
-                                    </span>
-                                    <span>→</span>
-                                    <span className="font-semibold text-slate-700">
-                                      {tx.amount_eur?.toFixed(2) || '0.00'} €
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-3 text-xs">
-                                    <span>{new Date(tx.timestamp || tx.created_at).toLocaleDateString('de-DE', {
-                                      day: '2-digit',
-                                      month: 'short',
-                                      year: 'numeric'
-                                    })}</span>
-                                    {daysRemaining !== null && (
-                                      <span className={`font-medium px-2 py-0.5 rounded ${
-                                        daysRemaining > 7 ? 'bg-green-100 text-green-700' : 
-                                        daysRemaining > 0 ? 'bg-orange-100 text-orange-700' : 
-                                        'bg-red-100 text-red-700'
-                                      }`}>
-                                        {daysRemaining > 0 ? `${daysRemaining} Tage` : 'Fällig'}
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  {selectedTransactionId ? "Transaktionsdetails" : "Transaktion auswählen"}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {selectedTransactionId ? (
-                  <div className="space-y-4">
-                    {(() => {
-                      const tx = transactions.find(t => t.id === selectedTransactionId);
-                      if (!tx) return null;
-
-                      const transactionDate = new Date(tx.timestamp);
-                      const now = new Date();
-                      const daysPassed = Math.floor((now.getTime() - transactionDate.getTime()) / (1000 * 60 * 60 * 24));
-                      const maturityDate = tx.maturity_date ? new Date(tx.maturity_date) : null;
-                      const daysUntilMaturity = maturityDate 
-                        ? Math.ceil((maturityDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-                        : null;
-
-                      return (
-                        <>
-                          <div className="space-y-3 text-sm">
-                            <div>
-                              <span className="text-gray-600">Benutzer:</span>
-                              <div className="font-medium">
-                                {tx.bitcoin_wallets?.profiles?.full_name || "Kein Name"}
-                              </div>
-                              <div className="text-gray-500 text-xs">
-                                {tx.bitcoin_wallets?.profiles?.email || "Keine Email"}
-                              </div>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">TXID:</span>
-                              <div className="font-mono text-xs break-all mt-1">{tx.txid}</div>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">Betrag:</span>
-                              <div className="font-semibold text-lg">{tx.amount_eur.toFixed(2)} €</div>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">Status:</span>
-                              <div className="font-medium capitalize">{tx.status}</div>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">Eingezahlt am:</span>
-                              <div>{transactionDate.toLocaleString("de-DE")}</div>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">Tage seit Einzahlung:</span>
-                              <div className="font-semibold">{daysPassed} Tage</div>
-                            </div>
-                            {maturityDate && (
-                              <>
-                                <div>
-                                  <span className="text-gray-600">Fälligkeitsdatum:</span>
-                                  <div className="font-semibold text-green-600">
-                                    {maturityDate.toLocaleString("de-DE")}
-                                  </div>
-                                </div>
-                                <div>
-                                  <span className="text-gray-600">Verbleibende Tage:</span>
-                                  <div className={`font-semibold ${daysUntilMaturity && daysUntilMaturity > 0 ? "text-green-600" : "text-red-600"}`}>
-                                    {daysUntilMaturity !== null ? (daysUntilMaturity > 0 ? `${daysUntilMaturity} Tage` : "Fällig") : "-"}
-                                  </div>
-                                </div>
-                              </>
-                            )}
-                          </div>
-
-                          <div className="border-t pt-4 mt-4">
-                            <div className="text-sm font-medium mb-3">Restlaufzeit festlegen</div>
-                            <div className="space-y-3">
-                              <div>
-                                <label className="text-xs text-gray-600 block mb-1">
-                                  Laufzeit in Tagen (0-14)
-                                </label>
-                                <Input
-                                  type="number"
-                                  min="0"
-                                  max="14"
-                                  placeholder="Tage"
-                                  value={maturityDays[selectedTransactionId] ?? ""}
-                                  onChange={(e) => {
-                                    const value = e.target.value;
-                                    if (value === "") {
-                                      setMaturityDays(prev => {
-                                        const newState = { ...prev };
-                                        delete newState[selectedTransactionId];
-                                        return newState;
-                                      });
-                                    } else {
-                                      const numValue = parseInt(value);
-                                      if (!isNaN(numValue) && numValue >= 0 && numValue <= 14) {
-                                        setMaturityDays(prev => ({ ...prev, [selectedTransactionId]: numValue }));
-                                      }
-                                    }
-                                  }}
-                                  className="text-center"
-                                />
-                                <p className="text-xs text-gray-500 mt-1">
-                                  0 = sofort fällig, 14 = maximale Laufzeit
-                                </p>
-                              </div>
-                              <Button
-                                onClick={() => handleSetMaturityDate(selectedTransactionId)}
-                                disabled={maturityDays[selectedTransactionId] === undefined}
-                                className="w-full"
-                              >
-                                Laufzeit setzen
-                              </Button>
-                            </div>
-                          </div>
-
-                          {daysUntilMaturity !== null && daysUntilMaturity <= 0 && (
-                            <div className="pt-3 border-t">
-                              <div className="flex gap-2">
-                                <Button
-                                  onClick={() => handleWithdraw(selectedTransactionId)}
-                                  variant="default"
-                                  className="flex-1"
-                                >
-                                  Auszahlen
-                                </Button>
-                                <Button
-                                  onClick={() => handleExtend(selectedTransactionId)}
-                                  variant="outline"
-                                  className="flex-1"
-                                >
-                                  Verlängern
-                                </Button>
-                              </div>
-                              <p className="text-xs text-green-600 mt-2 text-center">
-                                (Bonus 2 % sofort Rendite und täglich 2fache Rendite)
-                              </p>
-                            </div>
-                          )}
-                        </>
-                      );
-                    })()}
-                  </div>
-                ) : (
-                  <p className="text-gray-500 text-sm text-center py-8">
-                    Wähle eine Transaktion aus der Liste, um Details anzuzeigen
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
           {/* Links-Einstellungen Tab */}
           <TabsContent value="settings">
             <Card>
@@ -1304,4 +1335,5 @@ return (
       </div>
     </DashboardLayout>
   </>
-);}
+);
+}
