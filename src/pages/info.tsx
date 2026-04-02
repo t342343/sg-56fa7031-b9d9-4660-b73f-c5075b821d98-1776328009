@@ -1,19 +1,31 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import Link from "next/link";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, Clock, TrendingUp, Users, Award, HeadphonesIcon } from "lucide-react";
+import { ShieldCheck, Clock, TrendingUp, Users, Award, HeadphonesIcon, Wallet, ArrowRight, Building2, Shield, BadgeCheck, Lock, CheckCircle2 } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Info() {
   const router = useRouter();
   const [websiteUrl, setWebsiteUrl] = useState("/");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     loadSettings();
+    checkAuth();
   }, []);
+
+  const checkAuth = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    setIsLoggedIn(!!session);
+  };
+
+  const handleGetStarted = () => {
+    router.push(isLoggedIn ? "/dashboard" : "/login");
+  };
 
   const loadSettings = async () => {
     const { data } = await supabase
