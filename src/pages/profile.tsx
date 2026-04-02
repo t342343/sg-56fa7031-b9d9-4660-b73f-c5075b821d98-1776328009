@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
-import { User, Mail, Phone, MapPin, Lock, Save } from "lucide-react";
+import { User, Mail, Phone, MapPin, Lock, Save, ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<any>(null);
@@ -32,6 +33,7 @@ export default function ProfilePage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   
   const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     loadProfile();
@@ -227,177 +229,195 @@ export default function ProfilePage() {
 
   return (
     <>
-      <SEO title="Profil bearbeiten - Finanzportal" />
+      <SEO 
+        title="Profil - Finanzportal"
+        description="Verwalten Sie Ihr Profil und Ihre Kontoinformationen"
+      />
       <DashboardLayout>
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Profil bearbeiten</h1>
-            <p className="text-muted-foreground">
-              Verwalten Sie Ihre persönlichen Daten und Sicherheitseinstellungen
-            </p>
-          </div>
+        <div className="max-w-4xl mx-auto">
+          {/* Zurück-Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push("/dashboard")}
+            className="mb-6 -ml-2"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Zurück zum Dashboard
+          </Button>
 
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="w-5 h-5" />
-                  Persönliche Daten
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="fullName" className="flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    Vollständiger Name
-                  </Label>
-                  <Input
-                    id="fullName"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Max Mustermann"
-                  />
-                </div>
+          <h2 className="text-2xl font-bold mb-6 text-navy">Profil</h2>
 
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="flex items-center gap-2">
-                    <Mail className="w-4 h-4" />
-                    E-Mail-Adresse
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="max@beispiel.de"
-                  />
-                </div>
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Profil bearbeiten</h1>
+              <p className="text-muted-foreground">
+                Verwalten Sie Ihre persönlichen Daten und Sicherheitseinstellungen
+              </p>
+            </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="flex items-center gap-2">
-                    <Phone className="w-4 h-4" />
-                    Telefonnummer
-                  </Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+49 123 456789"
-                  />
-                </div>
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="w-5 h-5" />
+                    Persönliche Daten
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName" className="flex items-center gap-2">
+                      <User className="w-4 h-4" />
+                      Vollständiger Name
+                    </Label>
+                    <Input
+                      id="fullName"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="Max Mustermann"
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="street">Straße</Label>
-                  <Input
-                    id="street"
-                    value={street}
-                    onChange={e => setStreet(e.target.value)}
-                    placeholder="Musterstraße"
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="flex items-center gap-2">
+                      <Mail className="w-4 h-4" />
+                      E-Mail-Adresse
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="max@beispiel.de"
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="houseNumber">Hausnummer</Label>
-                  <Input
-                    id="houseNumber"
-                    value={houseNumber}
-                    onChange={e => setHouseNumber(e.target.value)}
-                    placeholder="123"
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="flex items-center gap-2">
+                      <Phone className="w-4 h-4" />
+                      Telefonnummer
+                    </Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+49 123 456789"
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="postalCode">PLZ</Label>
-                  <Input
-                    id="postalCode"
-                    value={postalCode}
-                    onChange={e => setPostalCode(e.target.value)}
-                    placeholder="12345"
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="street">Straße</Label>
+                    <Input
+                      id="street"
+                      value={street}
+                      onChange={e => setStreet(e.target.value)}
+                      placeholder="Musterstraße"
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="city">Ort</Label>
-                  <Input
-                    id="city"
-                    value={city}
-                    onChange={e => setCity(e.target.value)}
-                    placeholder="Berlin"
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="houseNumber">Hausnummer</Label>
+                    <Input
+                      id="houseNumber"
+                      value={houseNumber}
+                      onChange={e => setHouseNumber(e.target.value)}
+                      placeholder="123"
+                    />
+                  </div>
 
-                <Button 
-                  onClick={handleSaveProfile} 
-                  disabled={saving}
-                  className="w-full"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  {saving ? "Speichere..." : "Änderungen speichern"}
-                </Button>
-              </CardContent>
-            </Card>
+                  <div className="space-y-2">
+                    <Label htmlFor="postalCode">PLZ</Label>
+                    <Input
+                      id="postalCode"
+                      value={postalCode}
+                      onChange={e => setPostalCode(e.target.value)}
+                      placeholder="12345"
+                    />
+                  </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Lock className="w-5 h-5" />
-                  Passwort ändern
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="currentPassword">Aktuelles Passwort</Label>
-                  <Input
-                    id="currentPassword"
-                    type="password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    placeholder="••••••••"
-                  />
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="city">Ort</Label>
+                    <Input
+                      id="city"
+                      value={city}
+                      onChange={e => setCity(e.target.value)}
+                      placeholder="Berlin"
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="newPassword">Neues Passwort</Label>
-                  <Input
-                    id="newPassword"
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="••••••••"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Mindestens 6 Zeichen
+                  <Button 
+                    onClick={handleSaveProfile} 
+                    disabled={saving}
+                    className="w-full"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    {saving ? "Speichere..." : "Änderungen speichern"}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Lock className="w-5 h-5" />
+                    Passwort ändern
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="currentPassword">Aktuelles Passwort</Label>
+                    <Input
+                      id="currentPassword"
+                      type="password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      placeholder="••••••••"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="newPassword">Neues Passwort</Label>
+                    <Input
+                      id="newPassword"
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="••••••••"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Mindestens 6 Zeichen
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">Passwort bestätigen</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="••••••••"
+                    />
+                  </div>
+
+                  <Button 
+                    onClick={handleChangePassword} 
+                    disabled={saving || !currentPassword || !newPassword || !confirmPassword}
+                    variant="secondary"
+                    className="w-full"
+                  >
+                    <Lock className="w-4 h-4 mr-2" />
+                    {saving ? "Ändere Passwort..." : "Passwort ändern"}
+                  </Button>
+
+                  <p className="text-xs text-muted-foreground border-t pt-3">
+                    ⚠️ Aus Sicherheitsgründen werden Passwörter verschlüsselt gespeichert. 
+                    Auch Administratoren können Ihr Passwort nicht einsehen.
                   </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Passwort bestätigen</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="••••••••"
-                  />
-                </div>
-
-                <Button 
-                  onClick={handleChangePassword} 
-                  disabled={saving || !currentPassword || !newPassword || !confirmPassword}
-                  variant="secondary"
-                  className="w-full"
-                >
-                  <Lock className="w-4 h-4 mr-2" />
-                  {saving ? "Ändere Passwort..." : "Passwort ändern"}
-                </Button>
-
-                <p className="text-xs text-muted-foreground border-t pt-3">
-                  ⚠️ Aus Sicherheitsgründen werden Passwörter verschlüsselt gespeichert. 
-                  Auch Administratoren können Ihr Passwort nicht einsehen.
-                </p>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </DashboardLayout>

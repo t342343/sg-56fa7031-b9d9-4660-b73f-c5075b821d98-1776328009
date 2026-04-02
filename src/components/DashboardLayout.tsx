@@ -110,60 +110,84 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 Finanzportal
               </h1>
 
-              <div className="space-y-2">
-                <Button
-                  variant={router.pathname === homeMenuUrl ? "default" : "ghost"}
-                  className="w-full justify-start"
-                  onClick={() => {
-                    handleHomeMenuClick();
-                    setMobileMenuOpen(false);
-                  }}
-                >
-                  <Home className="mr-2 h-4 w-4" />
-                  Home
-                </Button>
+              <nav className="flex-1 p-4">
+                <div className="space-y-2">
+                  <Button
+                    variant={router.pathname === "/dashboard" ? "default" : "ghost"}
+                    className="w-full justify-start h-12 text-base"
+                    onClick={() => {
+                      router.push("/dashboard");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    <Home className="mr-3 h-5 w-5" />
+                    Dashboard
+                  </Button>
 
-                <Button
-                  variant={router.pathname === "/profile" ? "default" : "ghost"}
-                  className="w-full justify-start"
-                  onClick={() => {
-                    router.push("/profile");
-                    setMobileMenuOpen(false);
-                  }}
-                >
-                  <User className="mr-2 h-4 w-4" />
-                  Profil
-                </Button>
+                  <Button
+                    variant={router.pathname === "/profile" ? "default" : "ghost"}
+                    className="w-full justify-start h-12 text-base"
+                    onClick={() => {
+                      router.push("/profile");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    <User className="mr-3 h-5 w-5" />
+                    Profil
+                  </Button>
 
-                <Button
-                  variant={router.pathname === "/gewinnberechnung" ? "default" : "ghost"}
-                  className="w-full justify-start"
-                  onClick={() => {
-                    router.push("/gewinnberechnung");
-                    setMobileMenuOpen(false);
-                  }}
-                >
-                  <Calculator className="mr-2 h-4 w-4" />
-                  Gewinnberechnung
-                </Button>
+                  <Button
+                    variant={router.pathname === "/info" ? "default" : "ghost"}
+                    className="w-full justify-start h-12 text-base"
+                    onClick={() => {
+                      router.push("/info");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    <Info className="mr-3 h-5 w-5" />
+                    Info
+                  </Button>
 
-                <Button
-                  variant={router.pathname === "/info" ? "default" : "ghost"}
-                  className="w-full justify-start"
-                  onClick={() => {
-                    router.push("/info");
-                    setMobileMenuOpen(false);
-                  }}
-                >
-                  <Info className="mr-2 h-4 w-4" />
-                  Info
-                </Button>
+                  <Button
+                    variant={router.pathname === "/agb" ? "default" : "ghost"}
+                    className="w-full justify-start h-12 text-base"
+                    onClick={() => {
+                      router.push("/agb");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    <FileText className="mr-3 h-5 w-5" />
+                    AGB
+                  </Button>
 
-                <Button variant="outline" size="sm" onClick={handleLogout}>
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Abmelden
-                </Button>
-              </div>
+                  <Button
+                    variant={router.pathname === "/admin" ? "default" : "ghost"}
+                    className="w-full justify-start h-12 text-base"
+                    onClick={() => {
+                      router.push("/admin");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    <Users className="mr-3 h-5 w-5" />
+                    Admin
+                  </Button>
+
+                  {/* Website-Button ganz unten */}
+                  <div className="pt-4 border-t border-slate-200 mt-4">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start h-12 text-base"
+                      onClick={() => {
+                        handleHomeMenuClick();
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      <Home className="mr-3 h-5 w-5" />
+                      Website
+                    </Button>
+                  </div>
+                </div>
+              </nav>
             </div>
           </div>
         </div>
