@@ -203,6 +203,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                       <Home className="mr-3 h-5 w-5" />
                       Website
                     </Button>
+
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start h-12 text-base mt-2"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="mr-3 h-5 w-5" />
+                      Abmelden
+                    </Button>
                   </div>
                 </div>
               </nav>
