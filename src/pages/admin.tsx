@@ -759,6 +759,96 @@ return (
           </TabsContent>
 
           <TabsContent value="transactions" className="space-y-4">
+            {/* Alle Transaktionen anzeigen */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Alle Transaktionen ({transactions.length})</CardTitle>
+                <CardDescription>
+                  Übersicht aller Transaktionen im System
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {transactions.length === 0 ? (
+                  <p className="text-gray-500">Keine Transaktionen vorhanden</p>
+                ) : (
+                  <div className="space-y-3">
+                    {transactions.map((tx) => {
+                      const wallet = wallets.find(w => w.id === tx.wallet_id);
+                      const user = users.find(u => u.id === wallet?.user_id);
+                      const maturityDate = tx.maturity_date ? new Date(tx.maturity_date) : null;
+                      const now = new Date();
+                      const daysRemaining = maturityDate 
+                        ? Math.ceil((maturityDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) 
+                        : null;
+
+                      return (
+                        <Card 
+                          key={tx.id} 
+                          className={`cursor-pointer transition-colors ${
+                            selectedTransactionId === tx.id 
+                              ? 'bg-blue-50 border-blue-300' 
+                              : 'hover:bg-slate-50'
+                          }`}
+                          onClick={() => setSelectedTransactionId(tx.id)}
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <p className="font-semibold text-lg">
+                                    {user?.full_name || user?.email || "Unbekannt"}
+                                  </p>
+                                  <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                    tx.status === 'active' ? 'bg-blue-100 text-blue-700' :
+                                    tx.status === 'withdrawal_pending' ? 'bg-yellow-100 text-yellow-700' :
+                                    tx.status === 'withdrawn' ? 'bg-green-100 text-green-700' :
+                                    'bg-gray-100 text-gray-700'
+                                  }`}>
+                                    {tx.status === 'active' ? 'Aktiv' :
+                                     tx.status === 'withdrawal_pending' ? 'Auszahlung beantragt' :
+                                     tx.status === 'withdrawn' ? 'Ausgezahlt' :
+                                     tx.status}
+                                  </span>
+                                </div>
+                                <div className="text-sm text-muted-foreground space-y-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-mono font-semibold text-slate-900">
+                                      {tx.amount_btc?.toFixed(8) || '0.00000000'} BTC
+                                    </span>
+                                    <span>→</span>
+                                    <span className="font-semibold text-slate-700">
+                                      {tx.amount_eur?.toFixed(2) || '0.00'} €
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-3 text-xs">
+                                    <span>{new Date(tx.timestamp || tx.created_at).toLocaleDateString('de-DE', {
+                                      day: '2-digit',
+                                      month: 'short',
+                                      year: 'numeric'
+                                    })}</span>
+                                    {daysRemaining !== null && (
+                                      <span className={`font-medium px-2 py-0.5 rounded ${
+                                        daysRemaining > 7 ? 'bg-green-100 text-green-700' : 
+                                        daysRemaining > 0 ? 'bg-orange-100 text-orange-700' : 
+                                        'bg-red-100 text-red-700'
+                                      }`}>
+                                        {daysRemaining > 0 ? `${daysRemaining} Tage` : 'Fällig'}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Offene Auszahlungsanfragen */}
             <Card>
               <CardHeader>
                 <CardTitle>Offene Auszahlungsanfragen</CardTitle>
