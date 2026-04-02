@@ -874,8 +874,15 @@ export default function Dashboard() {
         </div>
       </DashboardLayout>
 
+      {/* Versicherungs-Hinweis */}
+      <div className="container mx-auto px-4 py-3">
+        <p className="text-[10px] text-gray-400 text-center leading-tight max-w-4xl mx-auto">
+          Alle eingezahlten Vermögenswerte sind "kreuzversichert". Das bedeutet ihre Bitcoin Einzahlungen sind gegen Kursschwankungen und Entwertung versichert. Außerdem sind alle eingezahlten Vermögenswerte vollständig gegen Verlust und Diebstahl bei Bitsurance versichert.
+        </p>
+      </div>
+
       {/* Geldwäsche-Hinweis */}
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-3">
         <p className="text-[10px] text-gray-400 text-center leading-tight max-w-4xl mx-auto">
           Als offizieller Anlageanbieter und Partner von Versicherungen und Banken sind wir verpflichtet bei Verdacht auf Verstoß gegen das Geldwäschegesetz (§ 261 StGB) auf Behördliche Anfragen Auskünfte zu erteilen.
         </p>
