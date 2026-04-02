@@ -43,6 +43,8 @@ export default function AdminPage() {
   const [selectedWallet, setSelectedWallet] = useState<string>("");
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [isAssigning, setIsAssigning] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Link Einstellungen States
   const [homeButtonUrl, setHomeButtonUrl] = useState("/");
@@ -55,9 +57,12 @@ export default function AdminPage() {
   }, []);
 
   const checkAdmin = async () => {
-    const isAdminStatus = await profileService.isCurrentUserAdmin();
+    const profile = await profileService.getCurrentProfile();
+    const isAdminStatus = profile?.role === 'admin';
     if (!isAdminStatus) {
       window.location.href = "/dashboard";
+    } else {
+      setIsAdmin(true);
     }
   };
 
@@ -80,7 +85,7 @@ export default function AdminPage() {
       if (profilesError) throw profilesError;
 
       const { data: walletsData, error: walletsError } = await supabase
-        .from("wallets")
+        .from("bitcoin_wallets")
         .select("*");
       if (walletsError) throw walletsError;
 
@@ -90,13 +95,13 @@ export default function AdminPage() {
       if (transactionsError) throw transactionsError;
 
       const { data: pendingWithdrawalsData, error: pendingWithdrawalsError } = await supabase
-        .from("withdrawals")
+        .from("withdrawal_requests")
         .select("*")
         .eq("status", "pending");
       if (pendingWithdrawalsError) throw pendingWithdrawalsError;
 
       const { data: completedWithdrawalsData, error: completedWithdrawalsError } = await supabase
-        .from("withdrawals")
+        .from("withdrawal_requests")
         .select("*")
         .eq("status", "completed");
       if (completedWithdrawalsError) throw completedWithdrawalsError;
@@ -108,7 +113,7 @@ export default function AdminPage() {
       if (chatsError) throw chatsError;
 
       const { data: withdrawalsData, error: withdrawalsError } = await supabase
-        .from("withdrawals")
+        .from("withdrawal_requests")
         .select("*")
         .eq("status", "pending");
       if (withdrawalsError) throw withdrawalsError;
