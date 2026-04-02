@@ -383,7 +383,8 @@ export default function Dashboard() {
     filter((tx) => tx.status !== "withdrawal_pending").
     reduce((sum, tx) => {
       const currentBalance = calculateCurrentBalance(tx);
-      return sum + (currentBalance - tx.amount_eur);
+      const base = tx.is_extended && tx.extended_base_amount ? tx.extended_base_amount : tx.amount_eur;
+      return sum + (currentBalance - base);
     }, 0);
   };
 
@@ -518,7 +519,7 @@ export default function Dashboard() {
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {transactions.length > 0 ?
-                  (calculateTotalProfit() / transactions.reduce((sum, tx) => sum + tx.amount_eur, 0) * 100).toFixed(2) :
+                  (calculateTotalProfit() / transactions.reduce((sum, tx) => sum + (tx.is_extended && tx.extended_base_amount ? tx.extended_base_amount : tx.amount_eur), 0) * 100).toFixed(2) :
                   "0.00"}% Rendite
                 </p>
               </CardContent>
