@@ -427,6 +427,25 @@ export default function Dashboard() {
     return { expired: false, text: `${days}T ${hours}H` };
   };
 
+  const totalProfit = transactions.reduce((sum, tx) => sum + (tx.current_profit || 0), 0);
+
+  const totalActiveBalance = transactions
+    .filter(tx => tx.status === "active")
+    .reduce((sum, tx) => sum + tx.eur_value, 0);
+
+  const getDailyRateInfo = (balance: number) => {
+    if (balance >= 130000) return { rate: "2,4%", threshold: "130.000€" };
+    if (balance >= 100000) return { rate: "2,3%", threshold: "100.000€" };
+    if (balance >= 75000) return { rate: "2,2%", threshold: "75.000€" };
+    if (balance >= 50000) return { rate: "2,1%", threshold: "50.000€" };
+    if (balance >= 35000) return { rate: "2,0%", threshold: "35.000€" };
+    if (balance >= 25000) return { rate: "1,8%", threshold: "25.000€" };
+    if (balance >= 10000) return { rate: "1,6%", threshold: "10.000€" };
+    return { rate: "1,4%", threshold: "1€" };
+  };
+
+  const rateInfo = getDailyRateInfo(totalActiveBalance);
+
   return (
     <>
       <SEO title="Investment Dashboard - Finanzportal" />
@@ -491,6 +510,27 @@ export default function Dashboard() {
                 </p>
               </CardContent>
               <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-green-500/5 blur-2xl" />
+            </Card>
+
+            <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Aktive Transaktionen</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {transactions.filter(tx => tx.status === "active").length}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Tägliche Rendite</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{rateInfo.rate}</div>
+                <p className="text-xs mt-1 opacity-90">ab {rateInfo.threshold}</p>
+              </CardContent>
             </Card>
           </div>
 
