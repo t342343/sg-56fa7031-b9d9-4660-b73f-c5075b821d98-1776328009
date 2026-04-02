@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
 import { authService } from "@/services/authService";
 import { profileService } from "@/services/profileService";
-import { LogOut, LayoutDashboard, Wallet, User } from "lucide-react";
+import { LogOut, LayoutDashboard, Wallet, User, Info, Calculator } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 
@@ -82,13 +82,27 @@ export function DashboardLayout({ children, requireAdmin = false }: DashboardLay
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm text-muted-foreground">Hallo, {userName}</span>
-              <Link href="/profile">
-                <Button variant="ghost" size="sm" className="gap-2">
-                  <User className="w-4 h-4" />
-                  Profil
-                </Button>
-              </Link>
-              <Button variant="outline" size="sm" onClick={handleLogout}>
+              <Button
+                variant={router.pathname === "/profile" ? "default" : "ghost"}
+                className="w-full justify-start"
+                onClick={() => router.push("/profile")}
+              >
+                <User className="mr-2 h-4 w-4" />
+                Profil
+              </Button>
+
+              <Button
+                variant={router.pathname === "/gewinnberechnung" ? "default" : "ghost"}
+                className="w-full justify-start"
+                onClick={() => router.push("/gewinnberechnung")}
+              >
+                <Calculator className="mr-2 h-4 w-4" />
+                Gewinnberechnung
+              </Button>
+
+              <Button
+                variant={router.pathname === "/info" ? "default" : "ghost"}
+                variant="outline" size="sm" onClick={handleLogout}>
                 <LogOut className="w-4 h-4 mr-2" />
                 Abmelden
               </Button>
