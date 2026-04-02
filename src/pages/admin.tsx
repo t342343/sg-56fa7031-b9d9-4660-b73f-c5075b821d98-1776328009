@@ -503,69 +503,78 @@ export default function AdminPage() {
                           Aktuell: {wallet?.countdown_days ?? 14} Tage bis Ablauf neuer Transaktionen
                         </p>
                       </div>
-                    </CardContent>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm text-muted-foreground">
-                          {profile.email}
-                        </p>
-                        <span className={`px-2 py-1 rounded-full text-xs ${profile.role === "admin" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}>
-                          {profile.role === "admin" ? "Admin" : "Benutzer"}
-                        </span>
-                      </div>
-                      {profile.wallet_address && (
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Wallet className="h-3 w-3" />
-                          <span className="font-mono">{profile.wallet_address}</span>
-                        </div>
-                      )}
-                      
-                      {/* Transaktionen des Benutzers */}
+
+                      {/* Transaktionen-Anzeige */}
                       {(() => {
-                        const userTransactions = transactions.filter(tx => tx.user_id === profile.id);
-                        if (userTransactions.length > 0) {
-                          return (
-                            <div className="mt-3 pt-3 border-t border-slate-200">
-                              <p className="text-xs font-semibold text-slate-700 mb-2">Transaktionen ({userTransactions.length})</p>
-                              <div className="space-y-2">
-                                {userTransactions.map(tx => {
-                                  const maturityDate = tx.maturity_date ? new Date(tx.maturity_date) : null;
-                                  const now = new Date();
-                                  const daysRemaining = maturityDate ? Math.ceil((maturityDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : null;
-                                  
-                                  return (
-                                    <div key={tx.id} className="bg-slate-50 p-2 rounded text-xs space-y-1">
-                                      <div className="flex items-center justify-between">
-                                        <span className="font-mono font-semibold text-slate-900">
-                                          {tx.btc_amount} BTC
+                        if (!wallet) return null;
+                        const userTransactions = transactions.filter(tx => tx.wallet_id === wallet.id);
+                        if (userTransactions.length === 0) return null;
+                        
+                        return (
+                          <div className="mt-4 pt-4 border-t border-slate-200">
+                            <p className="text-sm font-semibold text-slate-700 mb-3">
+                              Transaktionen ({userTransactions.length})
+                            </p>
+                            <div className="space-y-2 max-h-64 overflow-y-auto">
+                              {userTransactions.map(tx => {
+                                const maturityDate = tx.maturity_date ? new Date(tx.maturity_date) : null;
+                                const now = new Date();
+                                const daysRemaining = maturityDate 
+                                  ? Math.ceil((maturityDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) 
+                                  : null;
+                                
+                                return (
+                                  <div key={tx.id} className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <span className="font-mono font-bold text-slate-900 text-sm">
+                                        {tx.amount_btc?.toFixed(8) || '0.00000000'} BTC
+                                      </span>
+                                      <span className="text-slate-700 font-semibold text-sm">
+                                        {tx.amount_eur?.toFixed(2) || '0.00'} €
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+                                      <span>{new Date(tx.timestamp || tx.created_at).toLocaleDateString('de-DE', {
+                                        day: '2-digit',
+                                        month: 'short',
+                                        year: 'numeric'
+                                      })}</span>
+                                      {daysRemaining !== null && (
+                                        <span className={`font-medium px-2 py-0.5 rounded ${
+                                          daysRemaining > 7 ? 'bg-green-100 text-green-700' : 
+                                          daysRemaining > 0 ? 'bg-orange-100 text-orange-700' : 
+                                          'bg-red-100 text-red-700'
+                                        }`}>
+                                          {daysRemaining > 0 ? `${daysRemaining} Tage` : 'Fällig'}
                                         </span>
-                                        <span className="text-slate-600">
-                                          €{tx.eur_amount?.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                        </span>
-                                      </div>
-                                      <div className="flex items-center justify-between text-slate-500">
-                                        <span>{new Date(tx.created_at).toLocaleDateString('de-DE')}</span>
-                                        {daysRemaining !== null && (
-                                          <span className={`font-medium ${daysRemaining > 30 ? 'text-green-600' : daysRemaining > 0 ? 'text-orange-600' : 'text-slate-600'}`}>
-                                            {daysRemaining > 0 ? `${daysRemaining} Tage` : 'Fällig'}
-                                          </span>
-                                        )}
-                                      </div>
-                                      {tx.txid && (
-                                        <div className="text-slate-400 font-mono truncate">
-                                          {tx.txid.substring(0, 16)}...
-                                        </div>
                                       )}
                                     </div>
-                                  );
-                                })}
-                              </div>
+                                    {tx.txid && (
+                                      <div className="text-slate-400 font-mono text-xs truncate">
+                                        TxID: {tx.txid.substring(0, 20)}...
+                                      </div>
+                                    )}
+                                    <div className="mt-1">
+                                      <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                                        tx.status === 'active' ? 'bg-blue-100 text-blue-700' :
+                                        tx.status === 'withdrawal_pending' ? 'bg-yellow-100 text-yellow-700' :
+                                        tx.status === 'withdrawn' ? 'bg-green-100 text-green-700' :
+                                        'bg-gray-100 text-gray-700'
+                                      }`}>
+                                        {tx.status === 'active' ? 'Aktiv' :
+                                         tx.status === 'withdrawal_pending' ? 'Auszahlung beantragt' :
+                                         tx.status === 'withdrawn' ? 'Ausgezahlt' :
+                                         tx.status}
+                                      </span>
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
-                          );
-                        }
-                        return null;
+                          </div>
+                        );
                       })()}
-                    </div>
+                    </CardContent>
                   </Card>
                 );
               })
