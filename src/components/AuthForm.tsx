@@ -161,17 +161,8 @@ export function AuthForm() {
       filter(Boolean).
       join(", ");
 
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            phone,
-            address: combinedAddress
-          }
-        }
-      });
+      // Verwende authService.signUp() statt direktem Supabase-Aufruf
+      const { user: authUser, error: authError } = await authService.signUp(email, password);
 
       if (authError) {
         console.error("Registration error details:", authError);
@@ -184,7 +175,7 @@ export function AuthForm() {
         return;
       }
 
-      if (!authData?.user) {
+      if (!authUser) {
         toast({
           title: "Registrierung fehlgeschlagen",
           description: "Benutzer konnte nicht erstellt werden",
@@ -199,10 +190,10 @@ export function AuthForm() {
       // Warte kurz, damit Supabase die Session setzt
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      // Erstelle Profil
+      // Erstelle Profil mit zusätzlichen Daten
       try {
         await profileService.createProfile({
-          id: authData.user.id,
+          id: authUser.id,
           email,
           full_name: fullName,
           address: combinedAddress,
