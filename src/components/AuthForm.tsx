@@ -204,48 +204,6 @@ export function AuthForm() {
 
         console.log("Profile created successfully");
 
-        // Warte 1 Sekunde, damit Profil sicher committed ist
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // WICHTIG: Wallet-Zuweisung NACH Profil-Erstellung
-        try {
-          const availableWallets = await walletService.getWalletPool();
-          const unassignedWallet = availableWallets.find(w => !w.assigned_to_user_id);
-
-          if (unassignedWallet) {
-            console.log("Auto-assigning wallet to new user:", unassignedWallet.wallet_address);
-            
-            // Hole Admin-ID
-            const { data: adminProfile } = await supabase
-              .from("profiles")
-              .select("id")
-              .eq("email", "admin@finanzportal.dev")
-              .single();
-
-            if (adminProfile) {
-              console.log("Admin ID found:", adminProfile.id);
-              const success = await walletService.assignWallet(
-                authUser.id,
-                unassignedWallet.wallet_address,
-                adminProfile.id
-              );
-              
-              if (success) {
-                console.log("Wallet successfully assigned to new user");
-              } else {
-                console.error("Failed to assign wallet - assignWallet returned false");
-              }
-            } else {
-              console.error("Admin profile not found!");
-            }
-          } else {
-            console.log("No unassigned wallets available in pool");
-          }
-        } catch (walletError) {
-          console.error("Error auto-assigning wallet:", walletError);
-          // Wallet-Zuweisung fehlgeschlagen, aber User wurde erfolgreich erstellt
-        }
-
         toast({
           title: "Registrierung erfolgreich!",
           description: "Account erstellt. Sie können sich jetzt anmelden."
