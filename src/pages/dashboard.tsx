@@ -410,10 +410,17 @@ export default function Dashboard() {
     }, 0);
   };
 
-  const getNextProfitCountdown = (timestamp: string) => {
+  const getNextProfitCountdown = (timestamp: string, expiresAt: string) => {
     if (!serverTime) return "...";
 
     const now = serverTime;
+    const expiry = new Date(expiresAt).getTime();
+    
+    // Wenn Transaktion abgelaufen ist, zeige "Abgelaufen"
+    if (now.getTime() >= expiry) {
+      return "Abgelaufen";
+    }
+
     const startDate = new Date(timestamp);
 
     // Berechne nächsten vollen Tag seit Transaktionsstart (24 Stunden)
@@ -736,7 +743,7 @@ export default function Dashboard() {
                                 {!isExpired &&
                               <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                                     <Clock className="w-3 h-3" />
-                                    Nächster Gewinn in: {getNextProfitCountdown(tx.timestamp)}
+                                    Nächster Gewinn in: {getNextProfitCountdown(tx.timestamp, tx.expires_at)}
                                   </div>
                               }
                                 </div>
