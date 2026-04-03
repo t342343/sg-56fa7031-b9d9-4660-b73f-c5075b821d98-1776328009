@@ -42,6 +42,7 @@ const [maxSaldo, setMaxSaldo] = useState("");
 const [saldoSort, setSaldoSort] = useState<"high" | "low" | "none">("none");
 const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
 const [chats, setChats] = useState<any[]>([]);
+const [bitcoinPrice, setBitcoinPrice] = useState<number>(0);
 
 // Link-Einstellungen
 const [homeButtonUrl, setHomeButtonUrl] = useState("/");
@@ -56,9 +57,23 @@ const router = useRouter();
 
 useEffect(() => {
   loadData();
-  const interval = setInterval(loadData, 10000);
+  loadBitcoinPrice();
+  const interval = setInterval(() => {
+    loadData();
+    loadBitcoinPrice();
+  }, 10000);
   return () => clearInterval(interval);
 }, []);
+
+const loadBitcoinPrice = async () => {
+  try {
+    const response = await fetch("/api/bitcoin-price");
+    const data = await response.json();
+    setBitcoinPrice(data.price);
+  } catch (error) {
+    console.error("Fehler beim Laden des Bitcoin-Kurses:", error);
+  }
+};
 
 const loadData = async () => {
   const usersData = await profileService.getAllProfiles();
@@ -998,7 +1013,9 @@ return (
                             <div className="text-sm text-amber-600 font-medium">
                               {tx.withdrawn_amount_btc ? 
                                 `${tx.withdrawn_amount_btc.toFixed(8)} BTC` : 
-                                `${(tx.amount_btc || 0).toFixed(8)} BTC`
+                                bitcoinPrice > 0 ? 
+                                  `${((tx.withdrawn_amount_eur || tx.amount_eur) / bitcoinPrice).toFixed(8)} BTC` :
+                                  'Kurs lädt...'
                               }
                             </div>
                             <div className="text-sm text-green-600 mt-1">
@@ -1051,7 +1068,7 @@ return (
                           </div>
                         </div>
 
-                        <div className="mt-4 flex gap-2">
+                        <div className="mt-3 flex gap-2">
                           <Button
                             onClick={() => handleTransactionWithdrawal(tx.id, "withdrawn")}
                             className="flex-1 bg-green-600 hover:bg-green-700"
