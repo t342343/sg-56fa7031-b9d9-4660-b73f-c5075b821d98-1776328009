@@ -119,10 +119,7 @@ export default function AGB() {
             </section>
           </div>
 
-          <div className="mt-8 pt-6 border-t text-xs text-gray-500 text-center">
-            Als Partner der Versicherungen und Banken sind wir verpflichtet beim Verdacht der Geldwäsche 
-            Auskünfte an Behörden zu erteilen.
-          </div>
+          {/* Removed: Geldwäsche-Hinweistext */}
         </div>
       </div>
 
