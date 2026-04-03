@@ -397,6 +397,62 @@ const handleAddToPool = async () => {
   }
 };
 
+const handleDistributeWallets = async () => {
+  try {
+    // Finde alle User ohne Wallet
+    const usersWithoutWallet = users.filter(user => {
+      return !wallets.find(w => w.user_id === user.id);
+    });
+
+    if (usersWithoutWallet.length === 0) {
+      toast({ 
+        title: "Keine Aktion nötig", 
+        description: "Alle User haben bereits eine Wallet zugewiesen."
+      });
+      return;
+    }
+
+    // Hole verfügbare Wallets aus Pool
+    const availableWallets = await walletService.getWalletPool();
+    const unassignedWallets = availableWallets.filter(w => !w.assigned_to_user_id);
+
+    if (unassignedWallets.length === 0) {
+      toast({ 
+        title: "Keine Wallets verfügbar", 
+        description: `${usersWithoutWallet.length} User ohne Wallet gefunden, aber keine freien Wallets im Pool.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Teile Wallets automatisch zu
+    const me = await profileService.getCurrentProfile();
+    if (!me) {
+      toast({ title: "Fehler", description: "Admin-Profil nicht gefunden", variant: "destructive" });
+      return;
+    }
+
+    let assignedCount = 0;
+    for (let i = 0; i < Math.min(usersWithoutWallet.length, unassignedWallets.length); i++) {
+      const user = usersWithoutWallet[i];
+      const wallet = unassignedWallets[i];
+      
+      await walletService.assignWallet(user.id, wallet.wallet_address, me.id);
+      assignedCount++;
+    }
+
+    toast({ 
+      title: "Wallets erfolgreich verteilt", 
+      description: `${assignedCount} Wallet(s) an User ohne Wallet zugeteilt.`
+    });
+
+    loadData();
+  } catch (error) {
+    console.error("Error distributing wallets:", error);
+    toast({ title: "Fehler", description: "Fehler beim Verteilen der Wallets", variant: "destructive" });
+  }
+};
+
 const handleRemoveFromPool = async (poolId: string) => {
   try {
     await walletService.removeFromWalletPool(poolId);
@@ -747,6 +803,9 @@ return (
                   />
                   <Button onClick={handleAddToPool}>
                     Hinzufügen
+                  </Button>
+                  <Button onClick={handleDistributeWallets} variant="outline">
+                    Wallets verteilen
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
