@@ -703,6 +703,11 @@ export default function Dashboard() {
                                     +{profit.toFixed(2)} € Gewinn
                                   </div>
                                 )}
+                                {tx.is_extended && (
+                                  <div className="text-xs text-gray-400 mt-0.5">
+                                    Ursprünglich eingezahlt: {tx.amount_eur.toFixed(2)} €
+                                  </div>
+                                )}
                                 {!isExpired &&
                               <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                                     <Clock className="w-3 h-3" />
