@@ -517,6 +517,9 @@ export default function Dashboard() {
                     maximumFractionDigits: 2
                   })} €
                 </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  (berechnet aus allen aktiven Positionen)
+                </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   {transactions.length > 0 ?
                   (calculateTotalProfit() / transactions.reduce((sum, tx) => {
