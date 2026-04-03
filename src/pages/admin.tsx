@@ -394,8 +394,20 @@ return (
   <>
     <SEO title="Admin-Panel - Finanzportal" />
     <DashboardLayout>
-      <div className="container mx-auto py-8">
-        <h1 className="text-3xl font-bold mb-8">Admin-Panel</h1>
+      <div className="max-w-screen-2xl mx-auto p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
+            <p className="text-gray-600 mt-1">Benutzerverwaltung & Transaktionen</p>
+          </div>
+          <div className="text-right">
+            <div className="text-sm text-gray-600">Aktueller Bitcoin-Kurs</div>
+            <div className="text-xl font-bold text-amber-600">
+              {bitcoinPrice > 0 ? `${bitcoinPrice.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €` : 'Lädt...'}
+            </div>
+            <div className="text-xs text-gray-500">Aktualisiert alle 10 Sek.</div>
+          </div>
+        </div>
         
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-6">
@@ -1011,11 +1023,9 @@ return (
                               {(tx.withdrawn_amount_eur || tx.amount_eur).toFixed(2)} €
                             </div>
                             <div className="text-sm text-amber-600 font-medium">
-                              {tx.withdrawn_amount_btc ? 
-                                `${tx.withdrawn_amount_btc.toFixed(8)} BTC` : 
-                                bitcoinPrice > 0 ? 
-                                  `${((tx.withdrawn_amount_eur || tx.amount_eur) / bitcoinPrice).toFixed(8)} BTC` :
-                                  'Kurs lädt...'
+                              {bitcoinPrice > 0 ? 
+                                `${((tx.withdrawn_amount_eur || tx.amount_eur) / bitcoinPrice).toFixed(8)} BTC` :
+                                'Kurs lädt...'
                               }
                             </div>
                             <div className="text-sm text-green-600 mt-1">
