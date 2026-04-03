@@ -153,8 +153,7 @@ export default function Dashboard() {
       if (newCount > 0) {
         toast({
           title: newCount === 1 ? "Neue Transaktion gefunden!" : "Neue Transaktionen gefunden!",
-          description: newCount === 1 ? "Eine neue Zahlung wurde erkannt und hinzugefügt." : `${newCount} neue Zahlungen wurden erkannt und hinzugefügt.`,
-          duration: 5000
+          description: newCount === 1 ? "Eine neue Zahlung wurde erkannt und hinzugefügt." : `${newCount} neue Zahlungen wurden erkannt und hinzugefügt.`
         });
         // Lade Dashboard lautlos neu (ohne setLoading(true))
         await loadDashboard(true);
