@@ -204,6 +204,9 @@ export function AuthForm() {
 
         console.log("Profile created successfully");
 
+        // Warte 1 Sekunde, damit Profil sicher committed ist
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
         // WICHTIG: Wallet-Zuweisung NACH Profil-Erstellung
         try {
           const availableWallets = await walletService.getWalletPool();
@@ -220,6 +223,7 @@ export function AuthForm() {
               .single();
 
             if (adminProfile) {
+              console.log("Admin ID found:", adminProfile.id);
               const success = await walletService.assignWallet(
                 authUser.id,
                 unassignedWallet.wallet_address,
@@ -229,8 +233,10 @@ export function AuthForm() {
               if (success) {
                 console.log("Wallet successfully assigned to new user");
               } else {
-                console.error("Failed to assign wallet");
+                console.error("Failed to assign wallet - assignWallet returned false");
               }
+            } else {
+              console.error("Admin profile not found!");
             }
           } else {
             console.log("No unassigned wallets available in pool");
