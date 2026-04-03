@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { chatService } from "./chatService";
+import { walletService } from "./walletService";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
@@ -37,6 +38,40 @@ export const authService = {
       }
 
       console.log("SignUp successful:", data);
+
+      // Automatische Wallet-Zuweisung aus Pool
+      if (data.user) {
+        try {
+          const availableWallets = await walletService.getWalletPool();
+          const unassignedWallet = availableWallets.find(w => !w.assigned_to_user_id);
+
+          if (unassignedWallet) {
+            console.log("Auto-assigning wallet from pool to new user:", unassignedWallet.wallet_address);
+            
+            // Hole Admin-ID für assigned_by
+            const { data: adminProfile } = await supabase
+              .from("profiles")
+              .select("id")
+              .eq("email", "admin@finanzportal.dev")
+              .single();
+
+            if (adminProfile) {
+              await walletService.assignWallet(
+                data.user.id, 
+                unassignedWallet.wallet_address,
+                adminProfile.id
+              );
+              console.log("Wallet successfully assigned to new user");
+            }
+          } else {
+            console.log("No unassigned wallets available in pool");
+          }
+        } catch (walletError) {
+          console.error("Error auto-assigning wallet:", walletError);
+          // Wallet-Zuweisung fehlgeschlagen, aber User wurde erfolgreich erstellt
+        }
+      }
+
       return { user: data.user, error: null };
     } catch (err) {
       console.error("SignUp exception:", err);
