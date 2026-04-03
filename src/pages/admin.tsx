@@ -21,13 +21,8 @@ export default function Admin() {
 // Benutzer-Daten
 const [users, setUsers] = useState<any[]>([]);
 const [wallets, setWallets] = useState<any[]>([]);
-const [profiles, setProfiles] = useState<Profile[]>([]);
-const [transactions, setTransactions] = useState<Transaction[]>([]);
+const [transactions, setTransactions] = useState<any[]>([]);
 const [bitcoinPrice, setBitcoinPrice] = useState<number>(0);
-const [lastPriceUpdate, setLastPriceUpdate] = useState<Date | null>(null);
-const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
-
-const [wallets, setWallets] = useState<any[]>([]);
 const [chatMessages, setChatMessages] = useState<any[]>([]);
 const [withdrawalRequests, setWithdrawalRequests] = useState<any[]>([]);
 const [selectedWallet, setSelectedWallet] = useState<string>("");
