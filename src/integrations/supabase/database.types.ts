@@ -182,6 +182,7 @@ export type Database = {
           is_extended: boolean | null
           maturity_date: string | null
           maturity_days: number | null
+          original_deposit: number | null
           status: string | null
           timestamp: string
           txid: string
@@ -202,6 +203,7 @@ export type Database = {
           is_extended?: boolean | null
           maturity_date?: string | null
           maturity_days?: number | null
+          original_deposit?: number | null
           status?: string | null
           timestamp: string
           txid: string
@@ -222,6 +224,7 @@ export type Database = {
           is_extended?: boolean | null
           maturity_date?: string | null
           maturity_days?: number | null
+          original_deposit?: number | null
           status?: string | null
           timestamp?: string
           txid?: string
