@@ -28,12 +28,12 @@ export default function Info() {
   };
 
   const loadSettings = async () => {
-    const { data } = await supabase
-      .from("site_settings")
-      .select("setting_value")
-      .eq("setting_key", "website_button_url")
-      .single();
-    
+    const { data } = await supabase.
+    from("site_settings").
+    select("setting_value").
+    eq("setting_key", "website_button_url").
+    single();
+
     if (data) setWebsiteUrl(data.setting_value);
   };
 
@@ -58,13 +58,13 @@ export default function Info() {
               </span>
             </Link>
             <div className="flex gap-3">
-              {isLoggedIn ? (
-                <Button onClick={() => router.push("/dashboard")} size="lg">
+              {isLoggedIn ?
+              <Button onClick={() => router.push("/dashboard")} size="lg">
                   Zum Dashboard
                   <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              ) : (
-                <>
+                </Button> :
+
+              <>
                   <Link href="/login">
                     <Button variant="outline" size="lg">
                       Anmelden
@@ -77,7 +77,7 @@ export default function Info() {
                     </Button>
                   </Link>
                 </>
-              )}
+              }
             </div>
           </div>
         </header>
@@ -87,7 +87,7 @@ export default function Info() {
           <div className="max-w-4xl mx-auto space-y-6">
             <h1 className="text-5xl md:text-6xl font-bold leading-tight">
               Sicher in Bitcoin investieren
-              <span className="block bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent" style={{ fontSize: "32px" }}>
                 mit vollständigem Versicherungsschutz
               </span>
             </h1>
@@ -104,7 +104,7 @@ export default function Info() {
               <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
                 <div className="flex flex-col items-center gap-2 opacity-70 hover:opacity-100 transition-opacity">
                   <Building2 className="h-12 w-12 text-blue-600" />
-                  <span className="text-sm font-medium text-gray-600">Bankensicherheit</span>
+                  <span className="text-sm font-medium text-gray-600">Sichere Rendite</span>
                 </div>
                 <div className="flex flex-col items-center gap-2 opacity-70 hover:opacity-100 transition-opacity">
                   <Shield className="h-12 w-12 text-indigo-600" />
@@ -157,8 +157,8 @@ export default function Info() {
                   <TrendingUp className="h-6 w-6 text-purple-600 flex-shrink-0 mt-1" />
                   <div>
                     <h3 className="font-semibold mb-1">Hohe Renditen</h3>
-                    <p className="text-gray-600 text-sm">
-                      Profitieren Sie von attraktiven Renditen bis zu 1% täglich bei vollständiger Absicherung
+                    <p className="text-gray-600 text-sm">Profitieren Sie von attraktiven Renditen bis zu 2% täglich bei vollständiger Absicherung
+
                     </p>
                   </div>
                 </div>
@@ -166,8 +166,8 @@ export default function Info() {
                   <Clock className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
                   <div>
                     <h3 className="font-semibold mb-1">Echtzeit-Tracking</h3>
-                    <p className="text-gray-600 text-sm">
-                      Verfolgen Sie alle Transaktionen und Renditen in Echtzeit mit historischen EUR-Kursen
+                    <p className="text-gray-600 text-sm">Verfolgen Sie alle Transaktionen und Renditen in Echtzeit
+
                     </p>
                   </div>
                 </div>
@@ -252,8 +252,8 @@ export default function Info() {
                 <div className="text-center space-y-3">
                   <Shield className="h-12 w-12 mx-auto opacity-90" />
                   <h3 className="text-xl font-semibold">Versicherungspartner</h3>
-                  <p className="text-blue-100">
-                    Zusammenarbeit mit führenden Versicherungsgesellschaften für vollständigen Schutz Ihrer Investition
+                  <p className="text-blue-100">Zusammenarbeit mit führenden Versicherungsgesellschaften wie Bitsurance für vollständigen Schutz Ihrer Investition
+
                   </p>
                 </div>
                 <div className="text-center space-y-3">
@@ -277,8 +277,8 @@ export default function Info() {
                 <CardTitle className="text-lg">Ist meine Investition wirklich zu 100% abgesichert?</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">
-                  Ja, alle Einzahlungen sind vollständig versichert. Sowohl gegen Diebstahl und Verlust als auch gegen Kursschwankungen. Ihre Investition ist jederzeit geschützt.
+                <p className="text-gray-600">Ja, alle Einzahlungen sind vollständig versichert. Wir erstellen für Sie eine Versicherung beim führenden Anbieter Bitsurance. Sowohl gegen Diebstahl und Verlust als auch gegen Kursschwankungen. Ihre Investition ist jederzeit geschützt. Nach der Bitcoin Einzahlung wird der Euro Wechselkurs fixiert. Ob der Bitcoin Kurs steigt oder fällt spielt für ihre Rendite Berechnung keine Rolle.
+
                 </p>
               </CardContent>
             </Card>
@@ -288,8 +288,8 @@ export default function Info() {
                 <CardTitle className="text-lg">Wie hoch sind die Renditen?</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">
-                  Unsere Kunden profitieren von attraktiven täglichen Renditen von bis zu 1%. Die genaue Rendite wird in Ihrem Dashboard in Echtzeit angezeigt.
+                <p className="text-gray-600">Unsere Kunden profitieren von attraktiven täglichen Renditen von bis zu 2 Prozent abhängig vom Gesamtguthaben. Die genaue Rendite können Sie unter Gewinnberechnung entnehmen. Die Rendite wird vertraglich garantiert. 
+
                 </p>
               </CardContent>
             </Card>
@@ -361,13 +361,13 @@ export default function Info() {
             <Button
               onClick={handleWebsiteClick}
               size="lg"
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-            >
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+              
               Zur Website
             </Button>
           </div>
         </footer>
       </div>
-    </>
-  );
+    </>);
+
 }
