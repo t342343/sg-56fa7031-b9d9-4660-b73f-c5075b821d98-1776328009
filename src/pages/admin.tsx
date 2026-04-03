@@ -75,7 +75,7 @@ const checkAuth = async () => {
 
     // Prüfe ob User Admin ist
     const profile = await profileService.getCurrentProfile();
-    if (!profile || !profile.is_admin) {
+    if (!profile || profile.role !== "admin") {
       toast({
         title: "Zugriff verweigert",
         description: "Sie haben keine Admin-Berechtigung.",
