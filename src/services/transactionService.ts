@@ -163,7 +163,7 @@ export const transactionService = {
         .select("*", { count: "exact", head: true })
         .eq("wallet_id", transaction.wallet_id);
 
-      finalMaturityDays = (count || 0) < 2 ? 7 : 14;
+      finalMaturityDays = (count || 0) < 3 ? 3 : 4;
     }
 
     if (!finalExpiresAt) {
@@ -260,8 +260,8 @@ export const transactionService = {
 
         console.log(`  📊 Current transaction count: ${count}`);
 
-        // Erste 2 Transaktionen: 7 Tage, ab 3. Transaktion: 14 Tage
-        const maturityDays = (count || 0) < 2 ? 7 : 14;
+        // Erste 3 Transaktionen: 3 Tage, ab 4. Transaktion: 4 Tage
+        const maturityDays = (count || 0) < 3 ? 3 : 4;
         console.log(`  ⏱️  Maturity days: ${maturityDays}`);
 
         // Hole aktuellen EUR-Kurs
