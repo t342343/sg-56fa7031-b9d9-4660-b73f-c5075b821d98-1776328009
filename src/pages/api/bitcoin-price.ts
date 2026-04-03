@@ -4,54 +4,42 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  if (req.method !== "GET") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
   try {
-    // Retry-Logik
-    let retries = 0;
-    const maxRetries = 3;
-    
-    while (retries < maxRetries) {
-      try {
-        const response = await fetch(
-          "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur",
-          {
-            headers: {
-              'Accept': 'application/json'
-            }
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`API returned status ${response.status}`);
-        }
-
-        const data = await response.json();
-        const price = data.bitcoin?.eur;
-
-        if (!price) {
-          throw new Error("Price not found in response");
-        }
-
-        console.log("✅ Bitcoin price fetched:", price);
-        
-        // WICHTIG: Gib { price: ... } zurück, nicht { eur: ... }
-        return res.status(200).json({ price });
-
-      } catch (err) {
-        retries++;
-        if (retries < maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, 1000 * retries));
-        } else {
-          throw err;
+    // CoinGecko API - Aktueller Bitcoin-Preis in EUR
+    const response = await fetch(
+      "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur",
+      {
+        headers: {
+          "Accept": "application/json"
         }
       }
+    );
+
+    if (!response.ok) {
+      throw new Error(`CoinGecko API error: ${response.status}`);
     }
-  } catch (error: any) {
-    console.error("Bitcoin Price API Error:", error);
-    
-    // Fallback-Preis
-    const fallbackPrice = 85000;
-    console.log("⚠️ Using fallback price:", fallbackPrice);
-    
-    res.status(200).json({ price: fallbackPrice });
+
+    const data = await response.json();
+    const price = data.bitcoin?.eur;
+
+    if (!price) {
+      throw new Error("Bitcoin price not found in response");
+    }
+
+    return res.status(200).json({
+      price: price,
+      timestamp: new Date().toISOString(),
+      source: "CoinGecko"
+    });
+  } catch (error) {
+    console.error("Bitcoin price API error:", error);
+    return res.status(500).json({
+      error: "Failed to fetch Bitcoin price",
+      details: error instanceof Error ? error.message : "Unknown error"
+    });
   }
 }
