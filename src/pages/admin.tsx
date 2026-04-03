@@ -76,7 +76,13 @@ const loadBitcoinPrice = async () => {
       // Speichere letzten erfolgreichen Kurs als Fallback
       localStorage.setItem("lastBitcoinPrice", data.price.toString());
     } else {
-      throw new Error("Ungültiger Bitcoin-Kurs");
+      // Stille Fallback-Behandlung ohne Error
+      console.warn("API lieferte ungültigen Bitcoin-Kurs, verwende Fallback");
+      const lastPrice = localStorage.getItem("lastBitcoinPrice");
+      if (lastPrice && parseFloat(lastPrice) > 0) {
+        setBitcoinPrice(parseFloat(lastPrice));
+        console.log("Verwende letzten bekannten Bitcoin-Kurs:", lastPrice);
+      }
     }
   } catch (error) {
     console.error("Fehler beim Laden des Bitcoin-Kurses:", error);
