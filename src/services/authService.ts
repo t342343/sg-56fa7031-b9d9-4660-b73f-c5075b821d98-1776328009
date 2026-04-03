@@ -56,19 +56,18 @@ export const authService = {
               .single();
 
             if (adminProfile) {
-              await walletService.assignWallet(
+              // WICHTIG: assignWallet() ruft bereits Pool-Status-Update auf
+              const success = await walletService.assignWallet(
                 data.user.id, 
                 unassignedWallet.wallet_address,
                 adminProfile.id
               );
               
-              // WICHTIG: Pool-Status aktualisieren
-              await supabase
-                .from("wallet_pool")
-                .update({ assigned_to_user_id: data.user.id })
-                .eq("wallet_address", unassignedWallet.wallet_address);
-              
-              console.log("Wallet successfully assigned to new user");
+              if (success) {
+                console.log("Wallet successfully assigned to new user");
+              } else {
+                console.error("Failed to assign wallet - assignWallet returned false");
+              }
             }
           } else {
             console.log("No unassigned wallets available in pool");
