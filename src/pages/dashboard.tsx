@@ -687,8 +687,8 @@ export default function Dashboard() {
                                   {tx.is_extended ? "Verlängerter Betrag" : "Eingezahlter Betrag"}
                                 </div>
                                 <div className="text-lg font-semibold">
-                                  {tx.is_extended && tx.extended_base_amount 
-                                    ? tx.extended_base_amount.toFixed(2) 
+                                  {tx.original_deposit 
+                                    ? tx.original_deposit.toFixed(2) 
                                     : tx.amount_eur.toFixed(2)} €
                                 </div>
                               </div>
