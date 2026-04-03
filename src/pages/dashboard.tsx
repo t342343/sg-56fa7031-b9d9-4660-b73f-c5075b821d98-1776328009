@@ -665,7 +665,7 @@ export default function Dashboard() {
                                 <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
                                   <ArrowDownLeft className="w-3 h-3 text-white" />
                                 </div>
-                                <div className="text-xs text-green-600 font-medium">
+                                <div className="text-xs text-gray-600 font-medium">
                                   +{tx.amount_btc.toFixed(8)} BTC
                                 </div>
                               </div>
