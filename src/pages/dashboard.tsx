@@ -642,7 +642,7 @@ export default function Dashboard() {
                     const timeRemaining = getTimeRemaining(tx.expires_at);
                     const isExpired = timeRemaining.expired;
                     const currentBalance = calculateCurrentBalance(tx);
-                    const baseAmount = tx.is_extended && tx.extended_base_amount ? tx.extended_base_amount : (tx.original_deposit || tx.amount_eur);
+                    const baseAmount = tx.original_deposit || tx.amount_eur;
                     const profit = currentBalance - baseAmount;
 
                     return (
