@@ -517,16 +517,16 @@ export default function Dashboard() {
                     maximumFractionDigits: 2
                   })} €
                 </div>
-                <p className="text-xs text-gray-400 mt-1">
-                  (berechnet aus allen aktiven Positionen)
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-green-600 font-medium mt-1">
                   {transactions.length > 0 ?
                   (calculateTotalProfit() / transactions.reduce((sum, tx) => {
-                    const baseAmount = tx.is_extended && tx.extended_base_amount ? tx.extended_base_amount : tx.amount_eur;
+                    const baseAmount = tx.original_deposit || tx.amount_eur;
                     return sum + baseAmount;
                   }, 0) * 100).toFixed(2) :
                   "0.00"}% Rendite
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  (berechnet aus allen aktiven Positionen)
                 </p>
               </CardContent>
               <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-green-500/5 blur-2xl" />
