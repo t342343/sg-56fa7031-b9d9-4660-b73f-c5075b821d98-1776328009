@@ -289,7 +289,8 @@ export const transactionService = {
           timestamp: new Date(tx.time * 1000).toISOString(),
           status: "active",
           maturity_days: maturityDays,
-          expires_at: expiresAt.toISOString()
+          expires_at: expiresAt.toISOString(),
+          original_deposit: amountEur // Speichere ursprünglichen Betrag OHNE Bonus
         };
 
         console.log(`  💾 Inserting transaction:`, insertData);
@@ -396,7 +397,7 @@ export const transactionService = {
     const newExpiresAt = new Date(now);
     newExpiresAt.setDate(newExpiresAt.getDate() + 14);
 
-    // Schritt 1: Setze original_deposit auf den aktuellen Betrag (vor Verlängerung)
+    // Update Transaktion (original_deposit bleibt unveränderlich!)
     const { error: updateError } = await supabase
       .from("transactions")
       .update({
@@ -404,7 +405,6 @@ export const transactionService = {
         maturity_days: maturityDays,
         is_extended: true,
         extended_base_amount: newAmountEur,
-        original_deposit: newAmountEur, // WICHTIG: Ursprünglich eingezahlter Betrag
         amount_eur: newAmountEur,
         expires_at: newExpiresAt.toISOString()
       })
@@ -423,7 +423,7 @@ export const transactionService = {
       await supabase
         .from("transactions")
         .update({
-          amount_eur: finalAmount // +3% Bonus (original_deposit bleibt bei ursprünglichem Wert)
+          amount_eur: finalAmount // +3% Bonus (original_deposit bleibt unverändert)
         })
         .eq("id", transactionId);
 
