@@ -53,18 +53,57 @@ const [homeMenuUrl, setHomeMenuUrl] = useState("/");
 // Tab-State
 const [activeTab, setActiveTab] = useState("users");
 
+// Auth-State
+const [isLoading, setIsLoading] = useState(true);
+const [isAdmin, setIsAdmin] = useState(false);
+
 const { toast } = useToast();
 const router = useRouter();
 
 useEffect(() => {
-  loadData();
-  loadBitcoinPrice();
+  checkAuth();
+}, []);
+
+const checkAuth = async () => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      router.push("/login");
+      return;
+    }
+
+    // Prüfe ob User Admin ist
+    const profile = await profileService.getCurrentProfile();
+    if (!profile || !profile.is_admin) {
+      toast({
+        title: "Zugriff verweigert",
+        description: "Sie haben keine Admin-Berechtigung.",
+        variant: "destructive"
+      });
+      router.push("/dashboard");
+      return;
+    }
+
+    setIsAdmin(true);
+    setIsLoading(false);
+    loadData();
+    loadBitcoinPrice();
+  } catch (error) {
+    console.error("Auth check failed:", error);
+    router.push("/login");
+  }
+};
+
+useEffect(() => {
+  if (!isAdmin) return;
+  
   const interval = setInterval(() => {
     loadData();
     loadBitcoinPrice();
   }, 10000);
   return () => clearInterval(interval);
-}, []);
+}, [isAdmin]);
 
 const loadBitcoinPrice = async () => {
   try {
@@ -505,6 +544,14 @@ const calculateTotalYield = () => {
 return (
   <>
     <SEO title="Admin-Panel - Finanzportal" />
+    {isLoading ? (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Überprüfe Berechtigung...</p>
+        </div>
+      </div>
+    ) : (
     <DashboardLayout>
       <div className="max-w-screen-2xl mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
@@ -1481,6 +1528,7 @@ return (
         </Tabs>
       </div>
     </DashboardLayout>
+    )}
   </>
 );
 }
