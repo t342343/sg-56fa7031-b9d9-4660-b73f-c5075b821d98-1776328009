@@ -61,6 +61,13 @@ export const authService = {
                 unassignedWallet.wallet_address,
                 adminProfile.id
               );
+              
+              // WICHTIG: Pool-Status aktualisieren
+              await supabase
+                .from("wallet_pool")
+                .update({ assigned_to_user_id: data.user.id })
+                .eq("wallet_address", unassignedWallet.wallet_address);
+              
               console.log("Wallet successfully assigned to new user");
             }
           } else {

@@ -48,6 +48,12 @@ export const walletService = {
       return false;
     }
 
+    // Pool-Status aktualisieren
+    await supabase
+      .from("wallet_pool")
+      .update({ assigned_to_user_id: userId })
+      .eq("wallet_address", walletAddress);
+
     return true;
   },
 
