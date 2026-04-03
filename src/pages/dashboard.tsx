@@ -705,7 +705,7 @@ export default function Dashboard() {
                                 )}
                                 {tx.is_extended && (
                                   <div className="text-xs text-gray-400 mt-0.5">
-                                    Ursprünglich eingezahlt: {tx.extended_base_amount?.toFixed(2) || tx.amount_eur.toFixed(2)} €
+                                    Ursprünglich eingezahlt: {tx.original_deposit?.toFixed(2) || tx.amount_eur.toFixed(2)} €
                                   </div>
                                 )}
                                 {!isExpired &&
