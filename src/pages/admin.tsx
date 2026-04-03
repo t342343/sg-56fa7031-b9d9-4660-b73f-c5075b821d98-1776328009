@@ -69,9 +69,21 @@ const loadBitcoinPrice = async () => {
   try {
     const response = await fetch("/api/bitcoin-price");
     const data = await response.json();
-    setBitcoinPrice(data.price);
+    if (data.price && data.price > 0) {
+      setBitcoinPrice(data.price);
+      // Speichere letzten erfolgreichen Kurs als Fallback
+      localStorage.setItem("lastBitcoinPrice", data.price.toString());
+    } else {
+      throw new Error("Ungültiger Bitcoin-Kurs");
+    }
   } catch (error) {
     console.error("Fehler beim Laden des Bitcoin-Kurses:", error);
+    // Verwende letzten bekannten Kurs aus localStorage
+    const lastPrice = localStorage.getItem("lastBitcoinPrice");
+    if (lastPrice && parseFloat(lastPrice) > 0) {
+      setBitcoinPrice(parseFloat(lastPrice));
+      console.log("Verwende letzten bekannten Bitcoin-Kurs:", lastPrice);
+    }
   }
 };
 
@@ -242,9 +254,9 @@ const handleTransactionWithdrawal = async (txId: string, status: "withdrawn" | "
       const wachstumFaktor = Math.pow(1.0005, hoursPassed);
       const finalAmountEur = startBonus * wachstumFaktor;
 
-      // Verwende aktuellen Bitcoin-Kurs aus State (NICHT neuer API-Call)
+      // Verwende aktuellen Bitcoin-Kurs aus State (mit Fallback auf letzten Kurs)
       if (bitcoinPrice === 0) {
-        toast({ title: "Fehler", description: "Bitcoin-Kurs nicht geladen", variant: "destructive" });
+        toast({ title: "Fehler", description: "Bitcoin-Kurs nicht verfügbar. Bitte später versuchen.", variant: "destructive" });
         return;
       }
       
