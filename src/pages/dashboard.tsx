@@ -742,23 +742,24 @@ export default function Dashboard() {
                             <div className="flex gap-2">
                                   <Button
                                 size="sm"
-                                variant="outline"
-                                onClick={() => handleExtend(tx.id)}>
-                                
-                                    Verlängern
-                                  </Button>
-                                  <Button
-                                size="sm"
                                 variant="default"
                                 onClick={() => setSelectedTx(tx.id)}>
                                 
                                     Auszahlen
                                   </Button>
+                                  <Button
+                                size="sm"
+                                variant="outline"
+                                className="bg-green-600 text-white hover:bg-green-700 border-green-600"
+                                onClick={() => handleExtend(tx.id)}>
+                                
+                                    Verlängern
+                                  </Button>
                                 </div>
                             }
                               {isExpired && tx.status !== "withdrawal_pending" &&
                             <p className="text-xs text-green-600 mt-2 text-center">
-                                  (Bonus 2 % sofort Rendite und stündlich 2fache Rendite)
+                                  (Bonus 3 % Sofort Rendite.)
                                 </p>
                             }
                             </div>
