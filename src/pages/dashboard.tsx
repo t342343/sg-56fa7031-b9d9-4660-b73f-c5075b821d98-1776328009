@@ -77,6 +77,28 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error || !session) {
+        toast({
+          title: "Session abgelaufen",
+          description: "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.",
+          variant: "destructive",
+          duration: 5000
+        });
+        
+        // Warte kurz, damit der Toast angezeigt wird, dann leite weiter
+        setTimeout(() => {
+          router.push("/login");
+        }, 1500);
+      }
+    };
+    
+    checkSession();
+  }, []);
+
+  useEffect(() => {
     let channel: any;
 
     if (userId) {
