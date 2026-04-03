@@ -8,23 +8,23 @@ export default function AGB() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <SEO 
+      <SEO
         title="AGB - Finanzportal"
-        description="Allgemeine Geschäftsbedingungen"
-      />
+        description="Allgemeine Geschäftsbedingungen" />
+      
 
       <div className="container max-w-4xl mx-auto px-4 py-12">
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           onClick={() => router.back()}
-          className="mb-6"
-        >
+          className="mb-6">
+          
           <ArrowLeft className="mr-2 h-4 w-4" />
           Zurück
         </Button>
 
         <div className="bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold mb-8 text-center">Allgemeine Geschäftsbedingungen (AGB) für Krypto-Investment-Dienste</h1>
+          <h1 className="text-3xl font-bold mb-8 text-center">Allgemeine Geschäftsbedingungen (AGB) des Finanzportals</h1>
 
           <div className="space-y-6 text-gray-700">
             <section>
@@ -143,6 +143,6 @@ export default function AGB() {
       {/* Footer */}
       <footer className="bg-slate-900 text-white py-12 mt-20">
       </footer>
-    </div>
-  );
+    </div>);
+
 }
