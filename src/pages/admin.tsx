@@ -242,13 +242,14 @@ const handleTransactionWithdrawal = async (txId: string, status: "withdrawn" | "
       const wachstumFaktor = Math.pow(1.0005, hoursPassed);
       const finalAmountEur = startBonus * wachstumFaktor;
 
-      // Hole aktuellen Bitcoin-Kurs
-      const btcPriceResponse = await fetch("/api/bitcoin-price");
-      const btcPriceData = await btcPriceResponse.json();
-      const currentBtcPrice = btcPriceData.price;
+      // Verwende aktuellen Bitcoin-Kurs aus State (NICHT neuer API-Call)
+      if (bitcoinPrice === 0) {
+        toast({ title: "Fehler", description: "Bitcoin-Kurs nicht geladen", variant: "destructive" });
+        return;
+      }
       
-      // Berechne Bitcoin-Betrag
-      const finalAmountBtc = finalAmountEur / currentBtcPrice;
+      // Berechne Bitcoin-Betrag basierend auf EUR-Auszahlungsbetrag
+      const finalAmountBtc = finalAmountEur / bitcoinPrice;
 
       // Aktualisiere Transaktion mit finalen Beträgen
       const { error } = await supabase
