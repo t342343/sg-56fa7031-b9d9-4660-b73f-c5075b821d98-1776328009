@@ -396,15 +396,16 @@ export const transactionService = {
     const newExpiresAt = new Date(now);
     newExpiresAt.setDate(newExpiresAt.getDate() + 14);
 
-    // Schritt 1: Speichere aktuelles Guthaben als "Verlängerter Betrag" (bleibt fix)
+    // Schritt 1: Setze original_deposit auf den aktuellen Betrag (vor Verlängerung)
     const { error: updateError } = await supabase
       .from("transactions")
       .update({
         maturity_date: maturityDate,
         maturity_days: maturityDays,
         is_extended: true,
-        extended_base_amount: newAmountEur, // FIX: "Verlängerter Betrag" - ändert sich nicht mehr
-        amount_eur: newAmountEur, // Wird gleich mit 3% erhöht
+        extended_base_amount: newAmountEur,
+        original_deposit: newAmountEur, // WICHTIG: Ursprünglich eingezahlter Betrag
+        amount_eur: newAmountEur,
         expires_at: newExpiresAt.toISOString()
       })
       .eq("id", transactionId);
@@ -422,7 +423,7 @@ export const transactionService = {
       await supabase
         .from("transactions")
         .update({
-          amount_eur: finalAmount // +3% Bonus (extended_base_amount bleibt bei 6.28€)
+          amount_eur: finalAmount // +3% Bonus (original_deposit bleibt bei ursprünglichem Wert)
         })
         .eq("id", transactionId);
 
