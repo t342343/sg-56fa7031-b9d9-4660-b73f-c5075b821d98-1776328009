@@ -354,7 +354,42 @@ const handleAddToPool = async () => {
 
   try {
     await walletService.addToWalletPool(newPoolAddress.trim());
-    toast({ title: "Wallet zum Pool hinzugefügt" });
+    
+    // Prüfe, ob es User ohne Wallet gibt
+    const usersWithoutWallet = users.filter(user => {
+      return !wallets.find(w => w.user_id === user.id);
+    });
+
+    if (usersWithoutWallet.length > 0) {
+      // Hole verfügbare Wallets aus Pool
+      const availableWallets = await walletService.getWalletPool();
+      const unassignedWallets = availableWallets.filter(w => !w.assigned_to_user_id);
+
+      // Teile Wallets automatisch zu
+      let assignedCount = 0;
+      for (let i = 0; i < Math.min(usersWithoutWallet.length, unassignedWallets.length); i++) {
+        const user = usersWithoutWallet[i];
+        const wallet = unassignedWallets[i];
+        
+        const me = await profileService.getCurrentProfile();
+        if (me) {
+          await walletService.assignWallet(user.id, wallet.wallet_address, me.id);
+          assignedCount++;
+        }
+      }
+
+      if (assignedCount > 0) {
+        toast({ 
+          title: "Wallet hinzugefügt und zugeteilt", 
+          description: `${assignedCount} Wallet(s) automatisch an User ohne Wallet zugeteilt.`
+        });
+      } else {
+        toast({ title: "Wallet zum Pool hinzugefügt" });
+      }
+    } else {
+      toast({ title: "Wallet zum Pool hinzugefügt" });
+    }
+
     setNewPoolAddress("");
     loadData();
   } catch (error) {
