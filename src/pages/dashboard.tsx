@@ -383,7 +383,7 @@ export default function Dashboard() {
     filter((tx) => tx.status !== "withdrawal_pending").
     reduce((sum, tx) => {
       const currentBalance = calculateCurrentBalance(tx);
-      const baseAmount = tx.is_extended && tx.extended_base_amount ? tx.extended_base_amount : tx.amount_eur;
+      const baseAmount = tx.original_deposit || tx.amount_eur;
       return sum + (currentBalance - baseAmount);
     }, 0);
   };
