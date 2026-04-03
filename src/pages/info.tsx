@@ -277,7 +277,7 @@ export default function Info() {
                 <CardTitle className="text-lg">Ist meine Investition wirklich zu 100% abgesichert?</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">Ja, alle Einzahlungen sind vollständig versichert. Wir erstellen für Sie eine Versicherung beim führenden Anbieter Bitsurance. Sowohl gegen Diebstahl und Verlust als auch gegen Kursschwankungen. Ihre Investition ist jederzeit geschützt. Nach der Bitcoin Einzahlung wird der Euro Wechselkurs fixiert. Ob der Bitcoin Kurs steigt oder fällt spielt für ihre Rendite Berechnung keine Rolle.
+                <p className="text-gray-600">Ja, alle Einzahlungen sind vollständig versichert. Wir erstellen für Sie eine Versicherung beim führenden Anbieter Bitsurance. Sowohl gegen Diebstahl und Verlust als auch gegen Kursschwankungen. Ihre Investition ist jederzeit geschützt. Nach der Bitcoin Einzahlung wird der Euro Wechselkurs fixiert. Ob der Bitcoin Kurs steigt oder fällt spielt für die Berechnung ihrer Rendit Berechnung keine Rolle.
 
                 </p>
               </CardContent>
@@ -288,7 +288,7 @@ export default function Info() {
                 <CardTitle className="text-lg">Wie hoch sind die Renditen?</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">Unsere Kunden profitieren von attraktiven täglichen Renditen von bis zu 2 Prozent abhängig vom Gesamtguthaben. Die genaue Rendite können Sie unter Gewinnberechnung entnehmen. Die Rendite wird vertraglich garantiert. 
+                <p className="text-gray-600">Unsere Kunden profitieren von garantierten  täglichen Renditen (Kursunabhängig) von bis zu 2 Prozent abhängig vom Gesamtguthaben. Die genaue Rendite können Sie unter Gewinnberechnung entnehmen. Die Rendite wird vertraglich garantiert.
 
                 </p>
               </CardContent>
