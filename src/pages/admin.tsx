@@ -21,7 +21,13 @@ export default function Admin() {
 // Benutzer-Daten
 const [users, setUsers] = useState<any[]>([]);
 const [wallets, setWallets] = useState<any[]>([]);
-const [transactions, setTransactions] = useState<any[]>([]);
+const [profiles, setProfiles] = useState<Profile[]>([]);
+const [transactions, setTransactions] = useState<Transaction[]>([]);
+const [bitcoinPrice, setBitcoinPrice] = useState<number>(0);
+const [lastPriceUpdate, setLastPriceUpdate] = useState<Date | null>(null);
+const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
+
+const [wallets, setWallets] = useState<any[]>([]);
 const [chatMessages, setChatMessages] = useState<any[]>([]);
 const [withdrawalRequests, setWithdrawalRequests] = useState<any[]>([]);
 const [selectedWallet, setSelectedWallet] = useState<string>("");
@@ -42,7 +48,7 @@ const [maxSaldo, setMaxSaldo] = useState("");
 const [saldoSort, setSaldoSort] = useState<"high" | "low" | "none">("none");
 const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
 const [chats, setChats] = useState<any[]>([]);
-const [bitcoinPrice, setBitcoinPrice] = useState<number>(0);
+const [lastPriceUpdate, setLastPriceUpdate] = useState<Date | null>(null);
 
 // Link-Einstellungen
 const [homeButtonUrl, setHomeButtonUrl] = useState("/");
@@ -71,6 +77,7 @@ const loadBitcoinPrice = async () => {
     const data = await response.json();
     if (data.price && data.price > 0) {
       setBitcoinPrice(data.price);
+      setLastPriceUpdate(new Date());
       // Speichere letzten erfolgreichen Kurs als Fallback
       localStorage.setItem("lastBitcoinPrice", data.price.toString());
     } else {
@@ -418,7 +425,12 @@ return (
             <div className="text-xl font-bold text-amber-600">
               {bitcoinPrice > 0 ? `${bitcoinPrice.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €` : 'Lädt...'}
             </div>
-            <div className="text-xs text-gray-500">Aktualisiert alle 10 Sek.</div>
+            <div className="text-xs text-gray-500">
+              {lastPriceUpdate 
+                ? `Letztes Update: ${lastPriceUpdate.toLocaleTimeString('de-DE')}`
+                : 'Aktualisiert alle 10 Sek.'
+              }
+            </div>
           </div>
         </div>
         
