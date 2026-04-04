@@ -106,51 +106,51 @@ export default function Gewinnberechnung() {
         description="Erfahren Sie, wie Ihre Rendite berechnet wird und welche Boni Sie erhalten"
       />
       <DashboardLayout>
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
           {/* Zurück-Button */}
           <Button
             variant="ghost"
             size="sm"
             onClick={() => router.push("/dashboard")}
-            className="mb-6 -ml-2"
+            className="mb-4 sm:mb-6 -ml-2"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Zurück zum Dashboard
+            <span className="text-sm sm:text-base">Zurück zum Dashboard</span>
           </Button>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">Ihre Gewinnberechnung</CardTitle>
-              <CardDescription>Übersicht über die Rendite-Struktur</CardDescription>
+          <Card className="shadow-lg">
+            <CardHeader className="px-4 sm:px-6 py-4 sm:py-6">
+              <CardTitle className="text-xl sm:text-2xl">Ihre Gewinnberechnung</CardTitle>
+              <CardDescription className="text-sm sm:text-base">Übersicht über die Rendite-Struktur</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <h3 className="font-semibold text-lg mb-2 text-blue-900">Sofortiger Einzahlungsbonus</h3>
-                <p className="text-blue-800">
+            <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6 pb-4 sm:pb-6">
+              <div className="bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-200">
+                <h3 className="font-semibold text-base sm:text-lg mb-2 text-blue-900">Sofortiger Einzahlungsbonus</h3>
+                <p className="text-sm sm:text-base text-blue-800">
                   Bei jeder Einzahlung erhalten Sie <span className="font-bold">1% sofort</span> als einmaligen Bonus gutgeschrieben.
                 </p>
               </div>
 
-              <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                <h3 className="font-semibold text-lg mb-2 text-purple-900">Verlängerungsbonus</h3>
-                <p className="text-purple-800">
+              <div className="bg-purple-50 p-3 sm:p-4 rounded-lg border border-purple-200">
+                <h3 className="font-semibold text-base sm:text-lg mb-2 text-purple-900">Verlängerungsbonus</h3>
+                <p className="text-sm sm:text-base text-purple-800">
                   Bei Verlängerung einer Position erhalten Sie zusätzlich <span className="font-bold">einmalig 3%</span>. 
                   Danach läuft die Position weiter nach der Gesamtguthaben-Regel.
                 </p>
               </div>
 
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-lg border border-green-200">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-xl text-green-900">Tägliche Rendite nach Gesamtguthaben</h3>
-                  <div className="bg-green-600 text-white px-3 py-1 rounded-md text-sm font-semibold">
-                    Ihre aktuelle Rendite: {currentRate} täglich
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 sm:p-6 rounded-lg border border-green-200">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4 gap-2 sm:gap-0">
+                  <h3 className="font-semibold text-lg sm:text-xl text-green-900">Tägliche Rendite nach Gesamtguthaben</h3>
+                  <div className="bg-green-600 text-white px-3 py-1.5 rounded-md text-xs sm:text-sm font-semibold whitespace-nowrap">
+                    Ihre Rendite: {currentRate}
                   </div>
                 </div>
-                <p className="text-sm text-green-700 mb-4">
+                <p className="text-xs sm:text-sm text-green-700 mb-3 sm:mb-4">
                   Die tägliche Rendite richtet sich nach der Summe aller aktiven Positionen
                 </p>
                 
-                <div className="space-y-2">
+                <div className="space-y-1.5 sm:space-y-2">
                   {renderRateRow("1€", "1,4%")}
                   {renderRateRow("10.000€", "1,6%")}
                   {renderRateRow("25.000€", "1,8%")}
@@ -162,9 +162,9 @@ export default function Gewinnberechnung() {
                 </div>
               </div>
 
-              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                <h3 className="font-semibold text-base mb-2">Wichtiger Hinweis:</h3>
-                <p className="text-sm text-slate-700">
+              <div className="bg-slate-50 p-3 sm:p-4 rounded-lg border border-slate-200">
+                <h3 className="font-semibold text-sm sm:text-base mb-2">Wichtiger Hinweis:</h3>
+                <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
                   Das Gesamtguthaben wird aus allen aktiven Transaktionen zusammengerechnet. Je höher Ihr Gesamtguthaben, desto höher Ihre tägliche Rendite auf alle aktiven Positionen.
                 </p>
               </div>
@@ -173,21 +173,21 @@ export default function Gewinnberechnung() {
         </div>
       </DashboardLayout>
 
-      <div className="container mx-auto px-4 py-3">
-        <p className="text-[10px] text-gray-400 text-center leading-tight max-w-4xl mx-auto">
+      <div className="container mx-auto px-4 py-3 sm:py-4">
+        <p className="text-[9px] sm:text-[10px] text-gray-400 text-center leading-tight max-w-4xl mx-auto">
           Alle eingezahlten Vermögenswerte sind "kreuzversichert". Das bedeutet ihre Bitcoin Einzahlungen sind gegen Kursschwankungen und Entwertung versichert. Außerdem sind alle eingezahlten Vermögenswerte vollständig gegen Verlust und Diebstahl bei Bitsurance versichert.
         </p>
       </div>
 
-      <div className="container mx-auto px-4 py-3">
-        <p className="text-[10px] text-gray-400 text-center leading-tight max-w-4xl mx-auto">
+      <div className="container mx-auto px-4 py-3 sm:py-4">
+        <p className="text-[9px] sm:text-[10px] text-gray-400 text-center leading-tight max-w-4xl mx-auto">
           Als offizieller Anlageanbieter und Partner von Versicherungen und Banken sind wir verpflichtet bei Verdacht auf Verstoß gegen das Geldwäschegesetz (§ 261 StGB) auf Behördliche Anfragen Auskünfte zu erteilen.
         </p>
       </div>
 
-      <footer className="bg-slate-900 text-white py-12 mt-20">
+      <footer className="bg-slate-900 text-white py-8 sm:py-12 mt-12 sm:mt-20">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-sm text-slate-400">
+          <p className="text-xs sm:text-sm text-slate-400">
             © {new Date().getFullYear()} Finanzportal. Alle Rechte vorbehalten.
           </p>
         </div>
