@@ -13,7 +13,7 @@ export function InstallPWA() {
     setMounted(true);
     
     // Check if user previously dismissed the prompt
-    const isDismissed = localStorage.getItem('pwa-prompt-dismissed');
+    const isDismissed = localStorage.getItem('pwa-prompt-dismissed-login');
     if (isDismissed === 'true') {
       setDismissed(true);
     }
@@ -21,23 +21,23 @@ export function InstallPWA() {
 
   const handleDismiss = () => {
     setDismissed(true);
-    localStorage.setItem('pwa-prompt-dismissed', 'true');
+    localStorage.setItem('pwa-prompt-dismissed-login', 'true');
   };
 
   if (!mounted) return null;
   if (isInstalled || !installPrompt || dismissed) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 bg-gray-900 border border-orange-500/30 p-4 rounded-xl shadow-2xl z-[100] flex items-center justify-between gap-4 animate-in slide-in-from-bottom-5 fade-in duration-300">
+    <div className="bg-gray-800/80 border border-gray-700/50 p-4 rounded-xl flex items-center justify-between gap-4 mt-4 animate-in fade-in duration-300">
       <div className="flex flex-col">
-        <span className="text-white font-semibold text-sm">App installieren</span>
+        <span className="text-white font-medium text-sm">App installieren</span>
         <span className="text-gray-400 text-xs mt-0.5">Für Offline-Zugriff & Icon auf dem Desktop</span>
       </div>
       <div className="flex items-center gap-2 shrink-0">
         <Button 
-          onClick={promptInstall} 
+          onClick={(e) => { e.preventDefault(); promptInstall(); }} 
           size="sm" 
-          className="bg-orange-500 hover:bg-orange-600 text-white h-8 text-xs"
+          className="bg-blue-600 hover:bg-blue-700 text-white h-8 text-xs font-medium"
         >
           <Download className="w-3.5 h-3.5 mr-1.5" />
           Installieren
@@ -45,7 +45,7 @@ export function InstallPWA() {
         <Button 
           variant="ghost" 
           size="icon" 
-          onClick={handleDismiss} 
+          onClick={(e) => { e.preventDefault(); handleDismiss(); }} 
           className="text-gray-400 hover:text-white h-8 w-8"
         >
           <X className="w-4 h-4" />

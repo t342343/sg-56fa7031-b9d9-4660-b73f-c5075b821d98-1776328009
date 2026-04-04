@@ -12,6 +12,7 @@ import { walletService } from "@/services/walletService";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
+import { InstallPWA } from "@/components/InstallPWA";
 
 export function AuthForm() {
   const router = useRouter();
@@ -454,6 +455,7 @@ export function AuthForm() {
 
           </p>
         </div>
+        <InstallPWA />
       </Card>
     </div>);
 

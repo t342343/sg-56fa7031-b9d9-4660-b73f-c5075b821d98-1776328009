@@ -3,7 +3,6 @@ import type { AppProps } from "next/app";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/contexts/ThemeProvider";
 import { useEffect } from "react";
-import { InstallPWA } from "@/components/InstallPWA";
 
 export default function App({ Component, pageProps }: AppProps) {
   // Register service worker for PWA
@@ -23,7 +22,6 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <ThemeProvider>
       <Component {...pageProps} />
-      <InstallPWA />
       <Toaster />
     </ThemeProvider>
   );
