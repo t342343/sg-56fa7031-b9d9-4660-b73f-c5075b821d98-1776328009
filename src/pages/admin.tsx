@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageCircle, Send, Clock, CheckCircle2, Wallet, ArrowUpDown, X, User } from "lucide-react";
+import { MessageCircle, Send, Clock, CheckCircle2, Wallet, ArrowUpDown, X, User, Badge } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Admin() {
@@ -1310,13 +1310,13 @@ return (
                             <span className="font-medium">{tx.amount_eur.toFixed(2)} €</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Auszahlungsbetrag (EUR):</span>
+                            <span className="text-gray-600">Ausgezahlter Betrag (EUR):</span>
                             <span className="font-bold text-amber-800">
                               {(tx.withdrawn_amount_eur || tx.amount_eur).toFixed(2)} €
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Auszahlungsbetrag (BTC):</span>
+                            <span className="text-gray-600">Ausgezahlter Betrag (BTC):</span>
                             <span className="font-mono text-xs font-medium">
                               {tx.withdrawn_amount_btc ? 
                                 `${tx.withdrawn_amount_btc.toFixed(8)} BTC` : 
@@ -1341,7 +1341,7 @@ return (
                             </span>
                           </div>
                           <div className="border-t pt-2 mt-2">
-                            <div className="text-gray-600 mb-1">Auszahlung an:</div>
+                            <div className="text-gray-600 mb-1">Ausgezahlt an:</div>
                             <div className="font-mono text-xs bg-gray-100 p-2 rounded break-all border">
                               {tx.withdrawal_address || "Nicht verfügbar"}
                             </div>
@@ -1473,33 +1473,38 @@ return (
           </TabsContent>
 
           <TabsContent value="chat" className="space-y-4 mt-6">
-            {chats.length === 0 ? (
-              <p className="text-muted-foreground">Keine Chats vorhanden.</p>
+            {/* Alle Benutzer anzeigen - auch ohne bestehende Chats */}
+            {users.length === 0 ? (
+              <p className="text-muted-foreground">Keine Benutzer vorhanden.</p>
             ) : (
-              chats.map(([userId, messages]: [string, any[]]) => {
-                const profile = users.find(p => p.id === userId);
+              users.map((user) => {
+                const userMessages = chatMessages.filter(msg => msg.user_id === user.id);
+                
                 return (
-                  <Card key={userId}>
+                  <Card key={user.id}>
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <CardTitle className="flex items-center gap-2">
                           <MessageCircle className="w-5 h-5" />
                           <button
                             onClick={() => {
-                              setSelectedUserDetails(profile);
+                              setSelectedUserDetails(user);
                               setActiveTab("users");
                             }}
                             className="text-left hover:text-blue-600 transition-colors underline-offset-4 hover:underline"
                           >
-                            {profile?.full_name || profile?.email || "Unbekannt"}
+                            {user.full_name || user.email || "Unbekannt"}
                           </button>
+                          {userMessages.length > 0 && (
+                            <Badge variant="secondary">{userMessages.length} Nachrichten</Badge>
+                          )}
                         </CardTitle>
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => {
                             setActiveTab("users");
-                            setSelectedUserDetails(profile);
+                            setSelectedUserDetails(user);
                           }}
                         >
                           <User className="h-4 w-4 mr-2" />
@@ -1508,36 +1513,38 @@ return (
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="h-48 overflow-y-auto border rounded-lg p-4 space-y-2 bg-muted/20">
-                        {messages.map((msg: any) => (
-                          <div
-                            key={msg.id}
-                            className={`flex ${msg.is_admin ? 'justify-end' : 'justify-start'}`}
-                          >
+                      {userMessages.length > 0 && (
+                        <div className="h-48 overflow-y-auto border rounded-lg p-4 space-y-2 bg-muted/20">
+                          {userMessages.map((msg: any) => (
                             <div
-                              className={`max-w-[80%] rounded-lg p-2 text-sm ${
-                                msg.is_admin
-                                  ? 'bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100'
-                                  : 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100'
-                              }`}
+                              key={msg.id}
+                              className={`flex ${msg.is_admin ? 'justify-end' : 'justify-start'}`}
                             >
-                              <p>{msg.message}</p>
-                              <p className="text-xs opacity-60 mt-1">
-                                {new Date(msg.created_at).toLocaleString('de-DE')}
-                              </p>
+                              <div
+                                className={`max-w-[80%] rounded-lg p-2 text-sm ${
+                                  msg.is_admin
+                                    ? 'bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100'
+                                    : 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100'
+                                }`}
+                              >
+                                <p>{msg.message}</p>
+                                <p className="text-xs opacity-60 mt-1">
+                                  {new Date(msg.created_at).toLocaleString('de-DE')}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
+                          ))}
+                        </div>
+                      )}
 
                       <div className="flex gap-2">
                         <Textarea
-                          placeholder="Antwort schreiben..."
-                          value={adminMessages[userId] || ""}
-                          onChange={e => setAdminMessages({ ...adminMessages, [userId]: e.target.value })}
+                          placeholder="Nachricht schreiben..."
+                          value={adminMessages[user.id] || ""}
+                          onChange={e => setAdminMessages({ ...adminMessages, [user.id]: e.target.value })}
                           rows={2}
                         />
-                        <Button onClick={() => sendAdminMessage(userId)} className="self-end">
+                        <Button onClick={() => sendAdminMessage(user.id)} className="self-end">
                           <Send className="w-4 h-4" />
                         </Button>
                       </div>
