@@ -38,11 +38,25 @@ export default function Gewinnberechnung() {
 
   const fetchUserBalance = async (userId: string) => {
     try {
-      const transactions = await transactionService.getTransactions(userId);
+      // Zuerst die Wallets des Users finden
+      const { data: wallets } = await supabase
+        .from("bitcoin_wallets")
+        .select("id")
+        .eq("user_id", userId);
+        
+      if (!wallets || wallets.length === 0) return;
+      
+      const walletIds = wallets.map(w => w.id);
+
+      // Dann alle aktiven Transaktionen für diese Wallets abrufen
+      const { data: transactions } = await supabase
+        .from("transactions")
+        .select("*")
+        .in("wallet_id", walletIds)
+        .eq("status", "active");
       
       if (transactions) {
-        const activeTransactions = transactions.filter(tx => tx.status === "active");
-        const total = activeTransactions.reduce((sum, tx) => sum + tx.amount_eur, 0);
+        const total = transactions.reduce((sum, tx) => sum + tx.amount_eur, 0);
         setTotalBalance(total);
         
         // Rendite-Stufe basierend auf Gesamtguthaben ermitteln
