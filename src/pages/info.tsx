@@ -50,73 +50,73 @@ export default function Info() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
         {/* Header */}
         <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="container mx-auto px-4 py-3 sm:py-4 flex justify-between items-center">
             <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <Wallet className="h-8 w-8 text-blue-600" />
-              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <Wallet className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
+              <span className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 Finanzportal
               </span>
             </Link>
-            <div className="flex gap-3">
-              {isLoggedIn ?
-              <Button onClick={() => router.push("/dashboard")} size="lg">
+            <div className="flex gap-2 sm:gap-3">
+              {isLoggedIn ? (
+                <Button onClick={() => router.push("/dashboard")} size="sm" className="text-xs sm:text-sm">
                   Zum Dashboard
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button> :
-
-              <>
+                  <ArrowRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4" />
+                </Button>
+              ) : (
+                <>
                   <Link href="/login">
-                    <Button variant="outline" size="lg">
+                    <Button variant="outline" size="sm" className="text-xs sm:text-sm">
                       Anmelden
                     </Button>
                   </Link>
                   <Link href="/login">
-                    <Button size="lg">
+                    <Button size="sm" className="text-xs sm:text-sm hidden sm:inline-flex">
                       Registrieren
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
                 </>
-              }
+              )}
             </div>
           </div>
         </header>
 
         {/* Hero Section */}
-        <section className="container mx-auto px-4 py-16 text-center">
-          <div className="max-w-4xl mx-auto space-y-6">
-            <h1 className="text-5xl md:text-6xl font-bold leading-tight">
+        <section className="container mx-auto px-4 py-8 sm:py-16 text-center">
+          <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
+            <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold leading-tight">
               Sicher in Bitcoin investieren
-              <span className="block bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent" style={{ fontSize: "32px" }}>
+              <span className="block bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent text-xl sm:text-3xl md:text-4xl mt-2">
                 mit vollständigem Versicherungsschutz
               </span>
             </h1>
-            <p className="text-xl text-gray-600">
+            <p className="text-base sm:text-xl text-gray-600 px-4 sm:px-0">
               Unser Finanzportal bietet Ihnen die einzigartige Möglichkeit, risikolos in Bitcoin zu investieren
             </p>
           </div>
         </section>
 
         {/* Trust Indicators - Bank & Insurance Icons */}
-        <section className="container mx-auto px-4 py-12">
+        <section className="container mx-auto px-4 py-8 sm:py-12">
           <Card className="bg-white/80 backdrop-blur-sm border-2">
-            <CardContent className="py-8">
-              <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
+            <CardContent className="py-6 sm:py-8">
+              <div className="flex flex-wrap justify-center items-center gap-6 sm:gap-8 md:gap-12">
                 <div className="flex flex-col items-center gap-2 opacity-70 hover:opacity-100 transition-opacity">
-                  <Building2 className="h-12 w-12 text-blue-600" />
-                  <span className="text-sm font-medium text-gray-600">Sichere Rendite</span>
+                  <Building2 className="h-10 w-10 sm:h-12 sm:w-12 text-blue-600" />
+                  <span className="text-xs sm:text-sm font-medium text-gray-600">Sichere Rendite</span>
                 </div>
                 <div className="flex flex-col items-center gap-2 opacity-70 hover:opacity-100 transition-opacity">
-                  <Shield className="h-12 w-12 text-indigo-600" />
-                  <span className="text-sm font-medium text-gray-600">Versicherungsschutz</span>
+                  <Shield className="h-10 w-10 sm:h-12 sm:w-12 text-indigo-600" />
+                  <span className="text-xs sm:text-sm font-medium text-gray-600">Versicherungsschutz</span>
                 </div>
                 <div className="flex flex-col items-center gap-2 opacity-70 hover:opacity-100 transition-opacity">
-                  <BadgeCheck className="h-12 w-12 text-purple-600" />
-                  <span className="text-sm font-medium text-gray-600">Zertifiziert</span>
+                  <BadgeCheck className="h-10 w-10 sm:h-12 sm:w-12 text-purple-600" />
+                  <span className="text-xs sm:text-sm font-medium text-gray-600">Zertifiziert</span>
                 </div>
                 <div className="flex flex-col items-center gap-2 opacity-70 hover:opacity-100 transition-opacity">
-                  <Lock className="h-12 w-12 text-blue-700" />
-                  <span className="text-sm font-medium text-gray-600">Verschlüsselt</span>
+                  <Lock className="h-10 w-10 sm:h-12 sm:w-12 text-blue-700" />
+                  <span className="text-xs sm:text-sm font-medium text-gray-600">Verschlüsselt</span>
                 </div>
               </div>
             </CardContent>
@@ -124,50 +124,48 @@ export default function Info() {
         </section>
 
         {/* Main Info Section */}
-        <section className="container mx-auto px-4 py-12">
-          <div className="grid md:grid-cols-2 gap-8">
+        <section className="container mx-auto px-4 py-8 sm:py-12">
+          <div className="grid md:grid-cols-2 gap-6 sm:gap-8">
             {/* Was wir bieten */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CheckCircle2 className="h-6 w-6 text-green-600" />
+              <CardHeader className="px-4 sm:px-6 py-4 sm:py-6">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                  <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
                   Was wir bieten
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3 sm:space-y-4 px-4 sm:px-6 pb-4 sm:pb-6">
                 <div className="flex gap-3">
-                  <Wallet className="h-6 w-6 text-blue-600 flex-shrink-0 mt-1" />
+                  <Wallet className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 flex-shrink-0 mt-1" />
                   <div>
-                    <h3 className="font-semibold mb-1">Persönliche Bitcoin-Wallet</h3>
-                    <p className="text-gray-600 text-sm">
+                    <h3 className="font-semibold mb-1 text-sm sm:text-base">Persönliche Bitcoin-Wallet</h3>
+                    <p className="text-gray-600 text-xs sm:text-sm">
                       Jeder Benutzer erhält eine individuelle, gesicherte Bitcoin-Wallet, auf die nur Sie Zugriff haben
                     </p>
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <Shield className="h-6 w-6 text-indigo-600 flex-shrink-0 mt-1" />
+                  <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-indigo-600 flex-shrink-0 mt-1" />
                   <div>
-                    <h3 className="font-semibold mb-1">100% Versicherungsschutz</h3>
-                    <p className="text-gray-600 text-sm">
+                    <h3 className="font-semibold mb-1 text-sm sm:text-base">100% Versicherungsschutz</h3>
+                    <p className="text-gray-600 text-xs sm:text-sm">
                       Alle Einzahlungen sind vollständig gegen Verlust und Kursschwankungen abgesichert
                     </p>
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <TrendingUp className="h-6 w-6 text-purple-600 flex-shrink-0 mt-1" />
+                  <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 flex-shrink-0 mt-1" />
                   <div>
-                    <h3 className="font-semibold mb-1">Hohe Renditen</h3>
-                    <p className="text-gray-600 text-sm">Profitieren Sie von attraktiven Renditen bis zu 2% täglich bei vollständiger Absicherung
-
+                    <h3 className="font-semibold mb-1 text-sm sm:text-base">Hohe Renditen</h3>
+                    <p className="text-gray-600 text-xs sm:text-sm">Profitieren Sie von attraktiven Renditen bis zu 2% täglich bei vollständiger Absicherung
                     </p>
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <Clock className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
+                  <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 flex-shrink-0 mt-1" />
                   <div>
-                    <h3 className="font-semibold mb-1">Echtzeit-Tracking</h3>
-                    <p className="text-gray-600 text-sm">Verfolgen Sie alle Transaktionen und Renditen in Echtzeit
-
+                    <h3 className="font-semibold mb-1 text-sm sm:text-base">Echtzeit-Tracking</h3>
+                    <p className="text-gray-600 text-xs sm:text-sm">Verfolgen Sie alle Transaktionen und Renditen in Echtzeit
                     </p>
                   </div>
                 </div>
@@ -176,53 +174,53 @@ export default function Info() {
 
             {/* Wie es funktioniert */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-6 w-6 text-blue-600" />
+              <CardHeader className="px-4 sm:px-6 py-4 sm:py-6">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                  <Users className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                   Wie es funktioniert
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3 sm:space-y-4 px-4 sm:px-6 pb-4 sm:pb-6">
                 <div className="flex gap-3">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                  <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm sm:text-base">
                     1
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-1">Registrierung</h3>
-                    <p className="text-gray-600 text-sm">
+                    <h3 className="font-semibold mb-1 text-sm sm:text-base">Registrierung</h3>
+                    <p className="text-gray-600 text-xs sm:text-sm">
                       Erstellen Sie Ihr Konto mit wenigen Klicks - sicher und unkompliziert
                     </p>
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
+                  <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm sm:text-base">
                     2
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-1">Wallet-Zuweisung</h3>
-                    <p className="text-gray-600 text-sm">
+                    <h3 className="font-semibold mb-1 text-sm sm:text-base">Wallet-Zuweisung</h3>
+                    <p className="text-gray-600 text-xs sm:text-sm">
                       Sie erhalten automatisch Ihre persönliche Bitcoin-Wallet zugewiesen
                     </p>
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold">
+                  <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-sm sm:text-base">
                     3
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-1">Einzahlung</h3>
-                    <p className="text-gray-600 text-sm">
+                    <h3 className="font-semibold mb-1 text-sm sm:text-base">Einzahlung</h3>
+                    <p className="text-gray-600 text-xs sm:text-sm">
                       Tätigen Sie Ihre erste Einzahlung - alle Transaktionen werden in Echtzeit erfasst
                     </p>
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold">
+                  <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold text-sm sm:text-base">
                     4
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-1">Rendite erzielen</h3>
-                    <p className="text-gray-600 text-sm">
+                    <h3 className="font-semibold mb-1 text-sm sm:text-base">Rendite erzielen</h3>
+                    <p className="text-gray-600 text-xs sm:text-sm">
                       Profitieren Sie von täglichen Renditen und verfolgen Sie Ihre Gewinne im Dashboard
                     </p>
                   </div>
