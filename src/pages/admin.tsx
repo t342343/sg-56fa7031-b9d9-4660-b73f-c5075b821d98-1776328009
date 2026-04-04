@@ -1484,7 +1484,15 @@ return (
                       <div className="flex items-center justify-between">
                         <CardTitle className="flex items-center gap-2">
                           <MessageCircle className="w-5 h-5" />
-                          {profile?.full_name || profile?.email || "Unbekannt"}
+                          <button
+                            onClick={() => {
+                              setSelectedUserDetails(profile);
+                              setActiveTab("users");
+                            }}
+                            className="text-left hover:text-blue-600 transition-colors underline-offset-4 hover:underline"
+                          >
+                            {profile?.full_name || profile?.email || "Unbekannt"}
+                          </button>
                         </CardTitle>
                         <Button
                           variant="outline"
