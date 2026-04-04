@@ -58,8 +58,6 @@ const [activeTab, setActiveTab] = useState("users");
 // Auth-State
 const [isLoading, setIsLoading] = useState(true);
 const [isAdmin, setIsAdmin] = useState(false);
-const [loginAttempts, setLoginAttempts] = useState(0);
-const [lockedUntil, setLockedUntil] = useState<number | null>(null);
 
 const { toast } = useToast();
 const router = useRouter();
@@ -70,99 +68,28 @@ useEffect(() => {
 
 const checkAuth = async () => {
   try {
-    // Rate Limiting Prüfung
-    const storedAttempts = localStorage.getItem("admin_login_attempts");
-    const storedLockout = localStorage.getItem("admin_lockout_until");
-    
-    const attempts = storedAttempts ? parseInt(storedAttempts) : 0;
-    const lockoutTime = storedLockout ? parseInt(storedLockout) : null;
-    
-    setLoginAttempts(attempts);
-    
-    // Prüfe ob gesperrt
-    if (lockoutTime && Date.now() < lockoutTime) {
-      const remainingMinutes = Math.ceil((lockoutTime - Date.now()) / 60000);
-      setLockedUntil(lockoutTime);
-      toast({
-        title: "🚫 Admin-Zugang gesperrt",
-        description: `Zu viele Fehlversuche. Noch ${remainingMinutes} Minuten gesperrt.`,
-        variant: "destructive",
-      });
-      setTimeout(() => router.push("/dashboard"), 2000);
-      return;
-    }
-
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
-      // Fehlversuch zählen
-      const newAttempts = attempts + 1;
-      localStorage.setItem("admin_login_attempts", newAttempts.toString());
-      setLoginAttempts(newAttempts);
-      
-      // Bei 5 Versuchen sperren
-      if (newAttempts >= 5) {
-        const lockUntil = Date.now() + (15 * 60 * 1000); // 15 Minuten
-        localStorage.setItem("admin_lockout_until", lockUntil.toString());
-        setLockedUntil(lockUntil);
-        
-        toast({
-          title: "🚫 Admin-Zugang gesperrt",
-          description: "Zu viele Fehlversuche. 15 Minuten gesperrt.",
-          variant: "destructive",
-        });
-      } else if (newAttempts >= 3) {
-        toast({
-          title: "⚠️ Warnung",
-          description: `${5 - newAttempts} Versuch(e) übrig bis zur Sperre`,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Zugriff verweigert",
-          description: "Bitte melden Sie sich an",
-          variant: "destructive",
-        });
-      }
-      
+      toast({
+        title: "Zugriff verweigert",
+        description: "Bitte melden Sie sich an",
+        variant: "destructive",
+      });
       setTimeout(() => router.push("/login"), 2000);
       return;
     }
 
     const profile = await profileService.getCurrentProfile();
     if (!profile || profile.role !== "admin") {
-      // Fehlversuch zählen für falsche Rolle
-      const newAttempts = attempts + 1;
-      localStorage.setItem("admin_login_attempts", newAttempts.toString());
-      setLoginAttempts(newAttempts);
-      
-      if (newAttempts >= 5) {
-        const lockUntil = Date.now() + (15 * 60 * 1000);
-        localStorage.setItem("admin_lockout_until", lockUntil.toString());
-        setLockedUntil(lockUntil);
-        
-        toast({
-          title: "🚫 Admin-Zugang gesperrt",
-          description: "Zu viele Fehlversuche. 15 Minuten gesperrt.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Zugriff verweigert",
-          description: "Sie haben keine Admin-Berechtigung",
-          variant: "destructive",
-        });
-      }
-      
+      toast({
+        title: "Zugriff verweigert",
+        description: "Sie haben keine Admin-Berechtigung",
+        variant: "destructive",
+      });
       setTimeout(() => router.push("/dashboard"), 2000);
       return;
     }
-
-    // ERFOLGREICHER LOGIN - Reset der Fehlversuche
-    localStorage.removeItem("admin_login_attempts");
-    localStorage.removeItem("admin_lockout_until");
-    setLoginAttempts(0);
-    setLockedUntil(null);
 
     setIsAdmin(true);
     setIsLoading(false);
@@ -1638,7 +1565,7 @@ return (
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        {userMessages.length > 0 && (
+                        {userMessages.length > 0 ? (
                           <div className="h-48 overflow-y-auto border rounded-lg p-4 space-y-2 bg-muted/20">
                             {userMessages.map((msg: any) => (
                               <div
@@ -1660,19 +1587,9 @@ return (
                               </div>
                             ))}
                           </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground italic">Keine Nachrichten vorhanden</p>
                         )}
-
-                        <div className="flex gap-2">
-                          <Textarea
-                            placeholder="Nachricht schreiben..."
-                            value={adminMessages[user.id] || ""}
-                            onChange={e => setAdminMessages({ ...adminMessages, [user.id]: e.target.value })}
-                            rows={2}
-                          />
-                          <Button onClick={() => sendAdminMessage(user.id)} className="self-end">
-                            <Send className="w-4 h-4" />
-                          </Button>
-                        </div>
                       </CardContent>
                     </Card>
                   );

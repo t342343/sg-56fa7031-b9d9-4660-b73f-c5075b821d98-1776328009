@@ -54,6 +54,25 @@ export function AuthForm() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Rate Limiting Prüfung VOR dem Login-Versuch
+    const storedAttempts = localStorage.getItem("admin_login_attempts");
+    const storedLockout = localStorage.getItem("admin_lockout_until");
+    
+    const attempts = storedAttempts ? parseInt(storedAttempts) : 0;
+    const lockoutTime = storedLockout ? parseInt(storedLockout) : null;
+    
+    // Prüfe ob gesperrt
+    if (lockoutTime && Date.now() < lockoutTime) {
+      const remainingMinutes = Math.ceil((lockoutTime - Date.now()) / 60000);
+      toast({
+        title: "🚫 Zugang gesperrt",
+        description: `Zu viele Fehlversuche. Noch ${remainingMinutes} Minuten gesperrt.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -63,11 +82,33 @@ export function AuthForm() {
       const user = data?.user;
 
       if (!user) {
-        toast({
-          title: "Anmeldung fehlgeschlagen",
-          description: "Ungültige Anmeldedaten",
-          variant: "destructive"
-        });
+        // Fehlversuch zählen
+        const newAttempts = attempts + 1;
+        localStorage.setItem("admin_login_attempts", newAttempts.toString());
+        
+        // Bei 5 Versuchen sperren
+        if (newAttempts >= 5) {
+          const lockUntil = Date.now() + (15 * 60 * 1000); // 15 Minuten
+          localStorage.setItem("admin_lockout_until", lockUntil.toString());
+          
+          toast({
+            title: "🚫 Zugang gesperrt",
+            description: "Zu viele Fehlversuche. 15 Minuten gesperrt.",
+            variant: "destructive",
+          });
+        } else if (newAttempts >= 3) {
+          toast({
+            title: "⚠️ Warnung",
+            description: `${5 - newAttempts} Versuch(e) übrig bis zur Sperre`,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Anmeldung fehlgeschlagen",
+            description: "Ungültige Anmeldedaten",
+            variant: "destructive"
+          });
+        }
         setLoading(false);
         return;
       }
@@ -79,6 +120,10 @@ export function AuthForm() {
 
       const profile = await profileService.getCurrentProfile();
       console.log("Profile fetched:", profile);
+
+      // ERFOLGREICHER LOGIN - Reset der Fehlversuche
+      localStorage.removeItem("admin_login_attempts");
+      localStorage.removeItem("admin_lockout_until");
 
       toast({
         title: "Erfolgreich angemeldet",
@@ -93,11 +138,27 @@ export function AuthForm() {
       }
     } catch (error: any) {
       console.error("Login exception:", error);
-      toast({
-        title: "Fehler",
-        description: error.message || "Ein unerwarteter Fehler ist aufgetreten",
-        variant: "destructive"
-      });
+      
+      // Fehlversuch auch bei Exceptions zählen
+      const newAttempts = attempts + 1;
+      localStorage.setItem("admin_login_attempts", newAttempts.toString());
+      
+      if (newAttempts >= 5) {
+        const lockUntil = Date.now() + (15 * 60 * 1000);
+        localStorage.setItem("admin_lockout_until", lockUntil.toString());
+        
+        toast({
+          title: "🚫 Zugang gesperrt",
+          description: "Zu viele Fehlversuche. 15 Minuten gesperrt.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Fehler",
+          description: error.message || "Ein unerwarteter Fehler ist aufgetreten",
+          variant: "destructive"
+        });
+      }
     } finally {
       setLoading(false);
     }
