@@ -1496,7 +1496,9 @@ return (
                             {user.full_name || user.email || "Unbekannt"}
                           </button>
                           {userMessages.length > 0 && (
-                            <Badge variant="secondary">{userMessages.length} Nachrichten</Badge>
+                            <span className="bg-slate-100 text-slate-800 px-2 py-0.5 rounded text-xs font-medium border border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700">
+                              {userMessages.length} Nachrichten
+                            </span>
                           )}
                         </CardTitle>
                         <Button
