@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -10,9 +9,10 @@ import { SEO } from "@/components/SEO";
 
 export default function Gewinnberechnung() {
   const router = useRouter();
-  const [selectedTier, setSelectedTier] = useState("1");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [currentRate, setCurrentRate] = useState("1,4%");
+  const [totalBalance, setTotalBalance] = useState(0);
 
   useEffect(() => {
     checkAuth();
@@ -26,6 +26,7 @@ export default function Gewinnberechnung() {
         return;
       }
       setIsAuthenticated(true);
+      await fetchUserBalance(session.user.id);
     } catch (error) {
       console.error("Auth error:", error);
       router.push("/login");
@@ -34,9 +35,57 @@ export default function Gewinnberechnung() {
     }
   };
 
+  const fetchUserBalance = async (userId: string) => {
+    try {
+      const { data: transactions } = await supabase
+        .from("transactions")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("status", "active");
+
+      if (transactions) {
+        const total = transactions.reduce((sum, tx) => sum + tx.amount_eur, 0);
+        setTotalBalance(total);
+        
+        // Rendite-Stufe basierend auf Gesamtguthaben ermitteln
+        let rate = "1,4%";
+        if (total >= 130000) rate = "2,4%";
+        else if (total >= 100000) rate = "2,3%";
+        else if (total >= 75000) rate = "2,2%";
+        else if (total >= 50000) rate = "2,1%";
+        else if (total >= 35000) rate = "2,0%";
+        else if (total >= 25000) rate = "1,8%";
+        else if (total >= 10000) rate = "1,6%";
+        
+        setCurrentRate(rate);
+      }
+    } catch (error) {
+      console.error("Error fetching balance:", error);
+    }
+  };
+
   if (loading || !isAuthenticated) {
     return null;
   }
+
+  const renderRateRow = (minBalance: string, rate: string) => {
+    const isActive = currentRate === rate;
+    return (
+      <div 
+        key={rate}
+        className={`flex justify-between items-center py-2 border-b border-green-200 ${
+          isActive ? "bg-green-100 -mx-2 px-2 rounded-md border-2 border-green-500" : ""
+        }`}
+      >
+        <span className={isActive ? "text-green-900 font-semibold" : "text-green-800"}>
+          Ab {minBalance} Guthaben:
+        </span>
+        <span className={isActive ? "font-bold text-green-900 text-lg" : "font-bold text-green-900"}>
+          {rate} täglich
+        </span>
+      </div>
+    );
+  };
 
   return (
     <>
@@ -60,9 +109,7 @@ export default function Gewinnberechnung() {
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl">Ihre Gewinnberechnung</CardTitle>
-              <CardDescription>Übersicht über die Rendite-Struktur 
-
-              </CardDescription>
+              <CardDescription>Übersicht über die Rendite-Struktur</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
@@ -80,74 +127,33 @@ export default function Gewinnberechnung() {
                 </p>
               </div>
 
-              <div>
-                <Label htmlFor="balance-tier" className="text-base font-semibold mb-3 block">Wählen Sie Ihre aktuelles Guthaben aus
-
-                </Label>
-                <select
-                  id="balance-tier"
-                  value={selectedTier}
-                  onChange={(e) => setSelectedTier(e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                  
-                  <option value="1">Ab 1€ Guthaben</option>
-                  <option value="10000">Ab 10.000€ Guthaben</option>
-                  <option value="25000">Ab 25.000€ Guthaben</option>
-                  <option value="35000">Ab 35.000€ Guthaben</option>
-                  <option value="50000">Ab 50.000€ Guthaben</option>
-                  <option value="75000">Ab 75.000€ Guthaben</option>
-                  <option value="100000">Ab 100.000€ Guthaben</option>
-                  <option value="130000">Ab 130.000€ Guthaben</option>
-                </select>
-              </div>
-
               <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-lg border border-green-200">
-                <h3 className="font-semibold text-xl mb-4 text-green-900">Tägliche Rendite nach Gesamtguthaben</h3>
-                <p className="text-sm text-green-700 mb-4">Die tägliche Rendite richtet sich nach der Summe aller aktiven Positionen
-
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-xl text-green-900">Tägliche Rendite nach Gesamtguthaben</h3>
+                  <div className="bg-green-600 text-white px-3 py-1 rounded-md text-sm font-semibold">
+                    Ihre aktuelle Rendite: {currentRate} täglich
+                  </div>
+                </div>
+                <p className="text-sm text-green-700 mb-4">
+                  Die tägliche Rendite richtet sich nach der Summe aller aktiven Positionen
                 </p>
                 
                 <div className="space-y-2">
-                  <div className="flex justify-between items-center py-2 border-b border-green-200">
-                    <span className="text-green-800">Ab 1€ Guthaben:</span>
-                    <span className="font-bold text-green-900">1,4% täglich</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-green-200">
-                    <span className="text-green-800">Ab 10.000€ Guthaben:</span>
-                    <span className="font-bold text-green-900">1,6% täglich</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-green-200">
-                    <span className="text-green-800">Ab 25.000€ Guthaben:</span>
-                    <span className="font-bold text-green-900">1,8% täglich</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-green-200">
-                    <span className="text-green-800">Ab 35.000€ Guthaben:</span>
-                    <span className="font-bold text-green-900">2,0% täglich</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-green-200">
-                    <span className="text-green-800">Ab 50.000€ Guthaben:</span>
-                    <span className="font-bold text-green-900">2,1% täglich</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-green-200">
-                    <span className="text-green-800">Ab 75.000€ Guthaben:</span>
-                    <span className="font-bold text-green-900">2,2% täglich</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-green-200">
-                    <span className="text-green-800">Ab 100.000€ Guthaben:</span>
-                    <span className="font-bold text-green-900">2,3% täglich</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-green-800">Ab 130.000€ Guthaben:</span>
-                    <span className="font-bold text-green-900">2,4% täglich</span>
-                  </div>
+                  {renderRateRow("1€", "1,4%")}
+                  {renderRateRow("10.000€", "1,6%")}
+                  {renderRateRow("25.000€", "1,8%")}
+                  {renderRateRow("35.000€", "2,0%")}
+                  {renderRateRow("50.000€", "2,1%")}
+                  {renderRateRow("75.000€", "2,2%")}
+                  {renderRateRow("100.000€", "2,3%")}
+                  {renderRateRow("130.000€", "2,4%")}
                 </div>
               </div>
 
               <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
                 <h3 className="font-semibold text-base mb-2">Wichtiger Hinweis:</h3>
-                <p className="text-sm text-slate-700">Das Gesamtguthaben wird aus allen aktiven Transaktionen zusammengerechnet. Je höher Ihr Gesamtguthaben, desto höher Ihre tägliche Rendite auf alle aktiven Positionen. 
-
-
+                <p className="text-sm text-slate-700">
+                  Das Gesamtguthaben wird aus allen aktiven Transaktionen zusammengerechnet. Je höher Ihr Gesamtguthaben, desto höher Ihre tägliche Rendite auf alle aktiven Positionen.
                 </p>
               </div>
             </CardContent>
@@ -174,6 +180,6 @@ export default function Gewinnberechnung() {
           </p>
         </div>
       </footer>
-    </>);
-
+    </>
+  );
 }
