@@ -58,18 +58,8 @@ export function AuthForm() {
     try {
       console.log("Attempting login with:", loginData.email);
 
-      const { user, error } = await authService.signIn(loginData.email, loginData.password);
-
-      if (error) {
-        console.error("Login error details:", error);
-        toast({
-          title: "Anmeldung fehlgeschlagen",
-          description: error.message || "Bitte überprüfen Sie Ihre Anmeldedaten",
-          variant: "destructive"
-        });
-        setLoading(false);
-        return;
-      }
+      const data = await authService.signIn(loginData.email, loginData.password);
+      const user = data?.user;
 
       if (!user) {
         toast({

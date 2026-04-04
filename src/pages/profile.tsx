@@ -178,9 +178,10 @@ export default function ProfilePage() {
         return;
       }
 
-      const { error: loginError } = await authService.signIn(user.email, currentPassword);
-      
-      if (loginError) {
+      try {
+        const data = await authService.signIn(user.email, currentPassword);
+        if (!data?.user) throw new Error("Invalid password");
+      } catch (loginError) {
         toast({ 
           title: "Fehler", 
           description: "Aktuelles Passwort ist falsch.", 
