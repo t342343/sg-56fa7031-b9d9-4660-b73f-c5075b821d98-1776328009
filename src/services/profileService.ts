@@ -57,7 +57,7 @@ export const profileService = {
 
     const { data, error } = await supabase
       .from("profiles")
-      .insert(profile)
+      .upsert(profile, { onConflict: 'id' })
       .select()
       .single();
 
