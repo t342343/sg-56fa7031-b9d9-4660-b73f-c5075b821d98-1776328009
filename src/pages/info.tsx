@@ -325,16 +325,11 @@ export default function Info() {
             <p className="text-xl text-gray-600">
               Starten Sie noch heute und profitieren Sie von unserem einzigartigen Versicherungsschutz
             </p>
-            <div className="flex gap-4 justify-center">
-              <Button size="lg" className="text-lg px-8 py-6" onClick={handleGetStarted}>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0">
+              <Button size="lg" className="text-base sm:text-lg px-6 py-5 sm:px-8 sm:py-6 w-full sm:w-auto" onClick={handleGetStarted}>
                 {isLoggedIn ? "Zum Dashboard" : "Jetzt kostenlos registrieren"}
-                <ArrowRight className="ml-2 h-5 w-5" />
+                <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
-              <Link href="/">
-                <Button variant="outline" size="lg" className="text-lg px-8 py-6">
-                  Zurück zur Startseite
-                </Button>
-              </Link>
             </div>
           </div>
         </section>
