@@ -37,7 +37,7 @@ export function InstallPWA() {
         <Button 
           onClick={(e) => { e.preventDefault(); promptInstall(); }} 
           size="sm" 
-          className="bg-blue-600 hover:bg-blue-700 text-white h-8 text-xs font-medium"
+          className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white h-8 text-xs font-medium shadow-lg"
         >
           <Download className="w-3.5 h-3.5 mr-1.5" />
           Installieren
