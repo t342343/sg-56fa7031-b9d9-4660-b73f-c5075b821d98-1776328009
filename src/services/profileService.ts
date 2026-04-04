@@ -53,17 +53,22 @@ export const profileService = {
   },
 
   async createProfile(profile: ProfileInsert): Promise<Profile | null> {
+    console.log("🔍 [PROFILE SERVICE] createProfile called with:", profile);
+
     const { data, error } = await supabase
       .from("profiles")
       .insert(profile)
       .select()
       .single();
 
+    console.log("🔍 [PROFILE SERVICE] DB Response:", { data, error });
+
     if (error) {
-      console.error("Error creating profile:", error);
+      console.error("❌ [PROFILE SERVICE] Error creating profile:", error);
       return null;
     }
 
+    console.log("✅ [PROFILE SERVICE] Profile created:", data);
     return data;
   },
 

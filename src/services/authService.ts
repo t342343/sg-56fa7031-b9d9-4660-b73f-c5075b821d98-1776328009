@@ -21,6 +21,8 @@ export const authService = {
    */
   async signUp(email: string, password: string) {
     try {
+      console.log("🔍 [AUTH SERVICE] signUp called with email:", email);
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -33,14 +35,14 @@ export const authService = {
       });
 
       if (error) {
-        console.error("SignUp error:", error);
+        console.error("❌ [AUTH SERVICE] SignUp error:", error);
         return { user: null, error };
       }
 
-      console.log("SignUp successful:", data);
+      console.log("✅ [AUTH SERVICE] SignUp successful, user created:", data.user?.id);
       return { user: data.user, error: null };
     } catch (err) {
-      console.error("SignUp exception:", err);
+      console.error("❌ [AUTH SERVICE] SignUp exception:", err);
       return { user: null, error: err as any };
     }
   },

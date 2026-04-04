@@ -183,6 +183,14 @@ export function AuthForm() {
 
       // Erstelle Profil mit zusätzlichen Daten
       try {
+        console.log("🔍 [REGISTRATION] Calling createProfile with:", {
+          id: authUser.id,
+          email,
+          full_name: fullName,
+          address: combinedAddress,
+          phone
+        });
+
         await profileService.createProfile({
           id: authUser.id,
           email,
@@ -192,7 +200,7 @@ export function AuthForm() {
           role: "user"
         });
 
-        console.log("Profile created successfully");
+        console.log("✅ [REGISTRATION] Profile created successfully");
 
         toast({
           title: "Registrierung erfolgreich!",
@@ -206,7 +214,7 @@ export function AuthForm() {
         window.location.href = "/login?registered=true";
 
       } catch (profileError: any) {
-        console.error("Profile creation error:", profileError);
+        console.error("❌ [REGISTRATION] Profile creation error:", profileError);
         toast({
           title: "Registrierung teilweise erfolgreich",
           description: "Account erstellt, aber Profil konnte nicht angelegt werden. Bitte kontaktieren Sie den Support.",
