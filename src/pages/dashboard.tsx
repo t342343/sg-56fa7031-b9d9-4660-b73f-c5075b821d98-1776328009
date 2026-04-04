@@ -741,6 +741,9 @@ export default function Dashboard() {
                                     Ursprünglich eingezahlt: {tx.original_deposit?.toFixed(2) || tx.amount_eur.toFixed(2)} €
                                   </div>
                                 )}
+                                <div className="text-[10px] text-muted-foreground mt-0.5">
+                                  {rateInfo.rate} tägliche Rendite
+                                </div>
                               </div>
                             </div>
 
