@@ -280,16 +280,14 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="flex items-center gap-2">
-                      <Mail className="w-4 h-4" />
-                      E-Mail-Adresse
-                    </Label>
+                    <Label htmlFor="email">E-Mail-Adresse</Label>
                     <Input
                       id="email"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="max@beispiel.de"
+                      disabled={true}
+                      className="bg-muted"
                     />
                   </div>
 
