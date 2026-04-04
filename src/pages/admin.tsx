@@ -834,6 +834,103 @@ return (
                           <p className="text-sm text-muted-foreground italic">Keine Nachrichten vorhanden</p>
                         )}
                       </div>
+
+                      {/* Auszahlungsanfragen */}
+                      {(() => {
+                        if (!wallet) return null;
+                        const userPendingWithdrawals = pendingTransactions.filter(tx => tx.wallet_id === wallet.id);
+                        const userCompletedWithdrawals = completedWithdrawals.filter(tx => tx.wallet_id === wallet.id);
+                        const totalWithdrawals = userPendingWithdrawals.length + userCompletedWithdrawals.length;
+                        
+                        if (totalWithdrawals === 0) return null;
+                        
+                        return (
+                          <div className="mt-4 pt-4 border-t border-slate-200">
+                            <div className="flex items-center justify-between mb-3">
+                              <h3 className="text-lg font-semibold">
+                                Auszahlungsanfragen ({totalWithdrawals})
+                              </h3>
+                              {totalWithdrawals > 0 && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedUserDetails(null);
+                                    setActiveTab("withdrawals");
+                                  }}
+                                >
+                                  Zu Auszahlungen
+                                </Button>
+                              )}
+                            </div>
+                            
+                            {userPendingWithdrawals.length > 0 && (
+                              <div className="mb-3">
+                                <p className="text-sm font-semibold text-amber-700 mb-2">
+                                  Offene Anfragen ({userPendingWithdrawals.length})
+                                </p>
+                                <div className="space-y-2">
+                                  {userPendingWithdrawals.map(tx => (
+                                    <div key={tx.id} className="bg-amber-50 border border-amber-200 p-3 rounded-lg">
+                                      <div className="flex items-center justify-between mb-1">
+                                        <span className="font-mono font-bold text-amber-900 text-sm">
+                                          {(tx.withdrawn_amount_eur || tx.amount_eur).toFixed(2)} €
+                                        </span>
+                                        <span className="text-xs px-2 py-0.5 bg-amber-200 text-amber-800 rounded font-medium">
+                                          Ausstehend
+                                        </span>
+                                      </div>
+                                      <div className="text-xs text-amber-700">
+                                        Angefragt: {new Date(tx.created_at).toLocaleDateString('de-DE', {
+                                          day: '2-digit',
+                                          month: 'short',
+                                          year: 'numeric',
+                                          hour: '2-digit',
+                                          minute: '2-digit'
+                                        })}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {userCompletedWithdrawals.length > 0 && (
+                              <div>
+                                <p className="text-sm font-semibold text-green-700 mb-2">
+                                  Archiv ({userCompletedWithdrawals.length})
+                                </p>
+                                <div className="space-y-2">
+                                  {userCompletedWithdrawals.slice(0, 2).map(tx => (
+                                    <div key={tx.id} className="bg-green-50 border border-green-200 p-3 rounded-lg">
+                                      <div className="flex items-center justify-between mb-1">
+                                        <span className="font-mono font-bold text-green-900 text-sm">
+                                          {(tx.withdrawn_amount_eur || tx.amount_eur).toFixed(2)} €
+                                        </span>
+                                        <span className="text-xs px-2 py-0.5 bg-green-200 text-green-800 rounded font-medium">
+                                          ✓ Ausgezahlt
+                                        </span>
+                                      </div>
+                                      <div className="text-xs text-green-700">
+                                        Ausgezahlt: {new Date(tx.updated_at || tx.created_at).toLocaleDateString('de-DE', {
+                                          day: '2-digit',
+                                          month: 'short',
+                                          year: 'numeric'
+                                        })}
+                                      </div>
+                                    </div>
+                                  ))}
+                                  {userCompletedWithdrawals.length > 2 && (
+                                    <p className="text-xs text-center text-muted-foreground italic pt-2">
+                                      + {userCompletedWithdrawals.length - 2} weitere Auszahlungen
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </CardContent>
                   </Card>
                 </div>
