@@ -392,8 +392,11 @@ export const transactionService = {
   },
 
   async extendMaturity(transactionId: string, maturityDate: string, maturityDays: number, newAmountEur: number) {
-    // Berechne neues expires_at Datum (14 Tage ab jetzt)
-    const now = new Date();
+    // Hole Server-Zeit (konsistent mit Dashboard-Countdown)
+    const response = await fetch("/api/server-time");
+    const { timestamp } = await response.json();
+    const now = new Date(timestamp);
+    
     const newExpiresAt = new Date(now);
     newExpiresAt.setDate(newExpiresAt.getDate() + 14);
 
