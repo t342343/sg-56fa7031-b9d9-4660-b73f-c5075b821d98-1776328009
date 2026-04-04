@@ -254,10 +254,19 @@ export function AuthForm() {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-navy-50 p-4">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-3xl font-heading text-center text-navy">Finanzportal</CardTitle>
-          <CardDescription className="text-center text-lg">Risikofreies Investment für versicherte Bitcoin-Anlage
-
-          </CardDescription>
+          <CardTitle className="text-3xl font-heading text-center text-navy flex items-center justify-center gap-2">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 10L20.667 13.333V14H11.333V13.333L16 10Z" fill="#D4AF37"/>
+              <rect x="11.333" y="14" width="9.333" height="0.667" fill="#D4AF37"/>
+              <rect x="15.667" y="14.667" width="0.667" height="5.333" fill="#D4AF37"/>
+              <path d="M10 20H22V20.667H10V20Z" fill="#D4AF37"/>
+              <rect x="11.667" y="14.667" width="3.333" height="5.333" rx="0.333" fill="#1E293B"/>
+              <rect x="17" y="14.667" width="3.333" height="5.333" rx="0.333" fill="#1E293B"/>
+              <rect x="14.667" y="20.667" width="2.667" height="1.333" fill="#D4AF37"/>
+            </svg>
+            Finanzportal
+          </CardTitle>
+          <CardDescription className="text-center text-lg">Investment-Dashboard für versicherte Bitcoin-Anlage</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="login" className="w-full">
