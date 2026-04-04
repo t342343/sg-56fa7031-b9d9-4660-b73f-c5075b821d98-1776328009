@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageCircle, Send, Clock, CheckCircle2, Wallet, ArrowUpDown, X, User, Badge } from "lucide-react";
@@ -58,6 +58,8 @@ const [activeTab, setActiveTab] = useState("users");
 // Auth-State
 const [isLoading, setIsLoading] = useState(true);
 const [isAdmin, setIsAdmin] = useState(false);
+const [loginAttempts, setLoginAttempts] = useState(0);
+const [lockedUntil, setLockedUntil] = useState<number | null>(null);
 
 const { toast } = useToast();
 const router = useRouter();
@@ -1370,9 +1372,9 @@ return (
                               {(tx.withdrawn_amount_eur || tx.amount_eur).toFixed(2)} €
                             </div>
                             <div className="text-sm text-amber-600 font-medium">
-                              {bitcoinPrice > 0 ? 
-                                `${((tx.withdrawn_amount_eur || tx.amount_eur) / bitcoinPrice).toFixed(8)} BTC` :
-                                'Kurs lädt...'
+                              {tx.withdrawn_amount_btc ? 
+                                `${tx.withdrawn_amount_btc.toFixed(8)} BTC` : 
+                                `${(tx.amount_btc || 0).toFixed(8)} BTC`
                               }
                             </div>
                             <div className="text-sm text-green-600 mt-1">
