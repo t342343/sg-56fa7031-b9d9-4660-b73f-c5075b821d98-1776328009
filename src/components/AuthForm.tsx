@@ -254,15 +254,21 @@ export function AuthForm() {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-navy-50 p-4">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-3xl font-heading text-center text-navy flex items-center justify-center gap-2">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M16 10L20.667 13.333V14H11.333V13.333L16 10Z" fill="#D4AF37"/>
-              <rect x="11.333" y="14" width="9.333" height="0.667" fill="#D4AF37"/>
-              <rect x="15.667" y="14.667" width="0.667" height="5.333" fill="#D4AF37"/>
-              <path d="M10 20H22V20.667H10V20Z" fill="#D4AF37"/>
-              <rect x="11.667" y="14.667" width="3.333" height="5.333" rx="0.333" fill="#1E293B"/>
-              <rect x="17" y="14.667" width="3.333" height="5.333" rx="0.333" fill="#1E293B"/>
-              <rect x="14.667" y="20.667" width="2.667" height="1.333" fill="#D4AF37"/>
+          <CardTitle className="text-3xl font-heading text-center text-navy flex items-center justify-center gap-3">
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="chartGradientInline" x1="0%" y1="100%" x2="0%" y2="0%">
+                  <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              <!-- Rising chart bars -->
+              <rect x="12" y="23" width="4" height="6.5" rx="0.5" fill="url(#chartGradientInline)" opacity="0.7"/>
+              <rect x="18" y="20" width="4" height="9.5" rx="0.5" fill="url(#chartGradientInline)" opacity="0.85"/>
+              <rect x="24" y="15" width="4" height="14.5" rx="0.5" fill="url(#chartGradientInline)"/>
+              <!-- Upward arrow/trend line -->
+              <path d="M 13.5 22 L 20 18 L 26.5 12.5" stroke="#8B5CF6" stroke-width="0.75" stroke-linecap="round" fill="none"/>
+              <path d="M 25 10.5 L 27.5 12.5 L 26.5 15 Z" fill="#8B5CF6"/>
             </svg>
             Finanzportal
           </CardTitle>
