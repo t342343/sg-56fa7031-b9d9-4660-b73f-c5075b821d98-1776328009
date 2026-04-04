@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { SEO } from "@/components/SEO";
+import { transactionService } from "@/services/transactionService";
 
 export default function Gewinnberechnung() {
   const router = useRouter();
@@ -37,14 +38,11 @@ export default function Gewinnberechnung() {
 
   const fetchUserBalance = async (userId: string) => {
     try {
-      const { data: transactions } = await supabase
-        .from("transactions")
-        .select("*")
-        .eq("user_id", userId)
-        .eq("status", "active");
-
+      const transactions = await transactionService.getTransactions(userId);
+      
       if (transactions) {
-        const total = transactions.reduce((sum, tx) => sum + tx.amount_eur, 0);
+        const activeTransactions = transactions.filter(tx => tx.status === "active");
+        const total = activeTransactions.reduce((sum, tx) => sum + tx.amount_eur, 0);
         setTotalBalance(total);
         
         // Rendite-Stufe basierend auf Gesamtguthaben ermitteln
