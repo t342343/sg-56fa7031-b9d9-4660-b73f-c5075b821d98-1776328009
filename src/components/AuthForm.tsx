@@ -255,7 +255,7 @@ export function AuthForm() {
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-1">
           <CardTitle className="text-3xl font-heading text-center text-navy">Finanzportal</CardTitle>
-          <CardDescription className="text-center text-lg">Investment-Dashboard für versicherte Bitcoin-Anlage
+          <CardDescription className="text-center text-lg">Risikofreies Investment für versicherte Bitcoin-Anlage
 
           </CardDescription>
         </CardHeader>
@@ -413,8 +413,8 @@ export function AuthForm() {
                     id="bitsurance"
                     checked={bitsuranceAccepted}
                     onChange={(e) => setBitsuranceAccepted(e.target.checked)}
-                    className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
+                    className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                  
                   <Label htmlFor="bitsurance" className="text-sm leading-tight cursor-pointer">
                     Ich bestätige dass eine für mich kostenfreie Versicherung bei Bitsurance erstellt wird.
                   </Label>
@@ -427,8 +427,8 @@ export function AuthForm() {
                     id="agb"
                     checked={agbAccepted}
                     onChange={(e) => setAgbAccepted(e.target.checked)}
-                    className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
+                    className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                  
                   <Label htmlFor="agb" className="text-sm leading-tight cursor-pointer">
                     Ich akzeptiere die{" "}
                     <a href="/agb" target="_blank" className="text-blue-600 hover:underline">
@@ -441,8 +441,8 @@ export function AuthForm() {
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={isLoading || !agbAccepted || !bitsuranceAccepted}
-                >
+                  disabled={isLoading || !agbAccepted || !bitsuranceAccepted}>
+                  
                   {loading ? "Registrieren..." : "Registrieren"}
                 </Button>
               </form>
