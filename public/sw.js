@@ -1,17 +1,10 @@
 // Bitcoin Investment Portal - Service Worker
-const CACHE_NAME = 'btc-portal-v1';
-const RUNTIME_CACHE = 'btc-portal-runtime';
+const CACHE_NAME = 'btc-portal-v2';
+const RUNTIME_CACHE = 'btc-runtime-v2';
 
-// Critical assets to cache on install
+// Assets to cache immediately on install
 const PRECACHE_ASSETS = [
-  '/',
-  '/login',
-  '/dashboard',
-  '/profile',
   '/offline',
-  '/manifest.json',
-  '/icon-192.svg',
-  '/icon-512.svg',
 ];
 
 // Install event - cache critical assets

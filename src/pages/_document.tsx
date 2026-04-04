@@ -18,7 +18,7 @@ export default function Document() {
         <meta name="theme-color" content="#000000" />
 
         {/* PWA Manifest */}
-        <link rel="manifest" href="/manifest.json" />
+        <link rel="manifest" href="/manifest.json?v=2" />
         
         {/* PWA Icons */}
         <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.svg" />
