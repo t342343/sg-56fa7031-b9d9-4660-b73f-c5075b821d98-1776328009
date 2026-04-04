@@ -191,6 +191,7 @@ export default function Dashboard() {
     const profile = await profileService.getCurrentProfile();
     if (!profile) return;
 
+    setProfile(profile);
     setUserId(profile.id);
 
     const w = await walletService.getWalletForUser(profile.id);
