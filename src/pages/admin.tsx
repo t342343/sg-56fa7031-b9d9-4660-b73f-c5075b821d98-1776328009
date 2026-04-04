@@ -11,13 +11,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageCircle, Send, Clock, CheckCircle2, Wallet, ArrowUpDown, X, User, Badge } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-export default function Admin() {
+export default function AdminPage() {
 // Benutzer-Daten
 const [users, setUsers] = useState<any[]>([]);
 const [wallets, setWallets] = useState<any[]>([]);
@@ -68,24 +68,99 @@ useEffect(() => {
 
 const checkAuth = async () => {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    // Rate Limiting Prüfung
+    const storedAttempts = localStorage.getItem("admin_login_attempts");
+    const storedLockout = localStorage.getItem("admin_lockout_until");
     
-    if (!session) {
-      router.push("/login");
+    const attempts = storedAttempts ? parseInt(storedAttempts) : 0;
+    const lockoutTime = storedLockout ? parseInt(storedLockout) : null;
+    
+    setLoginAttempts(attempts);
+    
+    // Prüfe ob gesperrt
+    if (lockoutTime && Date.now() < lockoutTime) {
+      const remainingMinutes = Math.ceil((lockoutTime - Date.now()) / 60000);
+      setLockedUntil(lockoutTime);
+      toast({
+        title: "🚫 Admin-Zugang gesperrt",
+        description: `Zu viele Fehlversuche. Noch ${remainingMinutes} Minuten gesperrt.`,
+        variant: "destructive",
+      });
+      setTimeout(() => router.push("/dashboard"), 2000);
       return;
     }
 
-    // Prüfe ob User Admin ist
-    const profile = await profileService.getCurrentProfile();
-    if (!profile || profile.role !== "admin") {
-      toast({
-        title: "Zugriff verweigert",
-        description: "Sie haben keine Admin-Berechtigung.",
-        variant: "destructive"
-      });
-      router.push("/dashboard");
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      // Fehlversuch zählen
+      const newAttempts = attempts + 1;
+      localStorage.setItem("admin_login_attempts", newAttempts.toString());
+      setLoginAttempts(newAttempts);
+      
+      // Bei 5 Versuchen sperren
+      if (newAttempts >= 5) {
+        const lockUntil = Date.now() + (15 * 60 * 1000); // 15 Minuten
+        localStorage.setItem("admin_lockout_until", lockUntil.toString());
+        setLockedUntil(lockUntil);
+        
+        toast({
+          title: "🚫 Admin-Zugang gesperrt",
+          description: "Zu viele Fehlversuche. 15 Minuten gesperrt.",
+          variant: "destructive",
+        });
+      } else if (newAttempts >= 3) {
+        toast({
+          title: "⚠️ Warnung",
+          description: `${5 - newAttempts} Versuch(e) übrig bis zur Sperre`,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Zugriff verweigert",
+          description: "Bitte melden Sie sich an",
+          variant: "destructive",
+        });
+      }
+      
+      setTimeout(() => router.push("/login"), 2000);
       return;
     }
+
+    const profile = await profileService.getCurrentProfile();
+    if (!profile || profile.role !== "admin") {
+      // Fehlversuch zählen für falsche Rolle
+      const newAttempts = attempts + 1;
+      localStorage.setItem("admin_login_attempts", newAttempts.toString());
+      setLoginAttempts(newAttempts);
+      
+      if (newAttempts >= 5) {
+        const lockUntil = Date.now() + (15 * 60 * 1000);
+        localStorage.setItem("admin_lockout_until", lockUntil.toString());
+        setLockedUntil(lockUntil);
+        
+        toast({
+          title: "🚫 Admin-Zugang gesperrt",
+          description: "Zu viele Fehlversuche. 15 Minuten gesperrt.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Zugriff verweigert",
+          description: "Sie haben keine Admin-Berechtigung",
+          variant: "destructive",
+        });
+      }
+      
+      setTimeout(() => router.push("/dashboard"), 2000);
+      return;
+    }
+
+    // ERFOLGREICHER LOGIN - Reset der Fehlversuche
+    localStorage.removeItem("admin_login_attempts");
+    localStorage.removeItem("admin_lockout_until");
+    setLoginAttempts(0);
+    setLockedUntil(null);
 
     setIsAdmin(true);
     setIsLoading(false);
