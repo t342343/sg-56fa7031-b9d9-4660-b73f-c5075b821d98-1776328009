@@ -683,6 +683,12 @@ return (
                         <div>
                           <CardTitle className="text-2xl">{user.full_name || "Kein Name"}</CardTitle>
                           <CardDescription>{user.email}</CardDescription>
+                          {user.phone && (
+                            <CardDescription className="mt-1">Tel: {user.phone}</CardDescription>
+                          )}
+                          {user.address && (
+                            <CardDescription className="mt-1">Adresse: {user.address}</CardDescription>
+                          )}
                         </div>
                         <Button
                           variant="ghost"
