@@ -741,13 +741,7 @@ export default function Dashboard() {
                                     Ursprünglich eingezahlt: {tx.original_deposit?.toFixed(2) || tx.amount_eur.toFixed(2)} €
                                   </div>
                                 )}
-                                {!isExpired &&
-                              <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                                    <Clock className="w-3 h-3" />
-                                    Nächster Gewinn in: {getNextProfitCountdown(tx.timestamp, tx.expires_at)}
-                                  </div>
-                              }
-                                </div>
+                              </div>
                             </div>
 
                             <div className="space-y-2">
