@@ -44,6 +44,8 @@ const [saldoSort, setSaldoSort] = useState<"high" | "low" | "none">("none");
 const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
 const [chats, setChats] = useState<any[]>([]);
 const [lastPriceUpdate, setLastPriceUpdate] = useState<Date | null>(null);
+const [chatSearchQuery, setChatSearchQuery] = useState("");
+const [chatSort, setChatSort] = useState<"newest" | "oldest">("newest");
 
 // Link-Einstellungen
 const [homeButtonUrl, setHomeButtonUrl] = useState("/");
@@ -1473,87 +1475,131 @@ return (
           </TabsContent>
 
           <TabsContent value="chat" className="space-y-4 mt-6">
+            {/* Such- und Sortier-Optionen */}
+            <div className="flex gap-4 mb-4">
+              <div className="flex-1">
+                <Input
+                  placeholder="Benutzer suchen (Name, E-Mail)..."
+                  value={chatSearchQuery}
+                  onChange={(e) => setChatSearchQuery(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => setChatSort(chatSort === "newest" ? "oldest" : "newest")}
+                className="flex items-center gap-2"
+              >
+                <ArrowUpDown className="h-4 w-4" />
+                {chatSort === "newest" ? "Neueste zuerst" : "Älteste zuerst"}
+              </Button>
+            </div>
+
             {/* Alle Benutzer anzeigen - auch ohne bestehende Chats */}
             {users.length === 0 ? (
               <p className="text-muted-foreground">Keine Benutzer vorhanden.</p>
             ) : (
-              users.map((user) => {
-                const userMessages = chatMessages.filter(msg => msg.user_id === user.id);
-                
-                return (
-                  <Card key={user.id}>
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="flex items-center gap-2">
-                          <MessageCircle className="w-5 h-5" />
-                          <button
-                            onClick={() => {
-                              setSelectedUserDetails(user);
-                              setActiveTab("users");
-                            }}
-                            className="text-left hover:text-blue-600 transition-colors underline-offset-4 hover:underline"
-                          >
-                            {user.full_name || user.email || "Unbekannt"}
-                          </button>
-                          {userMessages.length > 0 && (
-                            <span className="bg-slate-100 text-slate-800 px-2 py-0.5 rounded text-xs font-medium border border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700">
-                              {userMessages.length} Nachrichten
-                            </span>
-                          )}
-                        </CardTitle>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setActiveTab("users");
-                            setSelectedUserDetails(user);
-                          }}
-                        >
-                          <User className="h-4 w-4 mr-2" />
-                          Details
-                        </Button>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {userMessages.length > 0 && (
-                        <div className="h-48 overflow-y-auto border rounded-lg p-4 space-y-2 bg-muted/20">
-                          {userMessages.map((msg: any) => (
-                            <div
-                              key={msg.id}
-                              className={`flex ${msg.is_admin ? 'justify-end' : 'justify-start'}`}
+              users
+                .filter(user => {
+                  if (!chatSearchQuery) return true;
+                  const query = chatSearchQuery.toLowerCase();
+                  return (
+                    user.full_name?.toLowerCase().includes(query) ||
+                    user.email?.toLowerCase().includes(query)
+                  );
+                })
+                .sort((a, b) => {
+                  const messagesA = chatMessages.filter(msg => msg.user_id === a.id);
+                  const messagesB = chatMessages.filter(msg => msg.user_id === b.id);
+                  
+                  const lastMessageA = messagesA.length > 0 
+                    ? new Date(messagesA[0].created_at).getTime() 
+                    : 0;
+                  const lastMessageB = messagesB.length > 0 
+                    ? new Date(messagesB[0].created_at).getTime() 
+                    : 0;
+                  
+                  return chatSort === "newest" 
+                    ? lastMessageB - lastMessageA 
+                    : lastMessageA - lastMessageB;
+                })
+                .map((user) => {
+                  const userMessages = chatMessages.filter(msg => msg.user_id === user.id);
+                  
+                  return (
+                    <Card key={user.id}>
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="flex items-center gap-2">
+                            <MessageCircle className="w-5 h-5" />
+                            <button
+                              onClick={() => {
+                                setSelectedUserDetails(user);
+                                setActiveTab("users");
+                              }}
+                              className="text-left hover:text-blue-600 transition-colors underline-offset-4 hover:underline"
                             >
-                              <div
-                                className={`max-w-[80%] rounded-lg p-2 text-sm ${
-                                  msg.is_admin
-                                    ? 'bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100'
-                                    : 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100'
-                                }`}
-                              >
-                                <p>{msg.message}</p>
-                                <p className="text-xs opacity-60 mt-1">
-                                  {new Date(msg.created_at).toLocaleString('de-DE')}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
+                              {user.full_name || user.email || "Unbekannt"}
+                            </button>
+                            {userMessages.length > 0 && (
+                              <span className="bg-slate-100 text-slate-800 px-2 py-0.5 rounded text-xs font-medium border border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700">
+                                {userMessages.length} Nachrichten
+                              </span>
+                            )}
+                          </CardTitle>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setActiveTab("users");
+                              setSelectedUserDetails(user);
+                            }}
+                          >
+                            <User className="h-4 w-4 mr-2" />
+                            Details
+                          </Button>
                         </div>
-                      )}
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {userMessages.length > 0 && (
+                          <div className="h-48 overflow-y-auto border rounded-lg p-4 space-y-2 bg-muted/20">
+                            {userMessages.map((msg: any) => (
+                              <div
+                                key={msg.id}
+                                className={`flex ${msg.is_admin ? 'justify-end' : 'justify-start'}`}
+                              >
+                                <div
+                                  className={`max-w-[80%] rounded-lg p-2 text-sm ${
+                                    msg.is_admin
+                                      ? 'bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100'
+                                      : 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100'
+                                  }`}
+                                >
+                                  <p>{msg.message}</p>
+                                  <p className="text-xs opacity-60 mt-1">
+                                    {new Date(msg.created_at).toLocaleString('de-DE')}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
 
-                      <div className="flex gap-2">
-                        <Textarea
-                          placeholder="Nachricht schreiben..."
-                          value={adminMessages[user.id] || ""}
-                          onChange={e => setAdminMessages({ ...adminMessages, [user.id]: e.target.value })}
-                          rows={2}
-                        />
-                        <Button onClick={() => sendAdminMessage(user.id)} className="self-end">
-                          <Send className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })
+                        <div className="flex gap-2">
+                          <Textarea
+                            placeholder="Nachricht schreiben..."
+                            value={adminMessages[user.id] || ""}
+                            onChange={e => setAdminMessages({ ...adminMessages, [user.id]: e.target.value })}
+                            rows={2}
+                          />
+                          <Button onClick={() => sendAdminMessage(user.id)} className="self-end">
+                            <Send className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })
             )}
           </TabsContent>
 
