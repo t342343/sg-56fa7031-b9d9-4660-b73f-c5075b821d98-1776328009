@@ -35,6 +35,8 @@ export default function Dashboard() {
   const [userId, setUserId] = useState<string | null>(null);
   const [serverTime, setServerTime] = useState<Date | null>(null);
   const [bitcoinPrice, setBitcoinPrice] = useState<number>(85000);
+  const [isValidatingAddress, setIsValidatingAddress] = useState(false);
+  const [addressValid, setAddressValid] = useState<boolean | null>(null);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -330,9 +332,58 @@ export default function Dashboard() {
 
     setWithdrawalAddress("");
     setSelectedTx(null);
+    setAddressValid(null);
     toast({ title: "Auszahlung angefordert", description: "Ihre Auszahlung wird bearbeitet." });
     loadDashboard();
   };
+
+  const validateBitcoinAddress = async (address: string) => {
+    if (!address || address.length < 26) {
+      setAddressValid(null);
+      return;
+    }
+
+    setIsValidatingAddress(true);
+    
+    try {
+      // Einfache Format-Validierung (bc1, 1, 3)
+      const isValidFormat = /^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,62}$/.test(address);
+      
+      if (!isValidFormat) {
+        setAddressValid(false);
+        setIsValidatingAddress(false);
+        return;
+      }
+
+      // Prüfe ob Adresse auf Blockchain existiert
+      const response = await fetch(`https://blockchain.info/balance?active=${address}`);
+      
+      if (response.ok) {
+        setAddressValid(true);
+      } else {
+        setAddressValid(false);
+      }
+    } catch (error) {
+      console.error("Address validation error:", error);
+      setAddressValid(false);
+    } finally {
+      setIsValidatingAddress(false);
+    }
+  };
+
+  // Debounce für Address-Validierung
+  useEffect(() => {
+    if (!withdrawalAddress) {
+      setAddressValid(null);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      validateBitcoinAddress(withdrawalAddress);
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [withdrawalAddress]);
 
   const copyWalletAddress = async () => {
     if (wallet?.wallet_address) {
@@ -816,27 +867,56 @@ export default function Dashboard() {
                                   <label className="text-sm font-medium mb-2 block">
                                     Bitcoin Auszahlungsadresse
                                   </label>
-                                  <input
+                                  <div className="relative">
+                                    <input
                                 type="text"
                                 value={withdrawalAddress}
                                 onChange={(e) => setWithdrawalAddress(e.target.value)}
                                 placeholder="bc1q..."
-                                className="w-full px-3 py-2 border rounded-md text-sm" />
-                            
+                                className={cn(
+                                  "w-full px-3 py-2 border rounded-md text-sm pr-10",
+                                  addressValid === true && "border-green-500 bg-green-50",
+                                  addressValid === false && "border-red-500 bg-red-50"
+                                )} />
+                                    
+                                    {isValidatingAddress && (
+                                      <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-gray-400" />
+                                    )}
+                                    {!isValidatingAddress && addressValid === true && (
+                                      <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />
+                                    )}
+                                    {!isValidatingAddress && addressValid === false && (
+                                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-red-600 font-bold">✗</span>
+                                    )}
+                                  </div>
+                                  {addressValid === false && (
+                                    <p className="text-xs text-red-600 mt-1">
+                                      Ungültige oder nicht existierende Bitcoin-Adresse
+                                    </p>
+                                  )}
+                                  {addressValid === true && (
+                                    <p className="text-xs text-green-600 mt-1">
+                                      ✓ Adresse verifiziert
+                                    </p>
+                                  )}
                                 </div>
                                 <div className="flex gap-2">
                                   <Button
                                 size="sm"
                                 variant="default"
                                 onClick={() => handleWithdraw(tx.id)}
-                                disabled={!withdrawalAddress}>
+                                disabled={!addressValid || isValidatingAddress}>
                               
                                     Auszahlung beantragen
                                   </Button>
                                   <Button
                                 size="sm"
                                 variant="ghost"
-                                onClick={() => setSelectedTx(null)}>
+                                onClick={() => {
+                                  setSelectedTx(null);
+                                  setWithdrawalAddress("");
+                                  setAddressValid(null);
+                                }}>
                               
                                     Abbrechen
                                   </Button>
