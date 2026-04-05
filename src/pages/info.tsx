@@ -58,13 +58,13 @@ export default function Info() {
               </span>
             </Link>
             <div className="flex gap-2 sm:gap-3">
-              {isLoggedIn ? (
-                <Button onClick={() => router.push("/dashboard")} size="sm" className="text-xs sm:text-sm">
+              {isLoggedIn ?
+              <Button onClick={() => router.push("/dashboard")} size="sm" className="text-xs sm:text-sm">
                   Zum Dashboard
                   <ArrowRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4" />
-                </Button>
-              ) : (
-                <>
+                </Button> :
+
+              <>
                   <Link href="/login">
                     <Button variant="outline" size="sm" className="text-xs sm:text-sm">
                       Anmelden
@@ -77,7 +77,7 @@ export default function Info() {
                     </Button>
                   </Link>
                 </>
-              )}
+              }
             </div>
           </div>
         </header>
@@ -275,7 +275,7 @@ export default function Info() {
                 <CardTitle className="text-lg">Ist meine Investition wirklich zu 100% abgesichert?</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">Ja, alle Einzahlungen sind vollständig versichert. Wir erstellen für Sie eine Versicherung beim führenden Anbieter Bitsurance. Sowohl gegen Diebstahl und Verlust als auch gegen Kursschwankungen. Ihre Investition ist jederzeit geschützt. Nach der Bitcoin Einzahlung wird der Euro Wechselkurs fixiert. Ob der Bitcoin Kurs steigt oder fällt spielt für die Berechnung ihrer Rendit Berechnung keine Rolle.
+                <p className="text-gray-600">Ja, alle Einzahlungen sind vollständig versichert. Wir erstellen für Sie eine Versicherung beim führenden Anbieter Bitsurance. Sowohl gegen Diebstahl und Verlust als auch gegen Kursschwankungen. Ihre Investition ist jederzeit geschützt. Nach der Bitcoin Einzahlung wird der Euro Wechselkurs fixiert. Ob der Bitcoin Kurs steigt oder fällt spielt für die Berechnung ihrer Rendite oder ihres Guthabens keine Rolle.
 
                 </p>
               </CardContent>
