@@ -166,6 +166,18 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, [wallet?.id]);
 
+  // Auto-refresh Status-Updates alle 1 Stunde
+  useEffect(() => {
+    if (!wallet?.id) return;
+
+    const interval = setInterval(() => {
+      console.log("🔄 Hourly refresh: Checking for status updates...");
+      loadDashboard(true);
+    }, 3600000); // 1 Stunde (3.600.000 ms)
+
+    return () => clearInterval(interval);
+  }, [wallet?.id]);
+
   const silentCheckTransactions = async () => {
     if (!wallet) return;
 
