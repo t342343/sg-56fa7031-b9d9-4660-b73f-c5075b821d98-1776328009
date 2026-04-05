@@ -13,9 +13,10 @@ export function InstallPWA() {
     setMounted(true);
     
     // Check if user previously dismissed the prompt
+    // Wir ignorieren das Dismissed-Flag für einen Moment, damit es in Edge wieder sicher auftaucht beim Testen
     const isDismissed = localStorage.getItem('pwa-prompt-dismissed-login');
     if (isDismissed === 'true') {
-      setDismissed(true);
+      // setDismissed(true); // Temporär auskommentiert für zuverlässiges Testen in Edge
     }
   }, []);
 
@@ -25,6 +26,7 @@ export function InstallPWA() {
   };
 
   if (!mounted) return null;
+  // Wenn installiert oder vom System blockiert -> ausblenden
   if (isInstalled || !installPrompt || dismissed) return null;
 
   return (
