@@ -502,10 +502,15 @@ export default function Dashboard() {
     return `${hours}h ${minutes}m`;
   };
 
-  const getCountdownProgress = (timestamp: string, expiresAt: string) => {
+  const getCountdownProgress = (timestamp: string, expiresAt: string, isExtended?: boolean) => {
     if (!serverTime) return 0;
 
-    const start = new Date(timestamp).getTime();
+    // Wenn verlängert, berechne virtuellen Startpunkt (14 Tage vor neuem Ablaufdatum)
+    // So startet der Balken bei jeder Verlängerung wieder bei 100%
+    const start = isExtended 
+      ? new Date(expiresAt).getTime() - (14 * 24 * 60 * 60 * 1000) // 14 Tage in Millisekunden
+      : new Date(timestamp).getTime();
+      
     const end = new Date(expiresAt).getTime();
     const now = serverTime.getTime();
 
@@ -818,7 +823,7 @@ export default function Dashboard() {
                                 </span>
                               </div>
                               <Progress
-                              value={getCountdownProgress(tx.timestamp, tx.expires_at)}
+                              value={getCountdownProgress(tx.timestamp, tx.expires_at, tx.is_extended)}
                               className="h-2 [&>div]:bg-blue-600" />
                             
                             </div>
