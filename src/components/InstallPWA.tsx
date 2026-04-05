@@ -1,5 +1,6 @@
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { Button } from "@/components/ui/button";
+import { Wallet } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
@@ -38,10 +39,7 @@ export function InstallPWA() {
     >
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="1" x2="12" y2="23"></line>
-            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-          </svg>
+          <Wallet className="w-6 h-6 text-white" />
         </div>
         
         <div className="flex-1 min-w-0">
