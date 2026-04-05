@@ -98,6 +98,27 @@ export default function Dashboard() {
     };
     
     checkSession();
+
+    // Live Auth State Listener - überwacht Session-Änderungen in Echtzeit
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth State Changed:", event);
+      
+      // Bei Logout, Token-Ablauf oder Sign-Out → sofort zum Login
+      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' && !session) {
+        await authService.logout();
+        router.push("/login");
+      }
+      
+      // Bei erfolgreichem Token-Refresh → Dashboard neu laden
+      if (event === 'TOKEN_REFRESHED' && session) {
+        console.log("Session refreshed, reloading dashboard...");
+        loadDashboard(true);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -203,7 +224,28 @@ export default function Dashboard() {
     if (!silent) setLoading(true);
 
     const profile = await profileService.getCurrentProfile();
-    if (!profile) return;
+    
+    // Ghost-Session Detection: Wenn kein Profil trotz "aktiver" Session → Session ist abgelaufen
+    if (!profile) {
+      console.warn("Ghost session detected - profile is null despite active session");
+      
+      // Lösche die tote Session komplett
+      await authService.logout();
+      
+      toast({
+        title: "Session abgelaufen",
+        description: "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.",
+        variant: "destructive",
+        duration: 3000
+      });
+      
+      // Erzwinge Weiterleitung zum Login
+      setTimeout(() => {
+        router.push("/login");
+      }, 1000);
+      
+      return;
+    }
 
     setProfile(profile);
     setUserId(profile.id);
