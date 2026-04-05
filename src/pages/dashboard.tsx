@@ -105,7 +105,7 @@ export default function Dashboard() {
       
       // Bei Logout, Token-Ablauf oder Sign-Out → sofort zum Login
       if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' && !session) {
-        await authService.logout();
+        await authService.signOut();
         router.push("/login");
       }
       
@@ -230,7 +230,7 @@ export default function Dashboard() {
       console.warn("Ghost session detected - profile is null despite active session");
       
       // Lösche die tote Session komplett
-      await authService.logout();
+      await authService.signOut();
       
       toast({
         title: "Session abgelaufen",
@@ -721,7 +721,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2 pt-3 border-t">
+                <div className="flex items-center gap-2 pt-3 border">
                   <Button
                     onClick={manualCheckTransactions}
                     disabled={checkingTransactions}
