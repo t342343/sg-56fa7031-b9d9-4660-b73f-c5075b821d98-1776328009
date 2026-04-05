@@ -19,6 +19,20 @@ export function AuthForm() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
+  // Verhindere Auth-Error Overlay
+  useEffect(() => {
+    const handleError = (event: PromiseRejectionEvent) => {
+      if (event.reason?.message?.includes('Invalid login credentials') ||
+          event.reason?.name === 'AuthApiError') {
+        event.preventDefault();
+        // Error wird nicht an Next.js Error Boundary weitergegeben
+      }
+    };
+
+    window.addEventListener('unhandledrejection', handleError);
+    return () => window.removeEventListener('unhandledrejection', handleError);
+  }, []);
+
   // Zeige Erfolgsmeldung wenn von Registrierung weitergeleitet
   useEffect(() => {
     if (router.query.registered === "true") {
