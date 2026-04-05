@@ -681,17 +681,17 @@ export default function Dashboard() {
                     return (
                       <Card key={tx.id} className={tx.status === "withdrawal_pending" ? "opacity-50 border-amber-200" : ""}>
                         <CardContent className="p-6">
-                            {tx.status === "withdrawal_pending" &&
+                            {tx.status === "withdrawal_pending" && (
                           <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                                 <div className="flex items-center gap-2 text-amber-800">
                                   <Clock className="w-5 h-5" />
                                   <span className="font-semibold">⏳ Ihre Auszahlung erfolgt in Kürze</span>
                                 </div>
                                 <p className="text-sm text-amber-700 mt-1">
-                                  Der Administrator wird Ihre Auszahlungsanfrage in Kürze bearbeiten.
+                                  Die Auszahlung erfolgt automatisiert. Dies kann selten jedoch bis zu 6 Stunden dauern.
                                 </p>
                               </div>
-                          }
+                          )}
 
                             <div className="flex items-start justify-between mb-3">
                               <div className="flex items-center gap-2">
@@ -706,11 +706,11 @@ export default function Dashboard() {
                                 <div className="text-xs text-muted-foreground">
                                   {new Date(tx.timestamp).toLocaleString("de-DE")}
                                 </div>
-                                {tx.status === "withdrawal_pending" &&
+                                {tx.status === "withdrawal_pending" && (
                               <div className="text-xs text-amber-500 font-medium mt-1">
                                     ⏳ Auszahlung in Kürze
                                   </div>
-                              }
+                              )}
                               </div>
                             </div>
 
