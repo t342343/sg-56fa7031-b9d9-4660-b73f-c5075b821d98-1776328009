@@ -55,36 +55,42 @@ export function AuthForm() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    console.log("🔍 Login attempt started");
 
     try {
       const { data, error } = await authService.signIn(loginData.email, loginData.password);
+      console.log("🔍 Login result:", { hasData: !!data, hasError: !!error });
 
       if (error) {
+        console.log("🔍 Error detected, showing message");
         setError("Ungültige Anmeldedaten");
         return;
       }
 
       if (!data.user) {
+        console.log("🔍 No user in data");
         setError("Ungültige Anmeldedaten");
         return;
       }
 
+      console.log("🔍 Getting profile for user:", data.user.id);
       const profile = await profileService.getProfile(data.user.id);
 
       if (!profile) {
+        console.log("🔍 No profile found");
         setError("Profil nicht gefunden");
         return;
       }
 
+      console.log("🔍 Redirecting to:", profile.role === "admin" ? "admin" : "dashboard");
       if (profile.role === "admin") {
         router.push("/admin");
       } else {
         router.push("/dashboard");
       }
     } catch (err: any) {
-      // Fehler komplett abfangen - kein Error Overlay
+      console.log("🔍 Catch block hit:", err);
       setError("Ungültige Anmeldedaten");
-      // Error schlucken, nicht weiterwerfen
       return;
     }
   };
