@@ -1,6 +1,5 @@
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { Button } from "@/components/ui/button";
-import { Download, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
