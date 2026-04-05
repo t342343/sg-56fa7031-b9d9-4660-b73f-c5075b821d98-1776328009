@@ -2,6 +2,7 @@ import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { Button } from "@/components/ui/button";
 import { Download, X } from "lucide-react";
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 
 export function InstallPWA() {
   const { installPrompt, promptInstall, isInstalled } = usePWAInstall();
@@ -28,38 +29,43 @@ export function InstallPWA() {
   if (isInstalled || !installPrompt || dismissed) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-4 flex items-center justify-between gap-3 animate-in slide-in-from-bottom-5 z-50">
-      <div className="flex items-start gap-3 flex-1 min-w-0">
-        <div className="shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center">
-          <Download className="w-5 h-5 text-white" />
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 50 }}
+      className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 p-4 z-50"
+    >
+      <div className="flex items-start gap-3">
+        <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
         </div>
+        
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-            Für Offline-Zugriff & Icon auf dem Desktop
+          <p className="text-sm font-medium text-gray-900 dark:text-white mb-3">
+            Benutze unsere App
           </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-            Schneller Zugriff von Ihrem Startbildschirm
-          </p>
+          
+          <div className="flex gap-2">
+            <Button
+              onClick={(e) => { e.preventDefault(); promptInstall(); }} 
+              size="sm"
+              className="flex-1"
+            >
+              App installieren
+            </Button>
+            <Button
+              onClick={(e) => { e.preventDefault(); handleDismiss(); }} 
+              size="sm"
+              variant="ghost"
+            >
+              Später
+            </Button>
+          </div>
         </div>
       </div>
-      <div className="flex items-center gap-2 shrink-0">
-        <Button 
-          onClick={(e) => { e.preventDefault(); promptInstall(); }} 
-          size="sm" 
-          className="h-8 text-xs font-medium"
-        >
-          <Download className="w-3.5 h-3.5 mr-1.5" />
-          APP
-        </Button>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={(e) => { e.preventDefault(); handleDismiss(); }} 
-          className="text-gray-400 hover:text-white h-8 w-8"
-        >
-          <X className="w-4 h-4" />
-        </Button>
-      </div>
-    </div>
+    </motion.div>
   );
 }
