@@ -58,12 +58,14 @@ export const authService = {
       });
 
       if (error) {
-        return { data: null, error };
+        // Error als normales Objekt zurückgeben, nicht re-throwen
+        return { data: null, error: { message: error.message } };
       }
 
       return { data, error: null };
-    } catch (error) {
-      return { data: null, error: error };
+    } catch (error: any) {
+      // Jeden möglichen Error abfangen und neutralisieren
+      return { data: null, error: { message: "Invalid credentials" } };
     }
   },
 

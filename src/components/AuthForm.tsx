@@ -81,8 +81,11 @@ export function AuthForm() {
       } else {
         router.push("/dashboard");
       }
-    } catch (err) {
+    } catch (err: any) {
+      // Fehler komplett abfangen - kein Error Overlay
       setError("Ungültige Anmeldedaten");
+      // Error schlucken, nicht weiterwerfen
+      return;
     }
   };
 
