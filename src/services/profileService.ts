@@ -24,6 +24,21 @@ export const profileService = {
     return data;
   },
 
+  async getProfile(id: string): Promise<Profile | null> {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      console.error("Error fetching profile:", error);
+      return null;
+    }
+
+    return data;
+  },
+
   async getAllProfiles(): Promise<Profile[]> {
     const { data, error } = await supabase
       .from("profiles")

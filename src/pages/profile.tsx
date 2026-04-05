@@ -166,9 +166,9 @@ export default function ProfilePage() {
     setSaving(true);
     try {
       // Schritt 1: Aktuelles Passwort verifizieren durch Re-Login mit AKTUELLER E-Mail
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: getUserError } = await supabase.auth.getUser();
       
-      if (!user?.email) {
+      if (getUserError || !user?.email) {
         toast({ 
           title: "Fehler", 
           description: "Benutzer-Session nicht gefunden.", 
