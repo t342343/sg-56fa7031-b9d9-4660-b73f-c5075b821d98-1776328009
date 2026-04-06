@@ -144,6 +144,25 @@ export const authService = {
     }
   },
 
+  // Update password
+  async updatePassword(newPassword: string): Promise<{ error: AuthError | null }> {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        return { error: { message: error.message } };
+      }
+
+      return { error: null };
+    } catch (error) {
+      return { 
+        error: { message: "An unexpected error occurred during password update" } 
+      };
+    }
+  },
+
   // Confirm email (REQUIRED)
   async confirmEmail(token: string, type: 'signup' | 'recovery' | 'email_change' = 'signup'): Promise<{ user: AuthUser | null; error: AuthError | null }> {
     try {

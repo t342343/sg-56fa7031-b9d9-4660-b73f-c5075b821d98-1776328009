@@ -179,8 +179,8 @@ export default function ProfilePage() {
       }
 
       try {
-        const { data, error } = await authService.signIn(user.email, currentPassword);
-        if (error || !data?.user) throw new Error("Invalid password");
+        const { user: signedInUser, error } = await authService.signIn(user.email, currentPassword);
+        if (error || !signedInUser) throw new Error("Invalid password");
       } catch (loginError) {
         toast({ 
           title: "Fehler", 
