@@ -256,6 +256,54 @@ export function AuthForm() {
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    setIsLoading(true);
+
+    try {
+      if (isSignUp) {
+        console.log("📧 Starting registration for:", formData.email);
+        
+        const { user, error } = await authService.signUp(
+          formData.email,
+          formData.password
+        );
+
+        if (error) {
+          console.error("❌ Registration error:", error);
+          setError(error.message || "Registrierung fehlgeschlagen");
+          setIsLoading(false);
+          return;
+        }
+
+        if (!user) {
+          setError("Registrierung fehlgeschlagen");
+          setIsLoading(false);
+          return;
+        }
+
+        console.log("✅ User registered:", user.id);
+        setSuccess("Registrierung erfolgreich! Bitte bestätige deine Email-Adresse. Wir haben dir eine Bestätigungs-Email gesendet.");
+        
+        // Formular zurücksetzen aber nicht weiterleiten
+        setFormData({ email: "", password: "", fullName: "" });
+        setIsLoading(false);
+      } else {
+      }
+    } catch (error: any) {
+      console.error("Registration exception:", error);
+      toast({
+        title: "Fehler",
+        description: error.message || "Ein unerwarteter Fehler ist aufgetreten",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-navy-50 p-4">
       <Card className="w-full max-w-md shadow-xl">
