@@ -279,68 +279,69 @@ const handleWithdrawal = async (requestId: string, status: "approved" | "rejecte
   loadData();
 };
 
-const handleTransactionWithdrawal = async (txId: string, status: "withdrawn" | "active") => {
-  if (status === "withdrawn") {
-    try {
-      // Hole aktuelle Transaktion
-      const { data: transaction, error: fetchError } = await supabase
-        .from("transactions")
-        .select("*")
-        .eq("id", txId)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      // Hole Server-Zeit für genaue Berechnung
-      const serverTimeRes = await fetch("/api/server-time");
-      const serverTimeData = await serverTimeRes.json();
-      const serverTime = new Date(serverTimeData.timestamp);
-
-      // Berechne finalen Auszahlungsbetrag mit Rendite
-      const eingezahlt = transaction.amount_eur;
-      const timestamp = new Date(transaction.timestamp).getTime();
-      const timeDiffMs = serverTime.getTime() - timestamp;
-      const hoursPassed = Math.max(0, Math.floor(timeDiffMs / (1000 * 60 * 60)));
-      
-      // 1% Start-Bonus + 0.05% pro Stunde
-      const startBonus = eingezahlt * 1.01;
-      const wachstumFaktor = Math.pow(1.0005, hoursPassed);
-      const finalAmountEur = startBonus * wachstumFaktor;
-
-      // Verwende aktuellen Bitcoin-Kurs aus State (mit Fallback auf letzten Kurs)
-      if (bitcoinPrice === 0) {
-        toast({ title: "Fehler", description: "Bitcoin-Kurs nicht verfügbar. Bitte später versuchen.", variant: "destructive" });
-        return;
-      }
-      
-      // Berechne Bitcoin-Betrag basierend auf EUR-Auszahlungsbetrag
-      const finalAmountBtc = finalAmountEur / bitcoinPrice;
-
-      // Aktualisiere Transaktion mit finalen Beträgen
-      const { error } = await supabase
-        .from("transactions")
-        .update({ 
-          status: "withdrawn",
-          withdrawn_amount_eur: finalAmountEur,
-          withdrawn_amount_btc: finalAmountBtc
-        })
-        .eq("id", txId);
-
-      if (error) throw error;
-
-      toast({ 
-        title: "Auszahlung genehmigt", 
-        description: `${finalAmountEur.toFixed(2)} € (${finalAmountBtc.toFixed(8)} BTC) veranlasst.` 
-      });
-    } catch (error) {
-      console.error("Fehler bei Genehmigung:", error);
-      toast({ title: "Fehler", description: "Konnte nicht genehmigt werden", variant: "destructive" });
-    }
-  } else {
-    await transactionService.updateTransactionStatus(txId, "active");
-    toast({ title: "Auszahlung abgelehnt", description: "Transaktion ist wieder aktiv." });
+const handleTransactionWithdrawal = async (transaction: any) => {
+  if (!transaction?.id) {
+    toast({ title: "Fehler", description: "Transaktion nicht gefunden", variant: "destructive" });
+    return;
   }
-  loadData();
+
+  try {
+    // Frische API-Abfrage für den aktuellen Bitcoin-Kurs
+    let currentBitcoinPrice = bitcoinPrice; // Fallback auf den State-Wert
+    
+    try {
+      const priceResponse = await fetch("/api/bitcoin-price");
+      if (priceResponse.ok) {
+        const priceData = await priceResponse.json();
+        if (priceData.price && priceData.price > 0) {
+          currentBitcoinPrice = priceData.price;
+        }
+      }
+    } catch (apiError) {
+      console.warn("API-Abfrage fehlgeschlagen, nutze Fallback-Wert:", currentBitcoinPrice);
+    }
+
+    // Validierung: Bitcoin-Preis muss gültig sein
+    if (!currentBitcoinPrice || currentBitcoinPrice <= 0) {
+      toast({
+        title: "Fehler",
+        description: "Bitcoin-Kurs konnte nicht abgerufen werden. Bitte versuche es erneut.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const finalAmountEur = transaction.withdrawn_amount_eur || transaction.amount_eur;
+    
+    // Berechne Bitcoin-Betrag basierend auf EUR-Auszahlungsbetrag mit dem frischen Kurs
+    const finalAmountBtc = finalAmountEur / currentBitcoinPrice;
+
+    // Verwende aktuellen Bitcoin-Kurs aus State (mit Fallback auf letzten Kurs)
+    if (bitcoinPrice === 0) {
+      toast({ title: "Fehler", description: "Bitcoin-Kurs nicht verfügbar. Bitte später versuchen.", variant: "destructive" });
+      return;
+    }
+    
+    // Aktualisiere Transaktion mit finalen Beträgen
+    const { error } = await supabase
+      .from("transactions")
+      .update({ 
+        status: "withdrawn",
+        withdrawn_amount_eur: finalAmountEur,
+        withdrawn_amount_btc: finalAmountBtc
+      })
+      .eq("id", transaction.id);
+
+    if (error) throw error;
+
+    toast({ 
+      title: "Auszahlung genehmigt", 
+      description: `${finalAmountEur.toFixed(2)} € (${finalAmountBtc.toFixed(8)} BTC) veranlasst.` 
+    });
+  } catch (error) {
+    console.error("Fehler bei Genehmigung:", error);
+    toast({ title: "Fehler", description: "Konnte nicht genehmigt werden", variant: "destructive" });
+  }
 };
 
 const updateSetting = async (key: string, value: string) => {
@@ -1356,13 +1357,13 @@ return (
 
                         <div className="mt-3 flex gap-2">
                           <Button
-                            onClick={() => handleTransactionWithdrawal(tx.id, "withdrawn")}
+                            onClick={() => handleTransactionWithdrawal(tx)}
                             className="flex-1 bg-green-600 hover:bg-green-700"
                           >
                             ✓ Auszahlung bestätigen
                           </Button>
                           <Button
-                            onClick={() => handleTransactionWithdrawal(tx.id, "active")}
+                            onClick={() => handleTransactionWithdrawal(tx, "active")}
                             variant="outline"
                             className="flex-1"
                           >

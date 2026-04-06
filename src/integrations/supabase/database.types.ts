@@ -163,13 +163,19 @@ export type Database = {
           created_at: string | null
           eur_rate: number
           expires_at: string | null
+          extended_base_amount: number | null
           id: string
+          is_extended: boolean | null
+          maturity_date: string | null
           maturity_days: number | null
           original_deposit: number | null
           status: string | null
           timestamp: string
           txid: string
           wallet_id: string
+          withdrawal_address: string | null
+          withdrawn_amount_btc: number | null
+          withdrawn_amount_eur: number | null
         }
         Insert: {
           amount_btc: number
@@ -178,13 +184,19 @@ export type Database = {
           created_at?: string | null
           eur_rate: number
           expires_at?: string | null
+          extended_base_amount?: number | null
           id?: string
+          is_extended?: boolean | null
+          maturity_date?: string | null
           maturity_days?: number | null
           original_deposit?: number | null
           status?: string | null
           timestamp: string
           txid: string
           wallet_id: string
+          withdrawal_address?: string | null
+          withdrawn_amount_btc?: number | null
+          withdrawn_amount_eur?: number | null
         }
         Update: {
           amount_btc?: number
@@ -193,13 +205,19 @@ export type Database = {
           created_at?: string | null
           eur_rate?: number
           expires_at?: string | null
+          extended_base_amount?: number | null
           id?: string
+          is_extended?: boolean | null
+          maturity_date?: string | null
           maturity_days?: number | null
           original_deposit?: number | null
           status?: string | null
           timestamp?: string
           txid?: string
           wallet_id?: string
+          withdrawal_address?: string | null
+          withdrawn_amount_btc?: number | null
+          withdrawn_amount_eur?: number | null
         }
         Relationships: [
           {
