@@ -588,7 +588,7 @@ export default function Dashboard() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Investment Dashboard</h1>
             <p className="text-muted-foreground">
-              Willkommen zurück, {profile?.full_name || profile?.email}
+              Willkommen zurück, {profile?.full_name}
             </p>
           </div>
 
@@ -993,6 +993,7 @@ export default function Dashboard() {
                             </div>
                           </div>
                     )
+                    }
                     }
                     </div>
                     
