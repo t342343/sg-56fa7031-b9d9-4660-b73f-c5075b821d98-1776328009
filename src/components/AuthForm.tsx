@@ -72,23 +72,17 @@ export function AuthForm() {
     console.log("🔍 Login attempt started");
 
     try {
-      const { data, error } = await authService.signIn(loginData.email, loginData.password);
-      console.log("🔍 Login result:", { hasData: !!data, hasError: !!error });
+      const { user, error } = await authService.signIn(loginData.email, loginData.password);
+      console.log("🔍 Login result:", { hasUser: !!user, hasError: !!error });
 
-      if (error) {
+      if (error || !user) {
         console.log("🔍 Error detected, showing message");
-        setError("Ungültige Anmeldedaten");
+        setError("Ungültige Anmeldedaten oder E-Mail noch nicht bestätigt.");
         return;
       }
 
-      if (!data.user) {
-        console.log("🔍 No user in data");
-        setError("Ungültige Anmeldedaten");
-        return;
-      }
-
-      console.log("🔍 Getting profile for user:", data.user.id);
-      const profile = await profileService.getProfile(data.user.id);
+      console.log("🔍 Getting profile for user:", user.id);
+      const profile = await profileService.getProfile(user.id);
 
       if (!profile) {
         console.log("🔍 No profile found");
@@ -223,10 +217,12 @@ export function AuthForm() {
       } catch (profileError: any) {
         console.error("❌ [REGISTRATION] Profile creation error:", profileError);
         toast({
-          title: "Registrierung teilweise erfolgreich",
-          description: "Account erstellt, aber Profil konnte nicht angelegt werden. Bitte kontaktieren Sie den Support.",
-          variant: "destructive"
+          title: "Registrierung erfolgreich!",
+          description: "Bitte bestätigen Sie nun Ihre E-Mail-Adresse. Ihr Profil wird beim ersten Login vervollständigt."
         });
+        
+        await supabase.auth.signOut();
+        window.location.href = "/login?registered=true";
       }
     } catch (error: any) {
       console.error("Registration exception:", error);
@@ -253,54 +249,6 @@ export function AuthForm() {
     if (password !== confirmPassword) {
       setError("Die Passwörter stimmen nicht überein.");
       return;
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-    setIsLoading(true);
-
-    try {
-      if (isSignUp) {
-        console.log("📧 Starting registration for:", formData.email);
-        
-        const { user, error } = await authService.signUp(
-          formData.email,
-          formData.password
-        );
-
-        if (error) {
-          console.error("❌ Registration error:", error);
-          setError(error.message || "Registrierung fehlgeschlagen");
-          setIsLoading(false);
-          return;
-        }
-
-        if (!user) {
-          setError("Registrierung fehlgeschlagen");
-          setIsLoading(false);
-          return;
-        }
-
-        console.log("✅ User registered:", user.id);
-        setSuccess("Registrierung erfolgreich! Bitte bestätige deine Email-Adresse. Wir haben dir eine Bestätigungs-Email gesendet.");
-        
-        // Formular zurücksetzen aber nicht weiterleiten
-        setFormData({ email: "", password: "", fullName: "" });
-        setIsLoading(false);
-      } else {
-      }
-    } catch (error: any) {
-      console.error("Registration exception:", error);
-      toast({
-        title: "Fehler",
-        description: error.message || "Ein unerwarteter Fehler ist aufgetreten",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
     }
   };
 

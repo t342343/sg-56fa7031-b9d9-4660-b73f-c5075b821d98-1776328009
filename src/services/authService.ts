@@ -63,7 +63,7 @@ export const authService = {
         email,
         password,
         options: {
-          emailRedirectTo: getRedirectURL(),
+          emailRedirectTo: getURL(),
         }
       });
 
