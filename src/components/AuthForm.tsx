@@ -153,8 +153,14 @@ export function AuthForm() {
       filter(Boolean).
       join(", ");
 
-      // Verwende authService.signUp() statt direktem Supabase-Aufruf
-      const { user: authUser, error: authError } = await authService.signUp(email, password);
+      console.log("🔍 [REGISTRATION] Calling signUp with all data");
+
+      // Verwende authService.signUp() mit ALLEN Daten - der Trigger erstellt dann das Profil automatisch
+      const { user: authUser, error: authError } = await authService.signUp(email, password, {
+        full_name: fullName,
+        phone: phone,
+        address: combinedAddress
+      });
 
       if (authError) {
         console.error("Registration error details:", authError);
@@ -177,53 +183,19 @@ export function AuthForm() {
         return;
       }
 
-      console.log("Registration successful, creating profile...");
+      console.log("✅ [REGISTRATION] SignUp successful, profile created by trigger");
 
-      // Warte kurz, damit Supabase die Session setzt
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      toast({
+        title: "Registrierung erfolgreich!",
+        description: "Bitte prüfen Sie Ihre E-Mails und bestätigen Sie Ihre E-Mail-Adresse, bevor Sie sich anmelden."
+      });
 
-      // Erstelle Profil mit zusätzlichen Daten
-      try {
-        console.log("🔍 [REGISTRATION] Calling createProfile with:", {
-          id: authUser.id,
-          email,
-          full_name: fullName,
-          address: combinedAddress,
-          phone
-        });
+      // Logout nach Registrierung und Umleitung zum Login
+      await supabase.auth.signOut();
 
-        await profileService.createProfile({
-          id: authUser.id,
-          email,
-          full_name: fullName,
-          address: combinedAddress,
-          phone,
-          role: "user"
-        });
+      // Verwende window.location für zuverlässige Umleitung mit Erfolgs-Parameter
+      window.location.href = "/login?registered=true";
 
-        console.log("✅ [REGISTRATION] Profile created successfully");
-
-        toast({
-          title: "Registrierung erfolgreich!",
-          description: "Bitte prüfen Sie Ihre E-Mails und bestätigen Sie Ihre E-Mail-Adresse, bevor Sie sich anmelden."
-        });
-
-        // Logout nach Registrierung und Umleitung zum Login
-        await supabase.auth.signOut();
-
-        // Verwende window.location für zuverlässige Umleitung mit Erfolgs-Parameter
-        window.location.href = "/login?registered=true";
-
-      } catch (profileError: any) {
-        console.error("❌ [REGISTRATION] Profile creation error:", profileError);
-        toast({
-          title: "Registrierung erfolgreich!",
-          description: "Bitte bestätigen Sie nun Ihre E-Mail-Adresse. Ihr Profil wird beim ersten Login vervollständigt."
-        });
-        
-        await supabase.auth.signOut();
-        window.location.href = "/login?registered=true";
-      }
     } catch (error: any) {
       console.error("Registration exception:", error);
       toast({
