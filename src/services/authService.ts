@@ -26,12 +26,6 @@ export const authService = {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          emailRedirectTo: getRedirectURL(),
-          data: {
-            email_confirm: false // Keine Email-Bestätigung erforderlich
-          }
-        },
       });
 
       if (error) {

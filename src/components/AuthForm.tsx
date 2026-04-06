@@ -38,7 +38,7 @@ export function AuthForm() {
     if (router.query.registered === "true") {
       toast({
         title: "Registrierung abgeschlossen!",
-        description: "Sie können sich jetzt anmelden.",
+        description: "Bitte prüfen Sie Ihre E-Mails und bestätigen Sie Ihre E-Mail-Adresse.",
         duration: 5000
       });
       // Entferne Parameter aus URL
@@ -211,7 +211,7 @@ export function AuthForm() {
 
         toast({
           title: "Registrierung erfolgreich!",
-          description: "Account erstellt. Sie können sich jetzt anmelden."
+          description: "Bitte prüfen Sie Ihre E-Mails und bestätigen Sie Ihre E-Mail-Adresse, bevor Sie sich anmelden."
         });
 
         // Logout nach Registrierung und Umleitung zum Login
