@@ -153,30 +153,11 @@ export function AuthForm() {
       filter(Boolean).
       join(", ");
 
-      console.log("🔍 [REGISTRATION] Calling signUp with all data");
-      console.log("📋 [DEBUG] Full Registration Data:", {
-        email,
-        fullName,
-        phone,
-        street,
-        houseNumber,
-        postalCode,
-        city,
-        combinedAddress
-      });
-
       // Verwende authService.signUp() mit ALLEN Daten - der Trigger erstellt dann das Profil automatisch
       const { user: authUser, error: authError } = await authService.signUp(email, password, {
         full_name: fullName,
         phone: phone,
         address: combinedAddress
-      });
-
-      console.log("📋 [DEBUG] SignUp response:", { 
-        hasUser: !!authUser, 
-        userId: authUser?.id,
-        hasError: !!authError,
-        errorMessage: authError?.message 
       });
 
       if (authError) {
@@ -199,8 +180,6 @@ export function AuthForm() {
         setLoading(false);
         return;
       }
-
-      console.log("✅ [REGISTRATION] SignUp successful, profile created by trigger");
 
       toast({
         title: "Registrierung erfolgreich!",

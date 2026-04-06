@@ -65,8 +65,6 @@ export const authService = {
     }
   ) {
     try {
-      console.log("🔍 [AUTH SERVICE] signUp called with:", { email, userData });
-
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -81,14 +79,11 @@ export const authService = {
       });
 
       if (error) {
-        console.error("❌ [AUTH SERVICE] SignUp error:", error);
         return { user: null, error };
       }
 
-      console.log("✅ [AUTH SERVICE] SignUp successful, user data saved to metadata");
       return { user: data.user, error: null };
     } catch (err) {
-      console.error("❌ [AUTH SERVICE] SignUp exception:", err);
       return { user: null, error: err as any };
     }
   },
