@@ -55,15 +55,18 @@ export const authService = {
   /**
    * Sign up a new user (mit Email-Bestätigung)
    */
-  async signUp(email: string, password: string) {
+  async signUp(email: string, password: string, full_name?: string) {
     try {
-      console.log("🔍 [AUTH SERVICE] signUp called with email:", email);
+      console.log("🔍 [AUTH SERVICE] signUp called with email:", email, "full_name:", full_name);
 
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: getURL(),
+          data: {
+            full_name: full_name || null
+          }
         }
       });
 
