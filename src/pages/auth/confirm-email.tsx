@@ -12,24 +12,38 @@ export default function ConfirmEmail() {
   useEffect(() => {
     const handleEmailConfirmation = async () => {
       try {
+        // Warte kurz, damit Supabase die Session aus dem URL-Hash verarbeiten kann
+        await new Promise(resolve => setTimeout(resolve, 500));
+
         // Prüfe ob User aus der URL-Hash authentifiziert wurde
         const { data: { session }, error } = await supabase.auth.getSession();
 
+        console.log("🔍 Email confirmation check:", { hasSession: !!session, error });
+
         if (error) {
+          console.error("Session error:", error);
           setStatus("error");
           setMessage("Fehler bei der Email-Bestätigung. Bitte versuche es erneut.");
           return;
         }
 
-        if (session) {
+        if (session?.user) {
+          console.log("✅ Session found, user confirmed:", session.user.email);
           setStatus("success");
-          setMessage("Email erfolgreich bestätigt! Du wirst gleich weitergeleitet...");
+          setMessage("Email erfolgreich bestätigt! Du wirst automatisch eingeloggt...");
           
-          // Nach 2 Sekunden zum Dashboard weiterleiten
+          // Stelle sicher dass die Session gesetzt ist
+          await supabase.auth.setSession({
+            access_token: session.access_token,
+            refresh_token: session.refresh_token
+          });
+
+          // Nach 1.5 Sekunden zum Dashboard weiterleiten
           setTimeout(() => {
             router.push("/dashboard");
-          }, 2000);
+          }, 1500);
         } else {
+          console.warn("❌ No session found");
           setStatus("error");
           setMessage("Ungültiger Bestätigungslink. Bitte fordere einen neuen an.");
         }

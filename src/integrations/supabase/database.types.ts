@@ -1,4 +1,4 @@
- 
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 export type Json =
   | string
   | number
@@ -11,7 +11,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.4"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -50,20 +50,6 @@ export type Database = {
           },
           {
             foreignKeyName: "bitcoin_wallets_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_assigned_by"
-            columns: ["assigned_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_user"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -177,19 +163,13 @@ export type Database = {
           created_at: string | null
           eur_rate: number
           expires_at: string | null
-          extended_base_amount: number | null
           id: string
-          is_extended: boolean | null
-          maturity_date: string | null
           maturity_days: number | null
           original_deposit: number | null
           status: string | null
           timestamp: string
           txid: string
           wallet_id: string
-          withdrawal_address: string | null
-          withdrawn_amount_btc: number | null
-          withdrawn_amount_eur: number | null
         }
         Insert: {
           amount_btc: number
@@ -198,19 +178,13 @@ export type Database = {
           created_at?: string | null
           eur_rate: number
           expires_at?: string | null
-          extended_base_amount?: number | null
           id?: string
-          is_extended?: boolean | null
-          maturity_date?: string | null
           maturity_days?: number | null
           original_deposit?: number | null
           status?: string | null
           timestamp: string
           txid: string
           wallet_id: string
-          withdrawal_address?: string | null
-          withdrawn_amount_btc?: number | null
-          withdrawn_amount_eur?: number | null
         }
         Update: {
           amount_btc?: number
@@ -219,28 +193,15 @@ export type Database = {
           created_at?: string | null
           eur_rate?: number
           expires_at?: string | null
-          extended_base_amount?: number | null
           id?: string
-          is_extended?: boolean | null
-          maturity_date?: string | null
           maturity_days?: number | null
           original_deposit?: number | null
           status?: string | null
           timestamp?: string
           txid?: string
           wallet_id?: string
-          withdrawal_address?: string | null
-          withdrawn_amount_btc?: number | null
-          withdrawn_amount_eur?: number | null
         }
         Relationships: [
-          {
-            foreignKeyName: "fk_wallet"
-            columns: ["wallet_id"]
-            isOneToOne: false
-            referencedRelation: "bitcoin_wallets"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "transactions_wallet_id_fkey"
             columns: ["wallet_id"]
@@ -338,7 +299,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      is_admin: { Args: never; Returns: boolean }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
