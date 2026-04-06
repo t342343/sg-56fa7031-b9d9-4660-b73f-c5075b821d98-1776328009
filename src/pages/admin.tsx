@@ -279,13 +279,30 @@ const handleWithdrawal = async (requestId: string, status: "approved" | "rejecte
   loadData();
 };
 
-const handleTransactionWithdrawal = async (transaction: any) => {
+const handleTransactionWithdrawal = async (transaction: any, targetStatus: string = "withdrawn") => {
   if (!transaction?.id) {
     toast({ title: "Fehler", description: "Transaktion nicht gefunden", variant: "destructive" });
     return;
   }
 
   try {
+    // Wenn abgelehnt wird (Status wird z.B. wieder auf 'active' gesetzt)
+    if (targetStatus !== "withdrawn") {
+      const { error } = await supabase
+        .from("transactions")
+        .update({ status: targetStatus })
+        .eq("id", transaction.id);
+
+      if (error) throw error;
+
+      toast({ 
+        title: "Auszahlung abgelehnt", 
+        description: "Die Transaktion wurde wieder auf aktiv gesetzt." 
+      });
+      loadData();
+      return;
+    }
+
     // Frische API-Abfrage für den aktuellen Bitcoin-Kurs
     let currentBitcoinPrice = bitcoinPrice; // Fallback auf den State-Wert
     
@@ -338,6 +355,7 @@ const handleTransactionWithdrawal = async (transaction: any) => {
       title: "Auszahlung genehmigt", 
       description: `${finalAmountEur.toFixed(2)} € (${finalAmountBtc.toFixed(8)} BTC) veranlasst.` 
     });
+    loadData();
   } catch (error) {
     console.error("Fehler bei Genehmigung:", error);
     toast({ title: "Fehler", description: "Konnte nicht genehmigt werden", variant: "destructive" });
