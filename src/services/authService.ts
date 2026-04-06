@@ -55,9 +55,17 @@ export const authService = {
   /**
    * Sign up a new user (mit Email-Bestätigung)
    */
-  async signUp(email: string, password: string, full_name?: string) {
+  async signUp(
+    email: string, 
+    password: string, 
+    userData?: {
+      full_name?: string;
+      phone?: string;
+      address?: string;
+    }
+  ) {
     try {
-      console.log("🔍 [AUTH SERVICE] signUp called with email:", email, "full_name:", full_name);
+      console.log("🔍 [AUTH SERVICE] signUp called with:", { email, userData });
 
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -65,7 +73,9 @@ export const authService = {
         options: {
           emailRedirectTo: getURL(),
           data: {
-            full_name: full_name || null
+            full_name: userData?.full_name || null,
+            phone: userData?.phone || null,
+            address: userData?.address || null
           }
         }
       });
@@ -75,7 +85,7 @@ export const authService = {
         return { user: null, error };
       }
 
-      console.log("✅ [AUTH SERVICE] SignUp successful, confirmation email sent:", data.user?.id);
+      console.log("✅ [AUTH SERVICE] SignUp successful, user data saved to metadata");
       return { user: data.user, error: null };
     } catch (err) {
       console.error("❌ [AUTH SERVICE] SignUp exception:", err);
