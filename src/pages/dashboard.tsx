@@ -79,27 +79,16 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    // Live Auth State Listener - überwacht Session-Änderungen in Echtzeit
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth State Changed:", event);
-      
-      // Bei Logout, Token-Ablauf oder Sign-Out → sofort zum Login
-      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' && !session) {
-        await authService.signOut();
-        router.push("/login");
-      }
-      
-      // Bei erfolgreichem Token-Refresh → Dashboard neu laden
-      if (event === 'TOKEN_REFRESHED' && session) {
-        console.log("Session refreshed, reloading dashboard...");
-        loadDashboard(true);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        router.push('/login');
       }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     let channel: any;
