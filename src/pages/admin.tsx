@@ -51,6 +51,7 @@ const [chatSort, setChatSort] = useState<"newest" | "oldest">("newest");
 const [homeButtonUrl, setHomeButtonUrl] = useState("/");
 const [websiteButtonUrl, setWebsiteButtonUrl] = useState("/");
 const [homeMenuUrl, setHomeMenuUrl] = useState("/");
+const [websiteLinkUrl, setWebsiteLinkUrl] = useState("/");
 
 // Tab-State
 const [activeTab, setActiveTab] = useState("users");
@@ -154,9 +155,11 @@ const loadData = async () => {
     const homeUrl = settings.find(s => s.setting_key === "home_button_url");
     const websiteUrl = settings.find(s => s.setting_key === "website_button_url");
     const homeMenuLinkUrl = settings.find(s => s.setting_key === "home_menu_url");
+    const websiteLinkUrlSetting = settings.find(s => s.setting_key === "website_link_url");
     if (homeUrl) setHomeButtonUrl(homeUrl.setting_value);
     if (websiteUrl) setWebsiteButtonUrl(websiteUrl.setting_value);
     if (homeMenuLinkUrl) setHomeMenuUrl(homeMenuLinkUrl.setting_value);
+    if (websiteLinkUrlSetting) setWebsiteLinkUrl(websiteLinkUrlSetting.setting_value);
   }
   
   setUsers(usersData);
@@ -1741,6 +1744,32 @@ return (
                       className="flex-1"
                     />
                     <Button onClick={() => updateSetting("home_menu_url", homeMenuUrl)}>
+                      Speichern
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Externe Links (https://...) öffnen in neuem Tab | Interne Links (/...) im gleichen Tab
+                  </p>
+                </div>
+
+                <div className="border-b" />
+
+                {/* Website Link (Menüpunkt) */}
+                <div className="space-y-2">
+                  <Label htmlFor="website-link-url" className="text-base font-semibold">Website-Link (Menüpunkt im Dashboard)</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Wohin soll der "Website"-Menüpunkt im Dashboard führen?
+                  </p>
+                  <div className="flex gap-2">
+                    <Input
+                      id="website-link-url"
+                      type="text"
+                      placeholder="z.B. https://ihre-website.de"
+                      value={websiteLinkUrl}
+                      onChange={(e) => setWebsiteLinkUrl(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button onClick={() => updateSetting("website_link_url", websiteLinkUrl)}>
                       Speichern
                     </Button>
                   </div>
