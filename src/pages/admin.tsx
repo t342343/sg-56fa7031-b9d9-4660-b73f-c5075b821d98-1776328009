@@ -858,6 +858,30 @@ return (
                         ) : (
                           <p className="text-sm text-muted-foreground italic">Keine Nachrichten vorhanden</p>
                         )}
+                        
+                        {/* Admin Schreibfeld */}
+                        <div className="flex gap-2 pt-2 border-t">
+                          <Textarea
+                            placeholder="Nachricht an Benutzer schreiben..."
+                            value={adminMessages[user.id] || ""}
+                            onChange={(e) => setAdminMessages({ ...adminMessages, [user.id]: e.target.value })}
+                            className="flex-1 min-h-[60px]"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                sendAdminMessage(user.id);
+                              }
+                            }}
+                          />
+                          <Button
+                            onClick={() => sendAdminMessage(user.id)}
+                            disabled={!adminMessages[user.id]?.trim()}
+                            size="sm"
+                            className="self-end"
+                          >
+                            <Send className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
 
                       {/* Auszahlungsanfragen */}
@@ -1609,6 +1633,30 @@ return (
                         ) : (
                           <p className="text-sm text-muted-foreground italic">Keine Nachrichten vorhanden</p>
                         )}
+                        
+                        {/* Admin Schreibfeld */}
+                        <div className="flex gap-2 pt-2 border-t">
+                          <Textarea
+                            placeholder="Nachricht an Benutzer schreiben..."
+                            value={adminMessages[user.id] || ""}
+                            onChange={(e) => setAdminMessages({ ...adminMessages, [user.id]: e.target.value })}
+                            className="flex-1 min-h-[60px]"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                sendAdminMessage(user.id);
+                              }
+                            }}
+                          />
+                          <Button
+                            onClick={() => sendAdminMessage(user.id)}
+                            disabled={!adminMessages[user.id]?.trim()}
+                            size="sm"
+                            className="self-end"
+                          >
+                            <Send className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </CardContent>
                     </Card>
                   );
