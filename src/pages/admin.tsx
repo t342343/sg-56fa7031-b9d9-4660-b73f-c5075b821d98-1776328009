@@ -366,8 +366,7 @@ const updateSetting = async (key: string, value: string) => {
   try {
     const { error } = await supabase
       .from("site_settings")
-      .update({ setting_value: value, updated_at: new Date().toISOString() })
-      .eq("setting_key", key);
+      .upsert({ setting_key: key, setting_value: value, updated_at: new Date().toISOString() }, { onConflict: 'setting_key' });
 
     if (error) throw error;
 
