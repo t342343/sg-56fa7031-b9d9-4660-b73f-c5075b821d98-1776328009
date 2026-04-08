@@ -46,6 +46,8 @@ const [chats, setChats] = useState<any[]>([]);
 const [lastPriceUpdate, setLastPriceUpdate] = useState<Date | null>(null);
 const [chatSearchQuery, setChatSearchQuery] = useState("");
 const [chatSort, setChatSort] = useState<"newest" | "oldest">("newest");
+const [hiddenUsers, setHiddenUsers] = useState<Set<string>>(new Set());
+const [showHiddenUsers, setShowHiddenUsers] = useState(true);
 
 // Link-Einstellungen
 const [homeButtonUrl, setHomeButtonUrl] = useState("/");
@@ -640,6 +642,13 @@ return (
                     <ArrowUpDown className="h-4 w-4" />
                     Saldo: {sortOrder === "asc" ? "Niedrig → Hoch" : "Hoch → Niedrig"}
                   </Button>
+                  <Button
+                    variant={showHiddenUsers ? "outline" : "default"}
+                    onClick={() => setShowHiddenUsers(!showHiddenUsers)}
+                    className="flex items-center gap-2"
+                  >
+                    {showHiddenUsers ? "Ausgeblendete anzeigen" : "Ausgeblendete verstecken"}
+                  </Button>
                 </div>
 
                 {/* Benutzer-Liste */}
@@ -653,6 +662,10 @@ return (
                         user.email?.toLowerCase().includes(query)
                       );
                     })
+                    .filter(user => {
+                      if (showHiddenUsers) return true;
+                      return !hiddenUsers.has(user.id);
+                    })
                     .sort((a, b) => {
                       const balanceA = calculateUserBalance(a.id);
                       const balanceB = calculateUserBalance(b.id);
@@ -661,9 +674,10 @@ return (
                     .map((user) => {
                       const wallet = wallets.find(w => w.user_id === user.id);
                       const balance = calculateUserBalance(user.id);
-
+                      const isHidden = hiddenUsers.has(user.id);
+                      
                       return (
-                        <Card key={user.id} className="hover:bg-slate-50 transition-colors">
+                        <Card key={user.id} className={`hover:bg-slate-50 transition-colors ${isHidden ? 'opacity-50' : ''}`}>
                           <CardContent className="p-4">
                             <div className="flex items-center justify-between">
                               <div className="flex-1">
@@ -671,7 +685,14 @@ return (
                                   onClick={() => setSelectedUserDetails(user)}
                                   className="text-left hover:text-blue-600 transition-colors"
                                 >
-                                  <p className="font-semibold text-lg">{user.full_name || "Kein Name"}</p>
+                                  <div className="flex items-center gap-2">
+                                    <p className="font-semibold text-lg">{user.full_name || "Kein Name"}</p>
+                                    {isHidden && (
+                                      <span className="text-xs px-2 py-1 bg-gray-200 text-gray-600 rounded">
+                                        Ausgeblendet
+                                      </span>
+                                    )}
+                                  </div>
                                   <p className="text-sm text-muted-foreground">{user.email}</p>
                                 </button>
                                 {wallet?.wallet_address && (
@@ -681,11 +702,30 @@ return (
                                   </div>
                                 )}
                               </div>
-                              <div className="text-right">
-                                <p className="text-2xl font-bold text-blue-600">
-                                  {balance.toFixed(2)} €
-                                </p>
-                                <p className="text-xs text-muted-foreground">Aktueller Saldo</p>
+                              <div className="flex items-center gap-4">
+                                <div className="text-right">
+                                  <p className="text-2xl font-bold text-blue-600">
+                                    {balance.toFixed(2)} €
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">Aktueller Saldo</p>
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const newHidden = new Set(hiddenUsers);
+                                    if (isHidden) {
+                                      newHidden.delete(user.id);
+                                    } else {
+                                      newHidden.add(user.id);
+                                    }
+                                    setHiddenUsers(newHidden);
+                                  }}
+                                  className="text-xs"
+                                >
+                                  {isHidden ? "Einblenden" : "Ausblenden"}
+                                </Button>
                               </div>
                             </div>
                           </CardContent>
