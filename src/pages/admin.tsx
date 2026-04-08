@@ -94,6 +94,7 @@ const checkAuth = async () => {
 
     setIsAdmin(true);
     setIsLoading(false);
+    loadSettings();
     loadData();
     loadBitcoinPrice();
   } catch (error) {
@@ -141,15 +142,7 @@ const loadBitcoinPrice = async () => {
   }
 };
 
-const loadData = async () => {
-  const usersData = await profileService.getAllProfiles();
-  const walletsData = await walletService.getAllWallets();
-  const txData = await transactionService.getAllTransactions();
-  const pendingTx = await transactionService.getPendingWithdrawals();
-  const completedTx = await transactionService.getCompletedWithdrawals();
-  const poolData = await walletService.getWalletPool();
-  
-  // Link-Einstellungen laden
+const loadSettings = async () => {
   const { data: settings } = await supabase.from("site_settings").select("*");
   if (settings) {
     const homeUrl = settings.find(s => s.setting_key === "home_button_url");
@@ -161,6 +154,15 @@ const loadData = async () => {
     if (homeMenuLinkUrl) setHomeMenuUrl(homeMenuLinkUrl.setting_value);
     if (websiteLinkUrlSetting) setWebsiteLinkUrl(websiteLinkUrlSetting.setting_value);
   }
+};
+
+const loadData = async () => {
+  const usersData = await profileService.getAllProfiles();
+  const walletsData = await walletService.getAllWallets();
+  const txData = await transactionService.getAllTransactions();
+  const pendingTx = await transactionService.getPendingWithdrawals();
+  const completedTx = await transactionService.getCompletedWithdrawals();
+  const poolData = await walletService.getWalletPool();
   
   setUsers(usersData);
   setWallets(walletsData);
