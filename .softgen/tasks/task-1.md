@@ -1,6 +1,6 @@
 ---
 title: Create CI/CD migration script for Coolify & Self-hosted Supabase
-status: todo
+status: done
 priority: high
 type: feature
 tags: [database, migration, script, self-hosted, coolify]
@@ -15,9 +15,9 @@ To support this CI/CD pipeline, we need an intelligent Node.js migration script 
 It MUST keep track of executed migrations (e.g., in a `_migration_history` table) so it never attempts to run the same SQL file twice, which would cause deployment crashes.
 
 ## Checklist
-- [ ] Create `scripts/run-migrations.js` using the `pg` client.
-- [ ] Implement logic to automatically create a `_migration_history` table if it doesn't exist.
-- [ ] Implement logic to read `supabase/migrations/`, sort chronologically, and filter out already executed files.
-- [ ] Implement secure execution using `process.env.DATABASE_URL` (connecting directly to the self-hosted PostgreSQL).
-- [ ] Add robust error logging (to help the user debug via Coolify logs if a SQL syntax error occurs).
-- [ ] Add the command `"migrate:prod": "node scripts/run-migrations.js"` to `package.json` scripts.
+- [x] Create `scripts/run-migrations.js` using the `pg` client.
+- [x] Implement logic to automatically create a `_migration_history` table if it doesn't exist.
+- [x] Implement logic to read `supabase/migrations/`, sort chronologically, and filter out already executed files.
+- [x] Implement secure execution using `process.env.DATABASE_URL` (connecting directly to the self-hosted PostgreSQL).
+- [x] Add robust error logging (to help the user debug via Coolify logs if a SQL syntax error occurs).
+- [x] Add the command `"migrate:prod": "node scripts/run-migrations.js"` to `package.json` scripts.
