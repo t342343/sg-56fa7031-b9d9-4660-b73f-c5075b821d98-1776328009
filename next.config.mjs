@@ -29,6 +29,7 @@ function getTurboRules() {
 
 const nextConfig = {
   reactStrictMode: true,
+  output: "standalone",
   experimental: {
     turbo: {
       rules: getTurboRules(),
