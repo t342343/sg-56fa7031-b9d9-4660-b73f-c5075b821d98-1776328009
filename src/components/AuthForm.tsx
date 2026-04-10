@@ -181,6 +181,17 @@ export function AuthForm() {
         return;
       }
 
+      // WICHTIG: Profil-Daten direkt aktualisieren (Fallback falls Trigger nicht funktioniert)
+      try {
+        await profileService.updateProfile(authUser.id, {
+          phone: phone,
+          address: combinedAddress
+        });
+      } catch (profileError) {
+        console.error("Profil-Update fehlgeschlagen:", profileError);
+        // Nicht blockieren - Trigger könnte es trotzdem schaffen
+      }
+
       toast({
         title: "Registrierung erfolgreich!",
         description: "Bitte prüfen Sie Ihre E-Mails und bestätigen Sie Ihre E-Mail-Adresse, bevor Sie sich anmelden."
