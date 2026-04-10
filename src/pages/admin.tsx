@@ -166,12 +166,12 @@ const loadData = async () => {
   const completedTx = await transactionService.getCompletedWithdrawals();
   const poolData = await walletService.getWalletPool();
   
-  setUsers(usersData);
-  setWallets(walletsData);
-  setTransactions(txData);
-  setPendingTransactions(pendingTx);
-  setCompletedWithdrawals(completedTx);
-  setWalletPool(poolData);
+  setUsers(usersData || []);
+  setWallets(walletsData || []);
+  setTransactions(txData || []);
+  setPendingTransactions(pendingTx || []);
+  setCompletedWithdrawals(completedTx || []);
+  setWalletPool(poolData || []);
 
   // Chat-Nachrichten laden
   const { data: chatData } = await supabase.from("chat_messages").select("*").order("created_at", { ascending: false });

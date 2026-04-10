@@ -94,6 +94,10 @@ export default function Dashboard() {
     let channel: any;
 
     if (userId) {
+      // Load initial chat history
+      loadChat();
+      
+      // Subscribe to new messages
       channel = chatService.subscribeToMessages(userId, (newMessage) => {
         setMessages((prev) => [...prev, newMessage]);
       });
