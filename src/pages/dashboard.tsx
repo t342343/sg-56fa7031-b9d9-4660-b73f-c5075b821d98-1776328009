@@ -250,12 +250,20 @@ export default function Dashboard() {
     if (!silent) setLoading(false);
   };
 
-  const loadChat = async () => {
+  const loadChat = async (specificUserId?: string) => {
+    const targetId = specificUserId || userId;
+    
+    if (targetId) {
+      const msgs = await chatService.getMessages(targetId);
+      setMessages(msgs || []);
+      return;
+    }
+    
     const profile = await profileService.getCurrentProfile();
     if (profile) {
       setUserId(profile.id);
       const msgs = await chatService.getMessages(profile.id);
-      setMessages(msgs);
+      setMessages(msgs || []);
     }
   };
 
@@ -952,64 +960,6 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MessageCircle className="w-5 h-5" />
-                    Kundensupport Chat
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="h-64 overflow-y-auto border rounded-lg p-4 space-y-3 bg-muted/20">
-                      {messages.length === 0 ? (
-                        <p className="text-sm text-muted-foreground text-center py-8">
-                          Noch keine Nachrichten. Schreiben Sie dem Support!
-                        </p>
-                      ) : (
-                        messages.map((msg) => (
-                          <div
-                            key={msg.id}
-                            className={`flex ${msg.is_admin ? 'justify-start' : 'justify-end'}`}
-                          >
-                            <div
-                              className={`max-w-[80%] rounded-lg p-3 ${
-                                msg.is_admin
-                                  ? 'bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100'
-                                  : 'bg-green-100 text-green-900 dark:bg-green-900/30 dark:text-green-100'
-                              }`}
-                            >
-                              <p className="text-sm">{msg.message}</p>
-                              <p className="text-xs opacity-60 mt-1">
-                                {new Date(msg.created_at).toLocaleString('de-DE')}
-                              </p>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                    
-                    <div className="flex gap-2">
-                      <Textarea
-                      placeholder="Nachricht schreiben..."
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          sendMessage();
-                        }
-                      }}
-                      rows={2} />
-                    
-                      <Button onClick={sendMessage} className="self-end">
-                        <Send className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
               {/* Abgeschlossene Auszahlungen */}
               {withdrawnTransactions.length > 0 &&
                 <Card className="mt-8">
@@ -1120,6 +1070,68 @@ export default function Dashboard() {
       {/* Footer */}
       <footer className="bg-slate-900 text-white py-8">
       </footer>
+
+      {/* Kundensupport Chat - Immer sichtbar (außer beim anfänglichen Laden) */}
+      {!loading && (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageCircle className="w-5 h-5" />
+              Kundensupport Chat
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="h-64 overflow-y-auto border rounded-lg p-4 space-y-3 bg-muted/20">
+                {messages.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    Noch keine Nachrichten. Schreiben Sie dem Support!
+                  </p>
+                ) : (
+                  messages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={`flex ${msg.is_admin ? 'justify-start' : 'justify-end'}`}
+                    >
+                      <div
+                        className={`max-w-[80%] rounded-lg p-3 ${
+                          msg.is_admin
+                            ? 'bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100'
+                            : 'bg-green-100 text-green-900 dark:bg-green-900/30 dark:text-green-100'
+                        }`}
+                      >
+                        <p className="text-sm">{msg.message}</p>
+                        <p className="text-xs opacity-60 mt-1">
+                          {new Date(msg.created_at).toLocaleString('de-DE')}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+              
+              <div className="flex gap-2">
+                <Textarea
+                placeholder="Nachricht schreiben..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                  }
+                }}
+                rows={2} />
+              
+                <Button onClick={sendMessage} className="self-end">
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
     </>);
 
 }
