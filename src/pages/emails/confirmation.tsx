@@ -4,7 +4,7 @@ export default function ConfirmationEmail() {
   return null;
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ query }) => {
+export const getServerSideProps: GetServerSideProps = async ({ query, res }) => {
   const confirmUrl = query.url || "https://finanzportal.is/dashboard";
 
   const html = `<!DOCTYPE html>
@@ -53,16 +53,11 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
 </body>
 </html>`;
 
+  res.setHeader("Content-Type", "text/html");
+  res.write(html);
+  res.end();
+
   return {
     props: {},
-    // @ts-ignore
-    redirect: undefined,
-    notFound: false,
   };
 };
-
-export async function getStaticProps() {
-  return {
-    props: {},
-  };
-}
