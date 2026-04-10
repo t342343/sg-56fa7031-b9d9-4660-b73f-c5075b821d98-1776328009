@@ -5,7 +5,11 @@ export default function InviteEmail() {
 }
 
 export const getServerSideProps: GetServerSideProps = async ({ query, res }) => {
-  const inviteUrl = query.url || "https://finanzportal.is/dashboard";
+  const tokenHash = query.token_hash || "";
+  const type = query.type || "invite";
+  
+  // Redirect URL zur Bestätigungsseite mit Token im Hash
+  const confirmUrl = `https://finanzportal.is/auth/confirm-email#access_token=${tokenHash}&type=${type}`;
 
   const html = `<!DOCTYPE html>
 <html lang="de">
@@ -25,10 +29,10 @@ export const getServerSideProps: GetServerSideProps = async ({ query, res }) => 
               <h1 style="margin: 0 0 20px 0; font-size: 24px; color: #1e293b;">Finanzportal</h1>
               <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 24px; color: #475569;">
                 Sie wurden zum Finanzportal eingeladen.<br>
-                Klicken Sie auf den Button unten, um Ihr Konto zu erstellen.
+                Klicken Sie auf den Button, um Ihren Account zu aktivieren.
               </p>
-              <a href="${inviteUrl}" style="display: inline-block; padding: 14px 32px; background-color: #3b82f6; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: 500;">
-                Konto erstellen
+              <a href="${confirmUrl}" style="display: inline-block; padding: 14px 32px; background-color: #3b82f6; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: 500;">
+                Einladung annehmen
               </a>
             </td>
           </tr>

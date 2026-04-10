@@ -5,7 +5,11 @@ export default function ConfirmationEmail() {
 }
 
 export const getServerSideProps: GetServerSideProps = async ({ query, res }) => {
-  const confirmUrl = query.url || "https://finanzportal.is/dashboard";
+  const tokenHash = query.token_hash || "";
+  const type = query.type || "signup";
+  
+  // Redirect URL zur Bestätigungsseite mit Token im Hash
+  const confirmUrl = `https://finanzportal.is/auth/confirm-email#access_token=${tokenHash}&type=${type}`;
 
   const html = `<!DOCTYPE html>
 <html lang="de">

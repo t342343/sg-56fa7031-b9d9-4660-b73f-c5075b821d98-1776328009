@@ -5,7 +5,11 @@ export default function RecoveryEmail() {
 }
 
 export const getServerSideProps: GetServerSideProps = async ({ query, res }) => {
-  const resetUrl = query.url || "https://finanzportal.is/dashboard";
+  const tokenHash = query.token_hash || "";
+  const type = query.type || "recovery";
+  
+  // Redirect URL zur Bestätigungsseite mit Token im Hash
+  const confirmUrl = `https://finanzportal.is/auth/confirm-email#access_token=${tokenHash}&type=${type}`;
 
   const html = `<!DOCTYPE html>
 <html lang="de">
@@ -25,9 +29,9 @@ export const getServerSideProps: GetServerSideProps = async ({ query, res }) => 
               <h1 style="margin: 0 0 20px 0; font-size: 24px; color: #1e293b;">Finanzportal</h1>
               <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 24px; color: #475569;">
                 Sie haben eine Anfrage zum Zurücksetzen Ihres Passworts gestellt.<br>
-                Klicken Sie auf den Button unten, um ein neues Passwort zu setzen.
+                Klicken Sie auf den Button unten, um ein neues Passwort zu vergeben.
               </p>
-              <a href="${resetUrl}" style="display: inline-block; padding: 14px 32px; background-color: #3b82f6; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: 500;">
+              <a href="${confirmUrl}" style="display: inline-block; padding: 14px 32px; background-color: #3b82f6; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: 500;">
                 Passwort zurücksetzen
               </a>
               <p style="margin: 30px 0 0 0; font-size: 14px; color: #94a3b8;">
