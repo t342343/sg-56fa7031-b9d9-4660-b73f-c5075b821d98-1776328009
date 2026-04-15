@@ -461,7 +461,7 @@ export default function Dashboard() {
     if (tx.is_extended) {
       // Verlängert → Start ab Verlängerungszeitpunkt (14 Tage vor neuem expires_at)
       startTime = expiresAt - (14 * 24 * 60 * 60 * 1000);
-      endTime = now;
+      endTime = now >= expiresAt ? expiresAt : now;  // ✅ Einfrieren wenn verlängerte Periode auch abläuft
     } else if (now >= expiresAt) {
       // Abgelaufen & pausiert → Einfrieren bei expires_at (KEIN weiterer Gewinn)
       startTime = timestamp;
