@@ -446,16 +446,33 @@ export default function Dashboard() {
   const calculateCurrentBalance = (tx: any) => {
     if (!serverTime) return tx.amount_eur; // Fallback wenn serverTime noch nicht geladen
 
-    // 1% Sofort-Bonus NUR bei NEUEN Einzahlungen, NICHT bei verlängerten
-    const eingezahlt = tx.is_extended ? tx.amount_eur : tx.amount_eur * 1.01;
+    // Basis-Betrag: Bei Verlängerung = gefrorener Wert, bei neuer Einzahlung = +1% Bonus
+    const eingezahlt = tx.is_extended 
+      ? (tx.extended_base_amount || tx.amount_eur)
+      : tx.amount_eur * 1.01;
 
     const timestamp = new Date(tx.timestamp).getTime();
     const now = serverTime.getTime();
     const expiresAt = new Date(tx.expires_at).getTime();
 
-    // Wenn abgelaufen: cap bei expires_at, sonst nutze now
-    const effectiveEndTime = now > expiresAt ? expiresAt : now;
-    const timeDiffMs = effectiveEndTime - timestamp;
+    // 3-Zustands-Logik: Laufend / Pausiert (eingefroren) / Verlängert
+    let startTime, endTime;
+
+    if (tx.is_extended) {
+      // Verlängert → Start ab Verlängerungszeitpunkt (14 Tage vor neuem expires_at)
+      startTime = expiresAt - (14 * 24 * 60 * 60 * 1000);
+      endTime = now;
+    } else if (now >= expiresAt) {
+      // Abgelaufen & pausiert → Einfrieren bei expires_at (KEIN weiterer Gewinn)
+      startTime = timestamp;
+      endTime = expiresAt;
+    } else {
+      // Normal laufend
+      startTime = timestamp;
+      endTime = now;
+    }
+
+    const timeDiffMs = endTime - startTime;
     const daysPassed = Math.max(0, timeDiffMs / (1000 * 60 * 60 * 24));
 
     // Gesamtguthaben aller aktiven Transaktionen für die Rendite
