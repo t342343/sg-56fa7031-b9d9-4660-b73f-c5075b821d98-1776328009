@@ -112,45 +112,37 @@ export default function Dashboard() {
     };
   }, [userId]);
 
+  // Polling als Backup für Chat-Updates (falls Realtime nicht funktioniert)
+  useEffect(() => {
+    if (!userId) return;
+
+    const interval = setInterval(() => {
+      loadChat();
+    }, 5000); // Alle 5 Sekunden
+
+    return () => clearInterval(interval);
+  }, [userId]);
+
   // Realtime-Listener für Auszahlungsgenehmigungen
   useEffect(() => {
-    if (!wallet?.id) return;
+    let channel: any;
 
-    const channel = supabase.
-    channel(`transactions-${wallet.id}`).
-    on(
-      'postgres_changes',
-      {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'transactions',
-        filter: `wallet_id=eq.${wallet.id}`
-      },
-      (payload: any) => {
-        // Wenn Status zu "withdrawn" wechselt
-        if (payload.new.status === "withdrawn" && payload.old.status === "withdrawal_pending") {
-          const tx = payload.new;
-          const finalAmountEur = tx.withdrawn_amount_eur || calculateCurrentBalance(tx);
-          const finalAmountBtc = tx.withdrawn_amount_btc || 0;
-          const walletAddress = tx.withdrawal_address || "Ihre Wallet";
-
-          toast({
-            title: "🎉 Auszahlung veranlasst!",
-            description: `${finalAmountEur.toFixed(2)} € (${finalAmountBtc.toFixed(8)} BTC) wurden an ${walletAddress.substring(0, 20)}... überwiesen.`,
-            duration: 10000
-          });
-
-          // Dashboard neu laden
-          loadDashboard();
-        }
-      }
-    ).
-    subscribe();
+    if (userId) {
+      // Load initial chat history
+      loadChat();
+      
+      // Subscribe to new messages
+      channel = chatService.subscribeToMessages(userId, (newMessage) => {
+        setMessages((prev) => [...prev, newMessage]);
+      });
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
-  }, [wallet?.id]);
+  }, [userId]);
 
   // Auto-refresh Transaktionen alle 30 Sekunden
   useEffect(() => {
@@ -669,7 +661,9 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8">
             <Card className="bg-gradient-to-br from-slate-500 to-slate-600 text-white relative overflow-hidden">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-slate-100">Tägliche Rendite</CardTitle>
+                <CardTitle className="text-sm font-medium text-slate-100">
+                  Tägliche Rendite
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-white mb-4">{rateInfo.rate}</div>
@@ -999,7 +993,7 @@ export default function Dashboard() {
 
               {/* Kundensupport Chat - Immer sichtbar (außer beim anfänglichen Laden) */}
               {!loading && (
-                <Card className="mt-6">
+                <Card id="chat-section" className="mt-6">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <MessageCircle className="w-5 h-5" />
