@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
-import { ArrowDownLeft, Copy, Check, Clock, MessageCircle, Send, TrendingUp, Wallet, CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowDownLeft, Copy, Check, Clock, MessageCircle, Send, TrendingUp, Wallet, CheckCircle2, Loader2, X } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -37,6 +37,7 @@ export default function Dashboard() {
   const [bitcoinPrice, setBitcoinPrice] = useState<number>(85000);
   const [isValidatingAddress, setIsValidatingAddress] = useState(false);
   const [addressValid, setAddressValid] = useState<boolean | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -1072,65 +1073,19 @@ export default function Dashboard() {
         </p>
       </div>
 
-      {/* Kundensupport Chat - Immer sichtbar (außer beim anfänglichen Laden) */}
+      {/* Floating Chat Button - WhatsApp Style */}
       {!loading && (
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MessageCircle className="w-5 h-5" />
-              Kundensupport Chat
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="h-64 overflow-y-auto border rounded-lg p-4 space-y-3 bg-muted/20">
-                {messages.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-8">
-                    Noch keine Nachrichten. Schreiben Sie dem Support!
-                  </p>
-                ) : (
-                  messages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`flex ${msg.is_admin ? 'justify-start' : 'justify-end'}`}
-                    >
-                      <div
-                        className={`max-w-[80%] rounded-lg p-3 ${
-                          msg.is_admin
-                            ? 'bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100'
-                            : 'bg-green-100 text-green-900 dark:bg-green-900/30 dark:text-green-100'
-                        }`}
-                      >
-                        <p className="text-sm">{msg.message}</p>
-                        <p className="text-xs opacity-60 mt-1">
-                          {new Date(msg.created_at).toLocaleString('de-DE')}
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-              
-              <div className="flex gap-2">
-                <Textarea
-                  placeholder="Nachricht schreiben..."
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      sendMessage();
-                    }
-                  }}
-                  rows={2}
-                />
-                <Button onClick={sendMessage} className="self-end">
-                  <Send className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <button
+          onClick={() => setChatOpen(!chatOpen)}
+          className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
+          aria-label="Chat öffnen"
+        >
+          {chatOpen ? (
+            <X className="w-6 h-6" />
+          ) : (
+            <MessageCircle className="w-6 h-6" />
+          )}
+        </button>
       )}
 
     </>);
