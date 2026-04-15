@@ -451,7 +451,11 @@ export default function Dashboard() {
 
     const timestamp = new Date(tx.timestamp).getTime();
     const now = serverTime.getTime();
-    const timeDiffMs = now - timestamp;
+    const expiresAt = new Date(tx.expires_at).getTime();
+
+    // Wenn abgelaufen: cap bei expires_at, sonst nutze now
+    const effectiveEndTime = now > expiresAt ? expiresAt : now;
+    const timeDiffMs = effectiveEndTime - timestamp;
     const daysPassed = Math.max(0, timeDiffMs / (1000 * 60 * 60 * 24));
 
     // Gesamtguthaben aller aktiven Transaktionen für die Rendite
