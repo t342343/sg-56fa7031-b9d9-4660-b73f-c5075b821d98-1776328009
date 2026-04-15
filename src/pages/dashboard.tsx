@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { authService } from "@/services/authService";
 import { Progress } from "@/components/ui/progress";
+import Link from "next/link";
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
@@ -995,6 +996,68 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
               }
+
+              {/* Kundensupport Chat */}
+              {!loading && (
+                <Card className="mt-6" id="chat-section">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MessageCircle className="w-5 h-5" />
+                      Kundensupport Chat
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-4 max-h-96 overflow-y-auto p-4 bg-slate-50 rounded-lg">
+                      {messages.length === 0 ? (
+                        <p className="text-muted-foreground text-center">Noch keine Nachrichten</p>
+                      ) : (
+                        messages.map((msg) => (
+                          <div
+                            key={msg.id}
+                            className={cn(
+                              "p-3 rounded-lg max-w-[80%]",
+                              msg.is_admin
+                                ? "bg-blue-100 ml-auto text-right"
+                                : "bg-white border border-slate-200"
+                            )}
+                          >
+                            <p className="text-sm">{msg.message}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {new Date(msg.created_at).toLocaleString("de-DE")}
+                            </p>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Textarea
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder="Nachricht schreiben..."
+                        className="resize-none"
+                        rows={2}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            sendMessage();
+                          }
+                        }}
+                      />
+                      <Button onClick={sendMessage} size="icon" className="self-end">
+                        <Send className="w-4 h-4" />
+                      </Button>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground text-center">
+                      Für dringende Anliegen kontaktieren Sie bitte direkt den{" "}
+                      <Link href="/admin" className="text-blue-600 hover:underline">
+                        Administrator
+                      </Link>
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           )}
 
