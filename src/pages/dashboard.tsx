@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { authService } from "@/services/authService";
 import { Progress } from "@/components/ui/progress";
 import Link from "next/link";
+import { useRef } from "react";
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
@@ -41,6 +42,7 @@ export default function Dashboard() {
   const [chatOpen, setChatOpen] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Hole Server-Zeit beim Laden
   useEffect(() => {
@@ -167,6 +169,13 @@ export default function Dashboard() {
 
     return () => clearInterval(interval);
   }, [wallet?.id]);
+
+  // Auto-Scroll zu neuesten Chat-Nachrichten
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
   const silentCheckTransactions = async () => {
     if (!wallet) return;
@@ -1008,25 +1017,28 @@ export default function Dashboard() {
                             Noch keine Nachrichten. Schreiben Sie dem Support!
                           </p>
                         ) : (
-                          messages.map((msg) => (
-                            <div
-                              key={msg.id}
-                              className={`flex ${msg.is_admin ? 'justify-start' : 'justify-end'}`}
-                            >
+                          <>
+                            {messages.map((msg) => (
                               <div
-                                className={`max-w-[80%] rounded-lg p-3 ${
-                                  msg.is_admin
-                                    ? 'bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100'
-                                    : 'bg-green-100 text-green-900 dark:bg-green-900/30 dark:text-green-100'
-                                }`}
+                                key={msg.id}
+                                className={`flex ${msg.is_admin ? 'justify-start' : 'justify-end'}`}
                               >
-                                <p className="text-sm">{msg.message}</p>
-                                <p className="text-xs opacity-60 mt-1">
-                                  {new Date(msg.created_at).toLocaleString('de-DE')}
-                                </p>
+                                <div
+                                  className={`max-w-[80%] rounded-lg p-3 ${
+                                    msg.is_admin
+                                      ? 'bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100'
+                                      : 'bg-green-100 text-green-900 dark:bg-green-900/30 dark:text-green-100'
+                                  }`}
+                                >
+                                  <p className="text-sm">{msg.message}</p>
+                                  <p className="text-xs opacity-60 mt-1">
+                                    {new Date(msg.created_at).toLocaleString('de-DE')}
+                                  </p>
+                                </div>
                               </div>
-                            </div>
-                          ))
+                            ))}
+                            <div ref={messagesEndRef} />
+                          </>
                         )}
                       </div>
                       
