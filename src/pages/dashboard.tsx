@@ -674,7 +674,7 @@ export default function Dashboard() {
                 
                 <div>
                   <label className="text-sm font-medium mb-2 block">
-                    Wallet-Adresse
+                    Bitcoin Einzahlungsadresse
                   </label>
                   <div className="flex gap-2">
                     <Input
@@ -691,7 +691,7 @@ export default function Dashboard() {
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
-                    Senden Sie Bitcoin an diese Adresse. Nach 1 Bestätigung wird Ihre Einzahlung automatisch gutgeschrieben.
+                    Schicken Sie Ihre Bitcoins an diese Adresse.
                   </p>
                 </div>
 
