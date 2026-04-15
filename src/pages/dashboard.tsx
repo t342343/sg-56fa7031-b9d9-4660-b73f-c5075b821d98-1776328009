@@ -656,67 +656,13 @@ export default function Dashboard() {
           </div>
 
           {/* Ihre Wallet - Dazwischen */}
-          {loading ? (
-            <div className="animate-pulse text-muted-foreground mb-6">Lade Daten...</div>
-          ) : !wallet ? (
-            <Card className="mb-6">
-              <CardContent className="pt-6">
-                <p className="text-muted-foreground text-center py-8">
-                  Ihnen wurde noch keine Bitcoin Wallet zugewiesen. Bitte warten Sie, bis der Administrator Ihr Konto eingerichtet hat.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="border-blue-accent/20 bg-blue-accent/5 mb-6">
-              <CardHeader>
-                <CardTitle className="text-lg">Ihre Wallet</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex flex-col sm:flex-row gap-4 items-start">
-                  <div className="flex-1 w-full">
-                    <div className="relative">
-                      <p className="font-mono bg-background border p-4 rounded-md break-all select-all text-sm pr-12">
-                        {wallet.wallet_address}
-                      </p>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={copyWalletAddress}
-                        className="absolute right-2 top-1/2 -translate-y-1/2"
-                        title="Adresse kopieren"
-                      >
-                        {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
-                      </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Dies ist Ihre persönliche Einzahlungsadresse. Es kann einige Minuten dauern, bis neue Einzahlungen sichtbar werden.
-                    </p>
-                  </div>
-                  
-                  <div className="bg-white p-4 rounded-lg border shadow-sm">
-                    <QRCodeSVG
-                      value={wallet.wallet_address}
-                      size={160}
-                      level="H"
-                      includeMargin={true} 
-                    />
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2 pt-3 border">
-                  <Button
-                    onClick={manualCheckTransactions}
-                    disabled={checkingTransactions}
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                  >
-                    Transaktionen aktualisieren
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          <Card className="mb-6">
+            <CardContent className="pt-6">
+              <p className="text-muted-foreground text-center py-8">
+                Ihnen wurde noch keine Bitcoin Wallet zugewiesen. Bitte warten Sie, bis der Administrator Ihr Konto eingerichtet hat.
+              </p>
+            </CardContent>
+          </Card>
 
           {/* Statistik-Karten - Untere Reihe */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8">
@@ -1088,6 +1034,16 @@ export default function Dashboard() {
           <MessageCircle className="w-6 h-6" />
         </button>
       )}
+
+      {/* Kundensupport Chat - DEBUG VERSION - Immer sichtbar */}
+      <Card className="mt-6 border-4 border-red-500 bg-red-50" id="chat-section">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MessageCircle className="w-5 h-5" />
+            🔴 CHAT DEBUG - Kannst du das sehen?
+          </CardTitle>
+        </CardHeader>
+      </Card>
 
     </>);
 
