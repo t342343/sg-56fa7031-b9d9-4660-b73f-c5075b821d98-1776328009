@@ -1050,6 +1050,11 @@ export default function Dashboard() {
               }
             </div>
           )}
+
+          {/* Footer */}
+          <footer className="bg-slate-900 text-white py-8">
+          </footer>
+
         </div>
       </DashboardLayout>
 
@@ -1066,10 +1071,6 @@ export default function Dashboard() {
           Als offizieller Anlageanbieter und Partner von Versicherungen und Banken sind wir verpflichtet bei Verdacht auf Verstoß gegen das Geldwäschegesetz (§ 261 StGB) auf Behördliche Anfragen Auskünfte zu erteilen.
         </p>
       </div>
-
-      {/* Footer */}
-      <footer className="bg-slate-900 text-white py-8">
-      </footer>
 
       {/* Kundensupport Chat - Immer sichtbar (außer beim anfänglichen Laden) */}
       {!loading && (
@@ -1112,17 +1113,17 @@ export default function Dashboard() {
               
               <div className="flex gap-2">
                 <Textarea
-                placeholder="Nachricht schreiben..."
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
-                  }
-                }}
-                rows={2} />
-              
+                  placeholder="Nachricht schreiben..."
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      sendMessage();
+                    }
+                  }}
+                  rows={2}
+                />
                 <Button onClick={sendMessage} className="self-end">
                   <Send className="w-4 h-4" />
                 </Button>
