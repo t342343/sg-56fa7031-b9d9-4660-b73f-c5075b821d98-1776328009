@@ -480,19 +480,19 @@ export default function Dashboard() {
   };
 
   const calculateTotalBalance = () => {
-    return transactions.
-    filter((tx) => tx.status !== "withdrawal_pending").
-    reduce((sum, tx) => sum + calculateCurrentBalance(tx), 0);
+    return transactions
+      .filter((tx) => tx.status !== "withdrawal_pending")
+      .reduce((sum, tx) => sum + calculateCurrentBalance(tx), 0);
   };
 
   const calculateTotalProfit = () => {
-    return transactions.
-    filter((tx) => tx.status !== "withdrawal_pending").
-    reduce((sum, tx) => {
-      const currentBalance = calculateCurrentBalance(tx);
-      const baseAmount = tx.original_deposit || tx.amount_eur;
-      return sum + (currentBalance - baseAmount);
-    }, 0);
+    return transactions
+      .filter((tx) => tx.status !== "withdrawal_pending")
+      .reduce((sum, tx) => {
+        const currentBalance = calculateCurrentBalance(tx);
+        const baseAmount = tx.original_deposit || tx.amount_eur;
+        return sum + (currentBalance - baseAmount);
+      }, 0);
   };
 
   const getNextProfitCountdown = (timestamp: string, expiresAt: string) => {
