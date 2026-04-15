@@ -649,13 +649,70 @@ export default function Dashboard() {
           </div>
 
           {/* Ihre Wallet - Dazwischen */}
-          <Card className="mb-6">
-            <CardContent className="pt-6">
-              <p className="text-muted-foreground text-center py-8">
-                Ihnen wurde noch keine Bitcoin Wallet zugewiesen. Bitte warten Sie, bis der Administrator Ihr Konto eingerichtet hat.
-              </p>
-            </CardContent>
-          </Card>
+          {!loading && !wallet && (
+            <Card className="mb-6">
+              <CardContent className="pt-6">
+                <p className="text-muted-foreground text-center py-8">
+                  Ihnen wurde noch keine Bitcoin Wallet zugewiesen. Bitte warten Sie, bis der Administrator Ihr Konto eingerichtet hat.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {!loading && wallet && (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Ihre Bitcoin Wallet</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg border">
+                  <QRCodeSVG value={wallet.wallet_address} size={200} />
+                  <p className="text-xs text-muted-foreground mt-4 text-center">
+                    Scannen Sie diesen QR-Code zum Einzahlen
+                  </p>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    Wallet-Adresse
+                  </label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={wallet.wallet_address}
+                      readOnly
+                      className="font-mono text-sm"
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={copyWalletAddress}
+                    >
+                      {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Senden Sie Bitcoin an diese Adresse. Nach 1 Bestätigung wird Ihre Einzahlung automatisch gutgeschrieben.
+                  </p>
+                </div>
+
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={manualCheckTransactions}
+                  disabled={checkingTransactions}
+                >
+                  {checkingTransactions ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Prüfe Transaktionen...
+                    </>
+                  ) : (
+                    "Transaktionen manuell prüfen"
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Statistik-Karten - Untere Reihe */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8">
