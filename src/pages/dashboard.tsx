@@ -997,64 +997,63 @@ export default function Dashboard() {
                 </Card>
               }
 
-              {/* Kundensupport Chat */}
+              {/* Kundensupport Chat - Immer sichtbar (außer beim anfänglichen Laden) */}
               {!loading && (
-                <Card className="mt-6" id="chat-section">
+                <Card className="mt-6">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <MessageCircle className="w-5 h-5" />
                       Kundensupport Chat
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-4 max-h-96 overflow-y-auto p-4 bg-slate-50 rounded-lg">
-                      {messages.length === 0 ? (
-                        <p className="text-muted-foreground text-center">Noch keine Nachrichten</p>
-                      ) : (
-                        messages.map((msg) => (
-                          <div
-                            key={msg.id}
-                            className={cn(
-                              "p-3 rounded-lg max-w-[80%]",
-                              msg.is_admin
-                                ? "bg-blue-100 ml-auto text-right"
-                                : "bg-white border border-slate-200"
-                            )}
-                          >
-                            <p className="text-sm">{msg.message}</p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {new Date(msg.created_at).toLocaleString("de-DE")}
-                            </p>
-                          </div>
-                        ))
-                      )}
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="h-64 overflow-y-auto border rounded-lg p-4 space-y-3 bg-muted/20">
+                        {messages.length === 0 ? (
+                          <p className="text-sm text-muted-foreground text-center py-8">
+                            Noch keine Nachrichten. Schreiben Sie dem Support!
+                          </p>
+                        ) : (
+                          messages.map((msg) => (
+                            <div
+                              key={msg.id}
+                              className={`flex ${msg.is_admin ? 'justify-start' : 'justify-end'}`}
+                            >
+                              <div
+                                className={`max-w-[80%] rounded-lg p-3 ${
+                                  msg.is_admin
+                                    ? 'bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100'
+                                    : 'bg-green-100 text-green-900 dark:bg-green-900/30 dark:text-green-100'
+                                }`}
+                              >
+                                <p className="text-sm">{msg.message}</p>
+                                <p className="text-xs opacity-60 mt-1">
+                                  {new Date(msg.created_at).toLocaleString('de-DE')}
+                                </p>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <Textarea
+                          placeholder="Nachricht schreiben..."
+                          value={newMessage}
+                          onChange={(e) => setNewMessage(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                              e.preventDefault();
+                              sendMessage();
+                            }
+                          }}
+                          rows={2}
+                        />
+                        <Button onClick={sendMessage} className="self-end">
+                          <Send className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
-
-                    <div className="flex gap-2">
-                      <Textarea
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        placeholder="Nachricht schreiben..."
-                        className="resize-none"
-                        rows={2}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && !e.shiftKey) {
-                            e.preventDefault();
-                            sendMessage();
-                          }
-                        }}
-                      />
-                      <Button onClick={sendMessage} size="icon" className="self-end">
-                        <Send className="w-4 h-4" />
-                      </Button>
-                    </div>
-
-                    <p className="text-xs text-muted-foreground text-center">
-                      Für dringende Anliegen kontaktieren Sie bitte direkt den{" "}
-                      <Link href="/admin" className="text-blue-600 hover:underline">
-                        Administrator
-                      </Link>
-                    </p>
                   </CardContent>
                 </Card>
               )}
@@ -1097,16 +1096,6 @@ export default function Dashboard() {
           <MessageCircle className="w-6 h-6" />
         </button>
       )}
-
-      {/* Kundensupport Chat - DEBUG VERSION - Immer sichtbar */}
-      <Card className="mt-6 border-4 border-red-500 bg-red-50" id="chat-section">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MessageCircle className="w-5 h-5" />
-            🔴 CHAT DEBUG - Kannst du das sehen?
-          </CardTitle>
-        </CardHeader>
-      </Card>
 
     </>);
 
