@@ -98,6 +98,7 @@ const checkAuth = async () => {
     setIsAdmin(true);
     setIsLoading(false);
     loadSettings();
+    loadHiddenUsers();
     loadData();
     loadBitcoinPrice();
   } catch (error) {
@@ -159,6 +160,69 @@ const loadSettings = async () => {
     if (homeMenuLinkUrl) setHomeMenuUrl(homeMenuLinkUrl.setting_value);
     if (websiteLinkUrlSetting) setWebsiteLinkUrl(websiteLinkUrlSetting.setting_value);
   }
+};
+
+// Lade ausgeblendete Benutzer aus site_settings
+const loadHiddenUsers = async () => {
+  try {
+    const { data: setting } = await supabase
+      .from("site_settings")
+      .select("setting_value")
+      .eq("setting_key", "hidden_users")
+      .single();
+    
+    if (setting?.setting_value) {
+      try {
+        const hiddenUserIds = JSON.parse(setting.setting_value);
+        if (Array.isArray(hiddenUserIds)) {
+          setHiddenUsers(new Set(hiddenUserIds));
+        }
+      } catch (parseError) {
+        console.warn("Fehler beim Parsen der ausgeblendeten Benutzer, starte mit leerer Liste");
+        setHiddenUsers(new Set());
+      }
+    }
+  } catch (error) {
+    // Wenn der Eintrag nicht existiert, ist das OK - wir starten mit leerer Liste
+    console.log("Keine ausgeblendeten Benutzer gespeichert");
+  }
+};
+
+// Speichere ausgeblendete Benutzer in site_settings
+const saveHiddenUsers = async (newHiddenSet: Set<string>) => {
+  try {
+    const hiddenArray = Array.from(newHiddenSet);
+    const { error } = await supabase
+      .from("site_settings")
+      .upsert({
+        setting_key: "hidden_users",
+        setting_value: JSON.stringify(hiddenArray),
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'setting_key' });
+    
+    if (error) {
+      console.error("Fehler beim Speichern der ausgeblendeten Benutzer:", error);
+      toast({
+        title: "Warnung",
+        description: "Ausblenden konnte nicht gespeichert werden",
+        variant: "destructive"
+      });
+    }
+  } catch (error) {
+    console.error("Fehler beim Speichern:", error);
+  }
+};
+
+// Toggle-Funktion für Ausblenden/Einblenden
+const toggleHiddenUser = async (userId: string) => {
+  const newHidden = new Set(hiddenUsers);
+  if (newHidden.has(userId)) {
+    newHidden.delete(userId);
+  } else {
+    newHidden.add(userId);
+  }
+  setHiddenUsers(newHidden);
+  await saveHiddenUsers(newHidden);
 };
 
 const loadData = async () => {
@@ -717,13 +781,7 @@ return (
                                   size="sm"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    const newHidden = new Set(hiddenUsers);
-                                    if (isHidden) {
-                                      newHidden.delete(user.id);
-                                    } else {
-                                      newHidden.add(user.id);
-                                    }
-                                    setHiddenUsers(newHidden);
+                                    toggleHiddenUser(user.id);
                                   }}
                                   className="text-xs"
                                 >
