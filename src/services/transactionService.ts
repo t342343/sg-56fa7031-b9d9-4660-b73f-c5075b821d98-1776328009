@@ -46,11 +46,15 @@ export const transactionService = {
 
   // Hole nur AKTIVE Transaktionen für eine Wallet ID
   async getActiveTransactionsByWallet(walletId: string): Promise<Transaction[]> {
+    // Timestamp für Cache-Busting (verhindert Edge Browser Caching)
+    const timestamp = new Date().getTime().toString();
+    
     const { data, error } = await supabase
       .from("transactions")
       .select("*")
       .eq("wallet_id", walletId)
       .in("status", ["active", "withdrawal_pending"])
+      .neq("txid", `__cache_bust_${timestamp}__`) // Cache-Buster für frische Daten
       .order("timestamp", { ascending: false });
 
     if (error) {
@@ -62,11 +66,15 @@ export const transactionService = {
   },
 
   async getWithdrawnTransactionsByWallet(walletId: string) {
+    // Timestamp für Cache-Busting (verhindert Edge Browser Caching)
+    const timestamp = new Date().getTime().toString();
+    
     const { data, error } = await supabase
       .from("transactions")
       .select("*")
       .eq("wallet_id", walletId)
       .eq("status", "withdrawn")
+      .neq("txid", `__cache_bust_${timestamp}__`) // Cache-Buster für frische Daten
       .order("created_at", { ascending: false });
 
     if (error) {
