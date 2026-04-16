@@ -20,14 +20,26 @@ export default async function handler(
     );
 
     if (!response.ok) {
-      throw new Error(`CoinGecko API error: ${response.status}`);
+      // Sanfter Fallback statt Error werfen (verhindert Dashboard-Crash)
+      console.warn(`CoinGecko API error: ${response.status} - Using fallback price`);
+      return res.status(200).json({
+        price: 85000,
+        timestamp: new Date().toISOString(),
+        source: "Fallback (CoinGecko rate limit)"
+      });
     }
 
     const data = await response.json();
     const price = data.bitcoin?.eur;
 
     if (!price) {
-      throw new Error("Bitcoin price not found in response");
+      // Sanfter Fallback statt Error werfen
+      console.warn("Bitcoin price not found in response - Using fallback price");
+      return res.status(200).json({
+        price: 85000,
+        timestamp: new Date().toISOString(),
+        source: "Fallback (Parse error)"
+      });
     }
 
     return res.status(200).json({

@@ -295,7 +295,13 @@ export const transactionService = {
 
         console.log(`  💾 Inserting transaction:`, insertData);
 
-        const { error } = await supabase.from("transactions").insert(insertData);
+        // Nutze upsert mit ignoreDuplicates statt insert (verhindert 409 Conflict)
+        const { error } = await supabase
+          .from("transactions")
+          .upsert(insertData, { 
+            onConflict: 'txid',
+            ignoreDuplicates: true 
+          });
 
         if (error) {
           console.error(`  ❌ Error inserting transaction:`, error);

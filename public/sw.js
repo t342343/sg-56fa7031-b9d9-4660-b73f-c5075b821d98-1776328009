@@ -36,6 +36,11 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // CRITICAL: Only cache GET requests (POST/HEAD/PUT/DELETE cannot be cached)
+  if (request.method !== 'GET') {
+    return;
+  }
+
   // NEVER cache Supabase API calls or Softgen monitoring
   if (
     url.hostname.includes('supabase.co') ||
