@@ -95,16 +95,22 @@ export const authService = {
     try {
       // Nur für Admin-Email: Bruteforce-Check
       if (email === ADMIN_EMAIL) {
+        console.log("🔒 Admin login detected, checking bruteforce protection...");
         const { data: blockData, error: blockError } = await (supabase.rpc as any)('check_admin_login_block');
         
+        console.log("🔒 Bruteforce check result:", { blockData, blockError });
+        
         if (blockError) {
-          console.error("Bruteforce check failed:", blockError);
+          console.error("❌ Bruteforce check failed:", blockError);
         } else if (blockData === true) {
+          console.log("🚫 Admin login BLOCKED due to too many attempts");
           return { 
             user: null, 
             error: { message: "Zu viele fehlgeschlagene Login-Versuche. Bitte warten Sie 15 Minuten." } 
           };
         }
+        
+        console.log("✅ Admin login NOT blocked, proceeding...");
       }
 
       // Normaler Login-Versuch
@@ -115,7 +121,9 @@ export const authService = {
 
       // Log für Admin-Email
       if (email === ADMIN_EMAIL) {
-        await (supabase.rpc as any)('log_admin_login', { is_success: !error });
+        console.log("📝 Logging admin login attempt, success:", !error);
+        const logResult = await (supabase.rpc as any)('log_admin_login', { is_success: !error });
+        console.log("📝 Log result:", logResult);
       }
 
       if (error) {
@@ -131,6 +139,7 @@ export const authService = {
 
       return { user: authUser, error: null };
     } catch (error) {
+      console.error("❌ signInAdmin exception:", error);
       return { 
         user: null, 
         error: { message: "An unexpected error occurred during sign in" } 
