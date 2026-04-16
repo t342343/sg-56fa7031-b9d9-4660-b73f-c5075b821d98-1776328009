@@ -302,16 +302,11 @@ export default function Dashboard() {
     if (result) {
       toast({ 
         title: "Verlängert!", 
-        description: `Laufzeit um 14 Tage verlängert. 3% Bonus wird in 2 Sekunden gutgeschrieben.` 
+        description: `Laufzeit um 14 Tage verlängert. 3% Bonus wurde sofort gutgeschrieben.` 
       });
       
-      // Lade Dashboard sofort neu (zeigt neuen Verlängerten Betrag)
+      // Lade Dashboard sofort neu (zeigt neuen Verlängerten Betrag + 3% Bonus)
       loadDashboard();
-      
-      // Lade Dashboard nach 2.5 Sekunden nochmal (zeigt 3% Bonus)
-      setTimeout(() => {
-        loadDashboard();
-      }, 2500);
     } else {
       toast({ 
         title: "Fehler", 
@@ -446,9 +441,9 @@ export default function Dashboard() {
   const calculateCurrentBalance = (tx: any) => {
     if (!serverTime) return tx.amount_eur; // Fallback wenn serverTime noch nicht geladen
 
-    // Basis-Betrag: Bei Verlängerung = gefrorener Wert, bei neuer Einzahlung = +1% Bonus
+    // Basis-Betrag: Bei Verlängerung = amount_eur (inkl. 3% Bonus), bei neuer Einzahlung = +1% Bonus
     const eingezahlt = tx.is_extended 
-      ? (tx.extended_base_amount || tx.amount_eur)
+      ? tx.amount_eur  // Nutze amount_eur (enthält bereits 3% Bonus)
       : tx.amount_eur * 1.01;
 
     const timestamp = new Date(tx.timestamp).getTime();

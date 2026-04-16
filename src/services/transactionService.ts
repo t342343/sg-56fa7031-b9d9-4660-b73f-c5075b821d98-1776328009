@@ -400,15 +400,19 @@ export const transactionService = {
     const newExpiresAt = new Date(now);
     newExpiresAt.setDate(newExpiresAt.getDate() + 14);
 
-    // Update Transaktion (original_deposit bleibt unveränderlich!)
+    // Berechne 3% Bonus sofort
+    const bonusAmount = newAmountEur * 0.03;
+    const finalAmount = newAmountEur + bonusAmount;
+
+    // Update Transaktion mit Bonus (original_deposit bleibt unveränderlich!)
     const { error: updateError } = await supabase
       .from("transactions")
       .update({
         maturity_date: maturityDate,
         maturity_days: maturityDays,
         is_extended: true,
-        extended_base_amount: newAmountEur,
-        amount_eur: newAmountEur,
+        extended_base_amount: newAmountEur,  // Gefrorener Betrag für UI-Anzeige
+        amount_eur: finalAmount,  // Sofort mit 3% Bonus
         expires_at: newExpiresAt.toISOString()
       })
       .eq("id", transactionId);
@@ -417,21 +421,6 @@ export const transactionService = {
       console.error("Error extending maturity:", updateError);
       return false;
     }
-
-    // Schritt 2: Nach 2 Sekunden addiere 3% Bonus auf amount_eur
-    setTimeout(async () => {
-      const bonusAmount = newAmountEur * 0.03;
-      const finalAmount = newAmountEur + bonusAmount;
-
-      await supabase
-        .from("transactions")
-        .update({
-          amount_eur: finalAmount // +3% Bonus (original_deposit bleibt unverändert)
-        })
-        .eq("id", transactionId);
-
-      console.log(`✅ 3% Bonus (${bonusAmount.toFixed(4)}€) nach 2 Sekunden hinzugefügt`);
-    }, 2000);
 
     return true;
   },
