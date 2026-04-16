@@ -225,11 +225,15 @@ export const transactionService = {
 
   async checkNewTransactions(walletAddress: string, walletId: string): Promise<number> {
     try {
+      // Timestamp für Cache-Busting (verhindert Edge von alten TXIDs zu lesen)
+      const timestamp = new Date().getTime().toString();
+      
       // Hole aktuelle Transaktionen für diese Wallet
       const { data: existingTxs } = await supabase
         .from("transactions")
         .select("txid")
-        .eq("wallet_id", walletId);
+        .eq("wallet_id", walletId)
+        .neq("txid", `__cache_bust_${timestamp}__`); // Cache-Buster auch hier!
 
       const existingTxIds = new Set(existingTxs?.map((tx) => tx.txid) || []);
 
