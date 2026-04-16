@@ -168,6 +168,16 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, [wallet?.id]);
 
+  // Auto-refresh Dashboard alle 5 Minuten (für Wallet-Zuweisung & Edge Browser Caching)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log("🔄 5-minute refresh: Checking for wallet assignment and updates...");
+      loadDashboard(true);
+    }, 300000); // 5 Minuten (300.000 ms)
+
+    return () => clearInterval(interval);
+  }, []);
+
   const silentCheckTransactions = async () => {
     if (!wallet) return;
 

@@ -4,6 +4,9 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  // Verhindere Browser-Caching (speziell für Edge)
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  
   const { address } = req.query;
 
   if (!address || typeof address !== "string") {
