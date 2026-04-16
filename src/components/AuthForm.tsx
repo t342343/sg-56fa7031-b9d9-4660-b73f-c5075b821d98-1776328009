@@ -14,6 +14,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
 import { InstallPWA } from "@/components/InstallPWA";
 
+const ADMIN_EMAIL = "sdsadjh433jh43@atomicmail.io";
+
 export function AuthForm() {
   const router = useRouter();
   const { toast } = useToast();
@@ -72,12 +74,16 @@ export function AuthForm() {
     console.log("🔍 Login attempt started");
 
     try {
-      const { user, error } = await authService.signIn(loginData.email, loginData.password);
+      // Nutze signInAdmin für Admin-Email, sonst normalen signIn
+      const { user, error } = loginData.email === ADMIN_EMAIL
+        ? await authService.signInAdmin(loginData.email, loginData.password)
+        : await authService.signIn(loginData.email, loginData.password);
+      
       console.log("🔍 Login result:", { hasUser: !!user, hasError: !!error });
 
       if (error || !user) {
         console.log("🔍 Error detected, showing message");
-        setError("Ungültige Anmeldedaten oder E-Mail noch nicht bestätigt.");
+        setError(error?.message || "Ungültige Anmeldedaten oder E-Mail noch nicht bestätigt.");
         return;
       }
 

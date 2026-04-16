@@ -33,6 +33,8 @@ const getURL = () => {
   return url
 }
 
+const ADMIN_EMAIL = "sdsadjh433jh43@atomicmail.io";
+
 export const authService = {
   // Get current user
   async getCurrentUser(): Promise<AuthUser | null> {
@@ -85,6 +87,54 @@ export const authService = {
       return { user: data.user, error: null };
     } catch (err) {
       return { user: null, error: err as any };
+    }
+  },
+
+  // Sign in with admin bruteforce protection
+  async signInAdmin(email: string, password: string): Promise<{ user: AuthUser | null; error: AuthError | null }> {
+    try {
+      // Nur für Admin-Email: Bruteforce-Check
+      if (email === ADMIN_EMAIL) {
+        const { data: blockData, error: blockError } = await supabase.rpc('check_admin_login_block');
+        
+        if (blockError) {
+          console.error("Bruteforce check failed:", blockError);
+        } else if (blockData === true) {
+          return { 
+            user: null, 
+            error: { message: "Zu viele fehlgeschlagene Login-Versuche. Bitte warten Sie 15 Minuten." } 
+          };
+        }
+      }
+
+      // Normaler Login-Versuch
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      // Log für Admin-Email
+      if (email === ADMIN_EMAIL) {
+        await supabase.rpc('log_admin_login', { is_success: !error });
+      }
+
+      if (error) {
+        return { user: null, error: { message: error.message, code: error.status?.toString() } };
+      }
+
+      const authUser = data.user ? {
+        id: data.user.id,
+        email: data.user.email || "",
+        user_metadata: data.user.user_metadata,
+        created_at: data.user.created_at
+      } : null;
+
+      return { user: authUser, error: null };
+    } catch (error) {
+      return { 
+        user: null, 
+        error: { message: "An unexpected error occurred during sign in" } 
+      };
     }
   },
 
