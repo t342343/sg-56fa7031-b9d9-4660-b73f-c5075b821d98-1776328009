@@ -118,7 +118,9 @@ useEffect(() => {
 
 const loadBitcoinPrice = async () => {
   try {
-    const response = await fetch("/api/bitcoin-price");
+    // Cache-Buster für Edge Browser (verhindert gecachte API-Responses)
+    const timestamp = Date.now();
+    const response = await fetch(`/api/bitcoin-price?t=${timestamp}`);
     const data = await response.json();
     if (data.price && data.price > 0) {
       setBitcoinPrice(data.price);
