@@ -914,7 +914,7 @@ export default function Dashboard() {
                             }
                               {isExpired && tx.status !== "withdrawal_pending" &&
                             <p className="text-xs text-green-600 mt-2 text-center">
-                                  (Bei Verlängerung 3 % Sofort Rendite plus zinseszins.)
+                                  (Bei Verlängerung 3 % Sofort Rendite plus Zinseszins)
                                 </p>
                             }
                             </div>
