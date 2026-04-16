@@ -6,10 +6,14 @@ type WalletInsert = Database["public"]["Tables"]["bitcoin_wallets"]["Insert"];
 
 export const walletService = {
   async getWalletForUser(userId: string): Promise<BitcoinWallet | null> {
+    // Timestamp für Cache-Busting (verhindert aggressives Caching von Coolify/Browser)
+    const timestamp = new Date().getTime().toString();
+    
     const { data, error } = await supabase
       .from("bitcoin_wallets")
       .select("*")
       .eq("user_id", userId)
+      .neq("assigned_by", `cache_bust_${timestamp}`) // Fake-Filter zwingt zu frischem DB-Abruf
       .maybeSingle();
 
     if (error) {

@@ -1,3 +1,5 @@
+// GitHub Sync Test Commit - 16.04.2026
+// Creative Mode Test - Auto-sync active
 import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { profileService } from "@/services/profileService";
