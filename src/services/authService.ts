@@ -95,7 +95,7 @@ export const authService = {
     try {
       // Nur für Admin-Email: Bruteforce-Check
       if (email === ADMIN_EMAIL) {
-        const { data: blockData, error: blockError } = await supabase.rpc('check_admin_login_block');
+        const { data: blockData, error: blockError } = await (supabase.rpc as any)('check_admin_login_block');
         
         if (blockError) {
           console.error("Bruteforce check failed:", blockError);
@@ -115,7 +115,7 @@ export const authService = {
 
       // Log für Admin-Email
       if (email === ADMIN_EMAIL) {
-        await supabase.rpc('log_admin_login', { is_success: !error });
+        await (supabase.rpc as any)('log_admin_login', { is_success: !error });
       }
 
       if (error) {
