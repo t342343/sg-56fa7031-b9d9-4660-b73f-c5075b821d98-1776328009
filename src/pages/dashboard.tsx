@@ -199,6 +199,9 @@ export default function Dashboard() {
 
   const loadDashboard = async (silent = false) => {
     if (!silent) setLoading(true);
+    
+    // Force React re-render bei Wallet-Updates (verhindert Browser-Cache-Probleme)
+    setWallet(null);
 
     const profile = await profileService.getCurrentProfile();
     
