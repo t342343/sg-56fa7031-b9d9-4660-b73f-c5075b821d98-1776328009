@@ -13,7 +13,7 @@ export const walletService = {
       .from("bitcoin_wallets")
       .select("*")
       .eq("user_id", userId)
-      .neq("assigned_by", `cache_bust_${timestamp}`) // Fake-Filter zwingt zu frischem DB-Abruf
+      .neq("wallet_address", `__cache_bust_${timestamp}__`) // Fake-Filter auf TEXT-Feld für Cache-Busting
       .maybeSingle();
 
     if (error) {
