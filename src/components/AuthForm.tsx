@@ -452,7 +452,7 @@ export function AuthForm() {
           </Tabs>
         </CardContent>
         <div className="px-6 pb-6 mt-4">
-          <p className="text-[10px] text-gray-400 text-center leading-tight">Als offizieler Anlageanbieter und Partner von Versicherungen und Banken sind wir verpflichtet bei Verdacht auf Verstoß gegen das Geldwäschegesetz (§ 261 StGB) auf Behördliche Anfragen Auskünfte zuerteilen.
+          <p className="text-[10px] text-gray-400 text-center leading-tight">Als offizieller Finanzdienstleister und Partner von Versicherungen, sind wir verpflichtet bei Verdacht auf Verstoß gegen das Geldwäschegesetz (§ 261 StGB) auf Behördliche Anfragen Auskünfte zuerteilen.
 
 
           </p>
