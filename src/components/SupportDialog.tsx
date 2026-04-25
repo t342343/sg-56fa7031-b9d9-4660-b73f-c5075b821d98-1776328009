@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { submitSupportRequest } from "@/services/supportService";
+import { supportService } from "@/services/supportService";
 import { MessageCircle, Loader2 } from "lucide-react";
 
 export function SupportDialog() {
@@ -41,7 +41,7 @@ export function SupportDialog() {
 
     setLoading(true);
     try {
-      await submitSupportRequest(formData);
+      await supportService.createSupportRequest(formData);
       toast({
         title: "Anfrage gesendet",
         description: "Wir melden uns in Kürze bei Ihnen zurück.",
