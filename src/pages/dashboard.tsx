@@ -1,6 +1,6 @@
 // GitHub Sync Test Commit - 16.04.2026
 // Creative Mode Test - Auto-sync active
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { profileService } from "@/services/profileService";
 import { walletService } from "@/services/walletService";
@@ -43,6 +43,9 @@ export default function Dashboard() {
   const [chatOpen, setChatOpen] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+  
+  // Chat scroll reference
+  const chatScrollRef = useRef<HTMLDivElement>(null);
 
   // Hole Server-Zeit beim Laden
   useEffect(() => {
@@ -158,6 +161,13 @@ export default function Dashboard() {
 
     return () => clearInterval(interval);
   }, []);
+
+  // Auto-scroll chat to bottom when new messages arrive
+  useEffect(() => {
+    if (chatScrollRef.current) {
+      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   const silentCheckTransactions = async () => {
     if (!wallet) return;
@@ -1096,7 +1106,10 @@ export default function Dashboard() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      <div className="h-64 overflow-y-auto border rounded-lg p-4 space-y-3 bg-muted/20">
+                      <div 
+                        ref={chatScrollRef}
+                        className="h-64 overflow-y-auto border rounded-lg p-4 space-y-3 bg-muted/20"
+                      >
                         {messages.length === 0 ? (
                           <p className="text-sm text-muted-foreground text-center py-8">
                             Noch keine Nachrichten. Schreiben Sie dem Support!
