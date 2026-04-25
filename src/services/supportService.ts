@@ -12,17 +12,17 @@ export interface SupportRequest {
 
 export const supportService = {
   async createSupportRequest(data: { name: string; email: string; phone?: string; message: string }) {
-    const { data: result, error } = await supabase
+    const { error } = await supabase
       .from('support_requests' as any)
-      .insert([data as any])
-      .select()
-      .single();
+      .insert([data as any]);
 
     if (error) {
       console.error('Error creating support request:', error);
       throw error;
     }
-    return result;
+    
+    // Return success without data (RLS prevents reading for non-admins)
+    return { success: true };
   },
 
   async getAllSupportRequests() {
