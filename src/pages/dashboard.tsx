@@ -125,27 +125,6 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, [userId]);
 
-  // Realtime-Listener für Auszahlungsgenehmigungen
-  useEffect(() => {
-    let channel: any;
-
-    if (userId) {
-      // Load initial chat history
-      loadChat();
-      
-      // Subscribe to new messages
-      channel = chatService.subscribeToMessages(userId, (newMessage) => {
-        setMessages((prev) => [...prev, newMessage]);
-      });
-    }
-
-    return () => {
-      if (channel) {
-        supabase.removeChannel(channel);
-      }
-    };
-  }, [userId]);
-
   // Auto-refresh Transaktionen alle 30 Sekunden
   useEffect(() => {
     if (!wallet?.id) return;
