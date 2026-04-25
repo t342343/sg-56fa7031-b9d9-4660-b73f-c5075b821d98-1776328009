@@ -13,8 +13,8 @@ export interface SupportRequest {
 export const supportService = {
   async createSupportRequest(data: { name: string; email: string; phone?: string; message: string }) {
     const { data: result, error } = await supabase
-      .from('support_requests')
-      .insert([data])
+      .from('support_requests' as any)
+      .insert([data as any])
       .select()
       .single();
 
@@ -27,7 +27,7 @@ export const supportService = {
 
   async getAllSupportRequests() {
     const { data, error } = await supabase
-      .from('support_requests')
+      .from('support_requests' as any)
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -35,13 +35,13 @@ export const supportService = {
       console.error('Error fetching support requests:', error);
       throw error;
     }
-    return data as SupportRequest[];
+    return data as unknown as SupportRequest[];
   },
 
   async updateSupportRequestStatus(id: string, status: 'new' | 'resolved') {
     const { data, error } = await supabase
-      .from('support_requests')
-      .update({ status })
+      .from('support_requests' as any)
+      .update({ status } as any)
       .eq('id', id)
       .select()
       .single();
