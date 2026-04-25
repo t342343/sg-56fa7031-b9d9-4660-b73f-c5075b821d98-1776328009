@@ -281,13 +281,40 @@ export default function Dashboard() {
     const profile = await profileService.getCurrentProfile();
     if (!profile) return;
 
-    await chatService.sendMessage(profile.id, newMessage);
-
-    // Automatische Standard-Antwort vom System
-    await chatService.sendMessage(profile.id, "Danke für Ihre Nachricht, in Kürze antwortet Ihnen ein Kundenbetreuer.", true);
-
+    // Optimistische UI-Aktualisierung (sofort anzeigen)
+    const tempUserMessage = {
+      id: `temp-${Date.now()}`,
+      user_id: profile.id,
+      message: newMessage,
+      is_admin: false,
+      created_at: new Date().toISOString(),
+      read: false
+    };
+    
+    setMessages((prev) => [...prev, tempUserMessage]);
+    const messageText = newMessage;
     setNewMessage("");
-    loadChat();
+
+    try {
+      // Echte Nachricht an DB senden
+      await chatService.sendMessage(profile.id, messageText);
+
+      // Automatische Standard-Antwort vom System
+      await chatService.sendMessage(profile.id, "Danke für Ihre Nachricht, in Kürze antwortet Ihnen ein Kundenbetreuer.", true);
+
+      // Messages neu laden um sicherzustellen, dass alles synchron ist
+      await loadChat();
+    } catch (error) {
+      console.error("Fehler beim Senden der Nachricht:", error);
+      toast({
+        title: "Fehler",
+        description: "Nachricht konnte nicht gesendet werden",
+        variant: "destructive"
+      });
+      // Bei Fehler die temp Message wieder entfernen
+      setMessages((prev) => prev.filter(m => m.id !== tempUserMessage.id));
+      setNewMessage(messageText);
+    }
   };
 
   const handleCopyAddress = () => {
