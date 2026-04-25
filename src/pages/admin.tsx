@@ -6,6 +6,7 @@ import { walletService } from "@/services/walletService";
 import { chatService } from "@/services/chatService";
 import { withdrawalService } from "@/services/withdrawalService";
 import { transactionService } from "@/services/transactionService";
+import { supportService } from "@/services/supportService";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,12 +15,15 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MessageCircle, Send, Clock, CheckCircle2, Wallet, ArrowUpDown, X, User, Badge } from "lucide-react";
+import { MessageCircle, Send, Clock, CheckCircle2, Wallet, ArrowUpDown, X, User, Badge as BadgeIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
 export default function AdminPanel() {
 // Benutzer-Daten
 const [users, setUsers] = useState<any[]>([]);
+const [supportRequests, setSupportRequests] = useState<any[]>([]);
 const [wallets, setWallets] = useState<any[]>([]);
 const [transactions, setTransactions] = useState<any[]>([]);
 const [bitcoinPrice, setBitcoinPrice] = useState<number>(0);
