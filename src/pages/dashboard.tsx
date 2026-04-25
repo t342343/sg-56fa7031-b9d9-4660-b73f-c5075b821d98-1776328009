@@ -260,20 +260,20 @@ export default function Dashboard() {
   };
 
   const loadChat = async (specificUserId?: string) => {
-    const targetId = specificUserId || userId;
-    
-    if (targetId) {
-      const msgs = await chatService.getMessages(targetId);
-      setMessages(msgs || []);
-      return;
-    }
-    
+    // SICHERHEITS-FIX: Immer frisches Profil holen, statt auf State zu verlassen
+    // Verhindert Race-Condition wo userId noch null ist
     const profile = await profileService.getCurrentProfile();
-    if (profile) {
+    if (!profile) return;
+    
+    const targetId = specificUserId || profile.id;
+    
+    // State trotzdem updaten falls noch nicht gesetzt
+    if (!userId && profile.id) {
       setUserId(profile.id);
-      const msgs = await chatService.getMessages(profile.id);
-      setMessages(msgs || []);
     }
+    
+    const msgs = await chatService.getMessages(targetId);
+    setMessages(msgs || []);
   };
 
   const sendMessage = async () => {
