@@ -70,6 +70,29 @@ const [isAdmin, setIsAdmin] = useState(false);
 const { toast } = useToast();
 const router = useRouter();
 
+const checkAuth = async () => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      router.push("/login");
+      return;
+    }
+    const profile = await profileService.getProfile(session.user.id);
+    if (profile?.role !== "admin") {
+      router.push("/dashboard");
+      return;
+    }
+    setIsAdmin(true);
+    loadSettings();
+    loadHiddenUsers();
+  } catch (error) {
+    console.error("Auth check failed:", error);
+    router.push("/login");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 useEffect(() => {
   checkAuth();
 }, []);
