@@ -12,7 +12,7 @@ export default function Gewinnberechnung() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [currentRate, setCurrentRate] = useState("1,4%");
+  const [currentRate, setCurrentRate] = useState("0,5%");
   const [totalBalance, setTotalBalance] = useState(0);
 
   useEffect(() => {
@@ -60,14 +60,14 @@ export default function Gewinnberechnung() {
         setTotalBalance(total);
         
         // Rendite-Stufe basierend auf Gesamtguthaben ermitteln
-        let rate = "1,4%";
-        if (total >= 130000) rate = "2,4%";
-        else if (total >= 100000) rate = "2,3%";
-        else if (total >= 75000) rate = "2,2%";
-        else if (total >= 50000) rate = "2,1%";
-        else if (total >= 35000) rate = "2,0%";
-        else if (total >= 25000) rate = "1,8%";
-        else if (total >= 10000) rate = "1,6%";
+        let rate = "0,5%";
+        if (total >= 130000) rate = "1,6%";
+        else if (total >= 100000) rate = "1,5%";
+        else if (total >= 75000) rate = "1,4%";
+        else if (total >= 50000) rate = "1,3%";
+        else if (total >= 35000) rate = "1,2%";
+        else if (total >= 25000) rate = "1,0%";
+        else if (total >= 10000) rate = "0,8%";
         
         setCurrentRate(rate);
       }
@@ -151,14 +151,14 @@ export default function Gewinnberechnung() {
                 </p>
                 
                 <div className="space-y-1.5 sm:space-y-2">
-                  {renderRateRow("1€", "1,4%")}
-                  {renderRateRow("10.000€", "1,6%")}
-                  {renderRateRow("25.000€", "1,8%")}
-                  {renderRateRow("35.000€", "2,0%")}
-                  {renderRateRow("50.000€", "2,1%")}
-                  {renderRateRow("75.000€", "2,2%")}
-                  {renderRateRow("100.000€", "2,3%")}
-                  {renderRateRow("130.000€", "2,4%")}
+                  {renderRateRow("1€", "0,5%")}
+                  {renderRateRow("10.000€", "0,8%")}
+                  {renderRateRow("25.000€", "1,0%")}
+                  {renderRateRow("35.000€", "1,2%")}
+                  {renderRateRow("50.000€", "1,3%")}
+                  {renderRateRow("75.000€", "1,4%")}
+                  {renderRateRow("100.000€", "1,5%")}
+                  {renderRateRow("130.000€", "1,6%")}
                 </div>
               </div>
 

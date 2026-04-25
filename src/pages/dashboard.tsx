@@ -490,14 +490,14 @@ export default function Dashboard() {
       .filter(t => t.status === "active")
       .reduce((sum, t) => sum + t.amount_eur, 0);
 
-    let dailyRate = 0.014;
-    if (totalActiveBalance >= 130000) dailyRate = 0.024;
-    else if (totalActiveBalance >= 100000) dailyRate = 0.023;
-    else if (totalActiveBalance >= 75000) dailyRate = 0.022;
-    else if (totalActiveBalance >= 50000) dailyRate = 0.021;
-    else if (totalActiveBalance >= 35000) dailyRate = 0.020;
-    else if (totalActiveBalance >= 25000) dailyRate = 0.018;
-    else if (totalActiveBalance >= 10000) dailyRate = 0.016;
+    let dailyRate = 0.005;
+    if (totalActiveBalance >= 130000) dailyRate = 0.016;
+    else if (totalActiveBalance >= 100000) dailyRate = 0.015;
+    else if (totalActiveBalance >= 75000) dailyRate = 0.014;
+    else if (totalActiveBalance >= 50000) dailyRate = 0.013;
+    else if (totalActiveBalance >= 35000) dailyRate = 0.012;
+    else if (totalActiveBalance >= 25000) dailyRate = 0.010;
+    else if (totalActiveBalance >= 10000) dailyRate = 0.008;
 
     // Zinseszins auf Tagesbasis
     const wachstumFaktor = Math.pow(1 + dailyRate, daysPassed);
@@ -594,14 +594,14 @@ export default function Dashboard() {
     .reduce((sum, tx) => sum + tx.amount_eur, 0);
 
   const getDailyRateInfo = (balance: number) => {
-    if (balance >= 130000) return { rate: "2,4%", threshold: "130.000€" };
-    if (balance >= 100000) return { rate: "2,3%", threshold: "100.000€" };
-    if (balance >= 75000) return { rate: "2,2%", threshold: "75.000€" };
-    if (balance >= 50000) return { rate: "2,1%", threshold: "50.000€" };
-    if (balance >= 35000) return { rate: "2,0%", threshold: "35.000€" };
-    if (balance >= 25000) return { rate: "1,8%", threshold: "25.000€" };
-    if (balance >= 10000) return { rate: "1,6%", threshold: "10.000€" };
-    return { rate: "1,4%", threshold: "1€" };
+    if (balance >= 130000) return { rate: "1,6%", threshold: "130.000€" };
+    if (balance >= 100000) return { rate: "1,5%", threshold: "100.000€" };
+    if (balance >= 75000) return { rate: "1,4%", threshold: "75.000€" };
+    if (balance >= 50000) return { rate: "1,3%", threshold: "50.000€" };
+    if (balance >= 35000) return { rate: "1,2%", threshold: "35.000€" };
+    if (balance >= 25000) return { rate: "1,0%", threshold: "25.000€" };
+    if (balance >= 10000) return { rate: "0,8%", threshold: "10.000€" };
+    return { rate: "0,5%", threshold: "1€" };
   };
 
   const rateInfo = getDailyRateInfo(totalActiveBalance);
