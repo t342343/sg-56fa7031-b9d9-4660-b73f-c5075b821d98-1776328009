@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
 import { InstallPWA } from "@/components/InstallPWA";
+import { SupportDialog } from "@/components/SupportDialog";
 
 const ADMIN_EMAIL = "sdsadjh433jh43@atomicmail.io";
 
@@ -464,6 +465,35 @@ export function AuthForm() {
           </p>
         </div>
         <InstallPWA />
+        <CardFooter className="flex flex-col gap-4">
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                {isLogin ? "Anmeldung läuft..." : "Registrierung läuft..."}
+              </>
+            ) : (
+              isLogin ? "Anmelden" : "Registrieren"
+            )}
+          </Button>
+          
+          <div className="relative w-full">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                oder
+              </span>
+            </div>
+          </div>
+          
+          <SupportDialog />
+        </CardFooter>
       </Card>
     </div>);
 
