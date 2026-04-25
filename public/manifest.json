@@ -1,6 +1,6 @@
 {
   "name": "Bitcoin Investment Portal",
-  "short_name": "BTC Portal",
+  "short_name": "Finanzportal",
   "description": "Finanzportal zum Investieren mit Bitcoin Wallet Management",
   "start_url": "/",
   "display": "standalone",

@@ -1,11 +1,11 @@
 ---
 title: Chat auto-scroll implementation
-status: todo
+status: done
 priority: high
 type: bug
 tags: [ui, chat]
 created_by: agent
-created_at: 2026-04-25T17:53:11.000Z
+created_at: 2026-04-25T18:15:00.000Z
 position: 10
 ---
 ## Notes
