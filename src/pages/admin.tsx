@@ -17,7 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageCircle, Send, Clock, CheckCircle2, Wallet, ArrowUpDown, X, User, Badge } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-export default function AdminPage() {
+export default function AdminPanel() {
 // Benutzer-Daten
 const [users, setUsers] = useState<any[]>([]);
 const [wallets, setWallets] = useState<any[]>([]);
@@ -69,43 +69,6 @@ const router = useRouter();
 useEffect(() => {
   checkAuth();
 }, []);
-
-const checkAuth = async () => {
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
-      toast({
-        title: "Zugriff verweigert",
-        description: "Bitte melden Sie sich an",
-        variant: "destructive",
-      });
-      setTimeout(() => router.push("/login"), 2000);
-      return;
-    }
-
-    const profile = await profileService.getCurrentProfile();
-    if (!profile || profile.role !== "admin") {
-      toast({
-        title: "Zugriff verweigert",
-        description: "Sie haben keine Admin-Berechtigung",
-        variant: "destructive",
-      });
-      setTimeout(() => router.push("/dashboard"), 2000);
-      return;
-    }
-
-    setIsAdmin(true);
-    setIsLoading(false);
-    loadSettings();
-    loadHiddenUsers();
-    loadData();
-    loadBitcoinPrice();
-  } catch (error) {
-    console.error("Auth check failed:", error);
-    router.push("/login");
-  }
-};
 
 useEffect(() => {
   if (!isAdmin) return;
@@ -639,6 +602,15 @@ const calculateTotalYield = () => {
   }, 0);
 };
 
+const loadSupportRequests = async () => {
+  try {
+    const requests = await supportService.getAllSupportRequests();
+    setSupportRequests(requests);
+  } catch (error) {
+    console.error('Error loading support requests:', error);
+  }
+};
+
 return (
   <>
     <SEO title="Admin-Panel - Finanzportal" />
@@ -672,13 +644,12 @@ return (
         </div>
         
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="users">Benutzer</TabsTrigger>
-            <TabsTrigger value="wallets">Wallets</TabsTrigger>
             <TabsTrigger value="transactions">Transaktionen</TabsTrigger>
-            <TabsTrigger value="withdrawals">Auszahlungen</TabsTrigger>
+            <TabsTrigger value="wallets">Wallets</TabsTrigger>
             <TabsTrigger value="chat">Chat</TabsTrigger>
-            <TabsTrigger value="settings">Einstellungen</TabsTrigger>
+            <TabsTrigger value="support">Support</TabsTrigger>
           </TabsList>
 
           {/* Benutzer-Verwaltung Tab */}
@@ -1192,8 +1163,9 @@ return (
                       const user = users.find(u => u.id === wallet?.user_id);
                       const maturityDate = tx.maturity_date ? new Date(tx.maturity_date) : null;
                       const now = new Date();
-                      const daysRemaining = maturityDate 
-                        ? Math.ceil((maturityDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) 
+                      const daysPassed = Math.floor((now.getTime() - new Date(tx.timestamp).getTime()) / (1000 * 60 * 60 * 24));
+                      const daysUntilMaturity = maturityDate 
+                        ? Math.ceil((maturityDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
                         : null;
 
                       return (
@@ -1241,13 +1213,13 @@ return (
                                       month: 'short',
                                       year: 'numeric'
                                     })}</span>
-                                    {daysRemaining !== null && (
+                                    {daysUntilMaturity !== null && (
                                       <span className={`px-2 py-0.5 rounded font-medium ${
-                                        daysRemaining > 7 ? 'bg-green-100 text-green-700' : 
-                                        daysRemaining > 0 ? 'bg-orange-100 text-orange-700' : 
+                                        daysUntilMaturity > 7 ? 'bg-green-100 text-green-700' : 
+                                        daysUntilMaturity > 0 ? 'bg-orange-100 text-orange-700' : 
                                         'bg-red-100 text-red-700'
                                       }`}>
-                                        {daysRemaining > 0 ? `${daysRemaining} Tage` : 'Fällig'}
+                                        {daysUntilMaturity > 0 ? `${daysUntilMaturity} Tage` : 'Fällig'}
                                       </span>
                                     )}
                                   </div>
@@ -1797,6 +1769,104 @@ return (
                   );
                 })
             )}
+          </TabsContent>
+
+          <TabsContent value="support">
+            <Card>
+              <CardHeader>
+                <CardTitle>Support-Anfragen</CardTitle>
+                <CardDescription>
+                  Übersicht aller Kundensupport-Anfragen von der Login-Seite
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Datum</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>E-Mail</TableHead>
+                      <TableHead>Telefon</TableHead>
+                      <TableHead>Nachricht</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Aktionen</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {supportRequests.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center text-muted-foreground">
+                          Keine Support-Anfragen vorhanden
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      supportRequests.map((request) => (
+                        <TableRow key={request.id}>
+                          <TableCell>
+                            {new Date(request.created_at).toLocaleDateString('de-DE', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </TableCell>
+                          <TableCell>{request.name}</TableCell>
+                          <TableCell>
+                            <a href={`mailto:${request.email}`} className="text-blue-600 hover:underline">
+                              {request.email}
+                            </a>
+                          </TableCell>
+                          <TableCell>
+                            {request.phone ? (
+                              <a href={`tel:${request.phone}`} className="text-blue-600 hover:underline">
+                                {request.phone}
+                              </a>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="max-w-md">
+                            <p className="line-clamp-2">{request.message}</p>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={request.status === 'new' ? 'default' : 'secondary'}>
+                              {request.status === 'new' ? 'Neu' : 'Bearbeitet'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {request.status === 'new' && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={async () => {
+                                  try {
+                                    await supportService.updateSupportRequestStatus(request.id, 'resolved');
+                                    await loadSupportRequests();
+                                    toast({
+                                      title: "Status aktualisiert",
+                                      description: "Anfrage als bearbeitet markiert"
+                                    });
+                                  } catch (error) {
+                                    toast({
+                                      title: "Fehler",
+                                      description: "Status konnte nicht aktualisiert werden",
+                                      variant: "destructive"
+                                    });
+                                  }
+                                }}
+                              >
+                                Als bearbeitet markieren
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Links-Einstellungen Tab */}
