@@ -671,9 +671,10 @@ return (
         </div>
         
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="users">Benutzer</TabsTrigger>
             <TabsTrigger value="transactions">Transaktionen</TabsTrigger>
+            <TabsTrigger value="withdrawals">Auszahlungen</TabsTrigger>
             <TabsTrigger value="wallets">Wallets</TabsTrigger>
             <TabsTrigger value="chat">Chat</TabsTrigger>
             <TabsTrigger value="support">Support</TabsTrigger>
