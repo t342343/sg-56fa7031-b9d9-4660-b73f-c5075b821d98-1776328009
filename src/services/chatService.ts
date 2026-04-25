@@ -21,7 +21,7 @@ export const chatService = {
       .from("chat_messages")
       .select("*")
       .eq("user_id", userId)
-      .neq("id", `cb-${Date.now()}`) // Cache-Buster: Timestamp ändert URL → PWA muss echte DB abfragen
+      .neq("message", `cb-${Date.now()}`) // Cache-Buster auf Text-Spalte (UUID-Spalte 'id' wirft 400 Error)
       .order("created_at", { ascending: true });
 
     if (error) throw error;
