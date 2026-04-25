@@ -1,11 +1,11 @@
 ---
 title: Support form on login and admin panel
-status: todo
+status: done
 priority: medium
 type: feature
-tags: [ui, database, isolated]
+tags: [ui, admin, database]
 created_by: agent
-created_at: 2026-04-25T18:25:00.000Z
+created_at: 2026-04-25T18:20:00.000Z
 position: 12
 ---
 
