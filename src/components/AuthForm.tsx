@@ -242,21 +242,12 @@ export function AuthForm() {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-navy-50 p-4">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-3xl font-heading text-center text-navy flex items-center justify-center gap-3">
-            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <linearGradient id="chartGradientInline" x1="0%" y1="100%" x2="0%" y2="0%">
-                  <stop offset="0%" style={{stopColor:"#3B82F6", stopOpacity:1}} />
-                  <stop offset="100%" style={{stopColor:"#8B5CF6", stopOpacity:1}} />
-                </linearGradient>
-              </defs>
-              <rect x="12" y="23" width="4" height="6.5" rx="0.5" fill="url(#chartGradientInline)" opacity="0.7"/>
-              <rect x="18" y="20" width="4" height="9.5" rx="0.5" fill="url(#chartGradientInline)" opacity="0.85"/>
-              <rect x="24" y="15" width="4" height="14.5" rx="0.5" fill="url(#chartGradientInline)"/>
-              <path d="M 13.5 22 L 20 18 L 26.5 12.5" stroke="#8B5CF6" strokeWidth="0.75" strokeLinecap="round" fill="none"/>
-              <path d="M 25 10.5 L 27.5 12.5 L 26.5 15 Z" fill="#8B5CF6"/>
-            </svg>
-            Finanzportal
+          <CardTitle className="text-center flex items-center justify-center">
+            <img 
+              src="/Logo_login.png" 
+              alt="Finanzportal" 
+              className="h-10 object-contain"
+            />
           </CardTitle>
           <CardDescription className="text-center text-lg">Investment-Dashboard für versicherte Bitcoin-Anlage</CardDescription>
         </CardHeader>

@@ -96,9 +96,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="lg:hidden fixed top-0 left-0 right-0 bg-white border-b border-slate-200 z-50 px-4 py-3 flex items-center justify-between">
           <button
             onClick={handleLogoClick}
-            className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+            className="hover:opacity-80 transition-opacity"
           >
-            Finanzportal
+            <img src="/Logo_login.png" alt="Finanzportal" className="h-8 object-contain" />
           </button>
           <Button
             variant="ghost"
@@ -115,9 +115,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="p-6 border-b border-slate-200">
             <button
               onClick={handleLogoClick}
-              className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+              className="hover:opacity-80 transition-opacity"
             >
-              Finanzportal
+              <img src="/Logo_login.png" alt="Finanzportal" className="h-10 object-contain" />
             </button>
           </div>
         </aside>
