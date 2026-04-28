@@ -16,7 +16,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [homeUrl, setHomeUrl] = useState("/");
   const [homeMenuUrl, setHomeMenuUrl] = useState("/");
-  const [websiteLinkUrl, setWebsiteLinkUrl] = useState("/");
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -45,10 +44,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     if (settings) {
       const logoUrl = settings.find(s => s.setting_key === "home_button_url");
       const menuUrl = settings.find(s => s.setting_key === "home_menu_url");
-      const websiteUrl = settings.find(s => s.setting_key === "website_link_url");
       if (logoUrl) setHomeUrl(logoUrl.setting_value);
       if (menuUrl) setHomeMenuUrl(menuUrl.setting_value);
-      if (websiteUrl) setWebsiteLinkUrl(websiteUrl.setting_value);
     }
   };
 
@@ -65,14 +62,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       window.open(homeMenuUrl, "_blank");
     } else {
       window.location.href = homeMenuUrl;
-    }
-  };
-
-  const handleWebsiteLinkClick = () => {
-    if (websiteLinkUrl.startsWith("http://") || websiteLinkUrl.startsWith("https://")) {
-      window.open(websiteLinkUrl, "_blank");
-    } else {
-      window.location.href = websiteLinkUrl;
     }
   };
 
@@ -201,23 +190,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     </Button>
                   )}
 
-                  {/* Website-Button ganz unten */}
                   <div className="pt-4 border-t border-slate-200 mt-4">
                     <Button
                       variant="ghost"
                       className="w-full justify-start h-12 text-base"
-                      onClick={() => {
-                        handleWebsiteLinkClick();
-                        setMobileMenuOpen(false);
-                      }}
-                    >
-                      <Home className="mr-3 h-5 w-5" />
-                      Website
-                    </Button>
-
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start h-12 text-base mt-2"
                       onClick={handleLogout}
                     >
                       <LogOut className="mr-3 h-5 w-5" />

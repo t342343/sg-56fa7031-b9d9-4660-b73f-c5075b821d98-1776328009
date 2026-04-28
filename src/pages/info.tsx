@@ -10,7 +10,6 @@ import { supabase } from "@/integrations/supabase/client";
 
 export default function Info() {
   const router = useRouter();
-  const [websiteUrl, setWebsiteUrl] = useState("/");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -33,16 +32,6 @@ export default function Info() {
     select("setting_value").
     eq("setting_key", "website_button_url").
     single();
-
-    if (data) setWebsiteUrl(data.setting_value);
-  };
-
-  const handleWebsiteClick = () => {
-    if (websiteUrl.startsWith("http://") || websiteUrl.startsWith("https://")) {
-      window.open(websiteUrl, "_blank");
-    } else {
-      window.location.href = websiteUrl;
-    }
   };
 
   return (
@@ -351,16 +340,10 @@ export default function Info() {
         {/* Footer */}
         <footer className="bg-slate-900 text-white py-12 mt-20">
           <div className="container mx-auto px-4 py-3">
-            <Button
-              onClick={handleWebsiteClick}
-              size="lg"
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-              
-              Zur Website
-            </Button>
           </div>
         </footer>
       </div>
-    </>);
+    </>
+  );
 
 }
