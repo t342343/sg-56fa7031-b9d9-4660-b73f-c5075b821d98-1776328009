@@ -340,7 +340,7 @@ export default function Info() {
         <footer className="border-t bg-white mt-auto">
           <div className="container mx-auto px-4 py-6">
             <p className="text-center text-sm text-gray-600">
-              © 2026 Finanzportal Alle Rechte vorbehalten
+              © 2026 Finanzportal GmbH. Alle Rechte vorbehalten
             </p>
           </div>
         </footer>
