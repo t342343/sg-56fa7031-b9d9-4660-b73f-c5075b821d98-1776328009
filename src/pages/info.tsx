@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ShieldCheck, Clock, TrendingUp, Users, Award, HeadphonesIcon, Wallet, ArrowRight, Building2, Shield, BadgeCheck, Lock, CheckCircle2 } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 
 export default function Info() {
   const router = useRouter();
@@ -270,16 +271,14 @@ export default function Info() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Wie hoch sind die Renditen?</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">Unsere Kunden profitieren von garantierten  täglichen Renditen (Kursunabhängig) von bis zu 2 Prozent abhängig vom Gesamtguthaben. Die genaue Rendite können Sie unter Gewinnberechnung entnehmen. Die Rendite wird vertraglich garantiert.
-
-                </p>
-              </CardContent>
-            </Card>
+            <Accordion type="single" collapsible>
+              <AccordionItem value="item-1">
+                <AccordionTrigger>Wie hoch sind die Renditen?</AccordionTrigger>
+                <AccordionContent>
+                  Unsere Kunden profitieren von garantierten täglichen Renditen (Kursunabhängig) über 1 Prozent abhängig vom Gesamtguthaben. Die genaue Rendite können Sie unter Gewinnberechnung entnehmen. Die Rendite wird vertraglich garantiert.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
 
             <Card>
               <CardHeader>
