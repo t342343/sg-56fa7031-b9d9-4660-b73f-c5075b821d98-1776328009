@@ -337,8 +337,11 @@ export default function Info() {
         </div>
 
         {/* Footer */}
-        <footer className="bg-slate-900 text-white py-12 mt-20">
-          <div className="container mx-auto px-4 py-3">
+        <footer className="border-t bg-white mt-auto">
+          <div className="container mx-auto px-4 py-6">
+            <p className="text-center text-sm text-gray-600">
+              © 2026 Finanzportal Alle Rechte vorbehalten
+            </p>
           </div>
         </footer>
       </div>
